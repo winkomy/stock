@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Stock Control & BOM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden-view { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800 font-sans">
+
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-xl z-10">
+        <div class="h-16 flex items-center px-6 border-b border-slate-800 font-bold text-xl tracking-wide">
+            Winko ProStock
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <button onclick="switchView('inventory-view')" id="btn-inventory" class="w-full text-left px-4 py-2 bg-blue-600 rounded-md transition-colors font-medium">
+                Inventory Master
+            </button>
+            <button onclick="switchView('bom-view')" id="btn-bom" class="w-full text-left px-4 py-2 hover:bg-slate-800 rounded-md transition-colors font-medium">
+                Parametric BOM
+            </button>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        
+        <header class="h-16 bg-white border-b flex items-center justify-between px-8 shadow-sm">
+            <h1 id="page-title" class="text-2xl font-semibold text-slate-700">Inventory Master</h1>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow text-sm font-medium transition-colors">
+                + New Order
+            </button>
+        </header>
+
+        <div class="p-8">
+            
+            <div id="inventory-view">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 border-l-4 border-l-blue-500">
+                        <h3 class="text-sm font-medium text-slate-500 mb-1">Total Stock Value</h3>
+                        <p class="text-3xl font-bold text-slate-800">RM 934,817.01</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 border-l-4 border-l-green-500">
+                        <h3 class="text-sm font-medium text-slate-500 mb-1">Items In Stock</h3>
+                        <p class="text-3xl font-bold text-green-600">63</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
+                        <h3 class="text-sm font-medium text-slate-500 mb-1">Active Assemblies</h3>
+                        <p class="text-3xl font-bold text-amber-600">4</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                        <h2 class="font-semibold text-slate-700">Live Raw Materials & Components</h2>
+                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search description or category..." class="px-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-72 shadow-sm">
+                    </div>
+                    
+                    <div class="overflow-x-auto h-[500px]">
+                        <table id="inventoryTable" class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 shadow-sm">
+                                <tr class="bg-white text-slate-500 text-sm border-b">
+                                    <th class="px-6 py-4 font-semibold">Category</th>
+                                    <th class="px-6 py-4 font-semibold">Description</th>
+                                    <th class="px-6 py-4 font-semibold">Quantity</th>
+                                    <th class="px-6 py-4 font-semibold">Unit Price</th>
+                                    <th class="px-6 py-4 font-semibold">Total Value</th>
+                                    <th class="px-6 py-4 font-semibold">Supplier</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="text-sm text-slate-600">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="bom-view" class="hidden-view">
+                <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden mb-6">
+                    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+                        <h2 class="font-semibold text-slate-700">Generate Modular Tank BOM</h2>
+                        <p class="text-xs text-slate-500 mt-1">Input grid dimensions (in panels) to automatically calculate required stock.</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Length</label>
+                                <input type="number" id="dim-length" placeholder="Panels" class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Width</label>
+                                <input type="number" id="dim-width" placeholder="Panels" class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Height (Panels)</label>
+                                <select id="dim-height" class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                    <option value="1">1 Panel (4ft)</option>
+                                    <option value="2">2 Panels (8ft)</option>
+                                    <option value="3" selected>3 Panels (12ft)</option>
+                                    <option value="4">4 Panels (16ft)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Partition Type</label>
+                                <select class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                    <option>None (Single Cell)</option>
+                                    <option>Asymmetrical (e.g. 3+4)</option>
+                                    <option>Symmetrical Half</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="calculateMockBOM()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-md shadow text-sm font-medium transition-colors">
+                            Calculate Requirements
+                        </button>
+                    </div>
+                </div>
+
+                <div id="bom-results" class="hidden-view bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-200 bg-green-50 flex justify-between items-center">
+                        <h2 class="font-semibold text-green-800">Generated Work Order Requirements</h2>
+                        <span class="text-xs font-mono text-green-700">WO-#4921</span>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-slate-600 mb-4 italic">Note: In the final app, this math will connect to your exact Mild Steel MS/HDG database.</p>
+                        <ul class="space-y-3 text-sm text-slate-700 mb-6">
+                            <li class="flex justify-between border-b border-slate-100 pb-2">
+                                <span><strong>Base Panels</strong> (Calculated from Area)</span>
+                                <span class="font-bold">Required qty generated here</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-100 pb-2">
+                                <span><strong>Wall Panels</strong> (Calculated from Perimeter × Height)</span>
+                                <span class="font-bold">Required qty generated here</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-100 pb-2">
+                                <span><strong>Roof Panels</strong></span>
+                                <span class="font-bold">Required qty generated here</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-100 pb-2">
+                                <span><strong>PVC FOAM TAPE & BUTLY SEALANT</strong></span>
+                                <span class="font-bold">Calculated from seam lengths</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Data injected from your uploaded CSV file
+        const inventoryData = [
+            {"CATEGORY": "Mild Steel Plate (S275JR) - Raw Materials", "DESCRIPTION": "4.6mm thk x 1340 x 2680mm ", "QUANTITY": 71.0, "UNIT (RM)": 369.58, "AMOUNT (RM)": 26240.18, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
+            {"CATEGORY": "Mild Steel Plate (S275JR) - Raw Materials", "DESCRIPTION": "1.5mm thk x 1340 x 2680mm", "QUANTITY": 200.0, "UNIT (RM)": 145.0, "AMOUNT (RM)": 29000.0, "SUPPLIER NAME": "Infinity Sdn Bhd"},
+            {"CATEGORY": "Mild Steel Plate (S275JR) - Raw Materials", "DESCRIPTION": "4.5mm thk x 1340 x 2680mm", "QUANTITY": 199.0, "UNIT (RM)": 326.0, "AMOUNT (RM)": 64874.0, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
+            {"CATEGORY": "Mild Steel Plate (S275JR) - Raw Materials", "DESCRIPTION": "5.0mm thk x 5' x 10' ", "QUANTITY": 10.0, "UNIT (RM)": 461.3, "AMOUNT (RM)": 4613.0, "SUPPLIER NAME": "KIN KEE HARDWARE"},
+            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 3.0mm", "QUANTITY": 407.0, "UNIT (RM)": 106.98, "AMOUNT (RM)": 43540.86, "SUPPLIER NAME": "KIN KEE HARDWARE"},
+            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 4.3mm", "QUANTITY": 144.0, "UNIT (RM)": 193.5, "AMOUNT (RM)": 27864.0, "SUPPLIER NAME": "TASHIN STEEL"},
+            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 1.5mm", "QUANTITY": 119.0, "UNIT (RM)": 72.5, "AMOUNT (RM)": 8627.5, "SUPPLIER NAME": "Infinity Sdn Bhd"},
+            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "1m x 1m x 5.0mm", "QUANTITY": 148.0, "UNIT (RM)": 238.0, "AMOUNT (RM)": 35224.0, "SUPPLIER NAME": "Hachita Enterprise"},
+            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 4.6mm", "QUANTITY": 344.0, "UNIT (RM)": 184.79, "AMOUNT (RM)": 63567.76, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
+            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 5.0mm", "QUANTITY": 32.0, "UNIT (RM)": 188.875, "AMOUNT (RM)": 6044.0, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
+            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "3.0mm type HDG", "QUANTITY": 191.0, "UNIT (RM)": 161.68, "AMOUNT (RM)": 30880.88, "SUPPLIER NAME": "KIN KEE HARDWARE"},
+            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "4.5mm type A HDG", "QUANTITY": 297.0, "UNIT (RM)": 256.25, "AMOUNT (RM)": 76106.25, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
+            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "4.5mm type B mild steel painted", "QUANTITY": 284.0, "UNIT (RM)": 171.25, "AMOUNT (RM)": 48635.0, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
+            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "4.6mm x 4' x 4' hdg tank", "QUANTITY": 162.0, "UNIT (RM)": 291.88, "AMOUNT (RM)": 47284.56, "SUPPLIER NAME": "Unknown"},
+            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "6.0mm type A hdg", "QUANTITY": 403.0, "UNIT (RM)": 348.34, "AMOUNT (RM)": 140381.02, "SUPPLIER NAME": "Hachita Enterprise"},
+            {"CATEGORY": "Roof Cover Sheet", "DESCRIPTION": "4' x 4' x 1.5mm thk MS tank cover", "QUANTITY": 186.0, "UNIT (RM)": 72.5, "AMOUNT (RM)": 13485.0, "SUPPLIER NAME": "Unknown"},
+            {"CATEGORY": "Roof Cover Sheet", "DESCRIPTION": "4' x 4' x 1.5mm thk hdg", "QUANTITY": 162.0, "UNIT (RM)": 99.85, "AMOUNT (RM)": 16175.7, "SUPPLIER NAME": "Unknown"},
+            {"CATEGORY": "Mild Steel Cleats", "DESCRIPTION": "5mm (B) hdg", "QUANTITY": 500.0, "UNIT (RM)": 18.9, "AMOUNT (RM)": 9450.0, "SUPPLIER NAME": "Unknown"},
+            {"CATEGORY": "Mild Steel Angles", "DESCRIPTION": "50mm x 50mm x 5mm thk x 6m length", "QUANTITY": 100.0, "UNIT (RM)": 47.5, "AMOUNT (RM)": 4750.0, "SUPPLIER NAME": "KIN KEE HARDWARE"},
+            {"CATEGORY": "Mild Steel Angle Stays", "DESCRIPTION": "50mm x 50mm x 5mm - 67.5\" HDG", "QUANTITY": 262.0, "UNIT (RM)": 21.35, "AMOUNT (RM)": 5593.7, "SUPPLIER NAME": "Unknown"},
+            {"CATEGORY": "Bolts & Nuts(HDG)", "DESCRIPTION": "M14 x 30mm bolts x nuts hdg", "QUANTITY": 72.0, "UNIT (RM)": 400.0, "AMOUNT (RM)": 28800.0, "SUPPLIER NAME": "SLS Bolts & Nuts s/b"},
+            {"CATEGORY": "PVC FOAM TAPE & BUTLY SEALANT", "DESCRIPTION": "PVC foam x 15m (NORTON)", "QUANTITY": 359.0, "UNIT (RM)": 55.35, "AMOUNT (RM)": 19870.65, "SUPPLIER NAME": "Globalike Ind S/B"},
+            {"CATEGORY": "PVC FOAM TAPE & BUTLY SEALANT", "DESCRIPTION": "Aseal Butyl sealant (80 x 24mm thk x 80m)", "QUANTITY": 89.0, "UNIT (RM)": 3.9, "AMOUNT (RM)": 347.1, "SUPPLIER NAME": "Vital Distribution S/B"}
+        ];
+
+        // Populate Table dynamically
+        const tbody = document.getElementById('tableBody');
+        inventoryData.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
+            
+            // Highlight low stock (just as an example, marking quantities < 50)
+            let qtyClass = item.QUANTITY < 50 ? "text-amber-600 font-bold" : "text-slate-700";
+
+            tr.innerHTML = `
+                <td class="px-6 py-4 font-medium text-slate-600 text-xs">${item.CATEGORY}</td>
+                <td class="px-6 py-4 text-slate-800 font-medium">${item.DESCRIPTION}</td>
+                <td class="px-6 py-4 ${qtyClass}">${item.QUANTITY}</td>
+                <td class="px-6 py-4">RM ${item["UNIT (RM)"].toFixed(2)}</td>
+                <td class="px-6 py-4 font-medium text-slate-700">RM ${item["AMOUNT (RM)"].toFixed(2)}</td>
+                <td class="px-6 py-4 text-slate-500 text-xs">${item["SUPPLIER NAME"]}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        function filterTable() {
+            const input = document.getElementById("searchInput").value.toUpperCase();
+            const tr = tbody.getElementsByTagName("tr");
+
+            for (let i = 0; i < tr.length; i++) {
+                let catCol = tr[i].getElementsByTagName("td")[0].innerText;
+                let descCol = tr[i].getElementsByTagName("td")[1].innerText;
+                
+                if (catCol.toUpperCase().includes(input) || descCol.toUpperCase().includes(input)) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
+        function switchView(viewId) {
+            document.getElementById('inventory-view').classList.add('hidden-view');
+            document.getElementById('bom-view').classList.add('hidden-view');
+            
+            document.getElementById('btn-inventory').className = "w-full text-left px-4 py-2 hover:bg-slate-800 rounded-md transition-colors font-medium";
+            document.getElementById('btn-bom').className = "w-full text-left px-4 py-2 hover:bg-slate-800 rounded-md transition-colors font-medium";
+            
+            document.getElementById(viewId).classList.remove('hidden-view');
+            if(viewId === 'inventory-view') {
+                document.getElementById('page-title').innerText = "Inventory Master";
+                document.getElementById('btn-inventory').className = "w-full text-left px-4 py-2 bg-blue-600 rounded-md transition-colors font-medium";
+            } else {
+                document.getElementById('page-title').innerText = "Parametric BOM Engine";
+                document.getElementById('btn-bom').className = "w-full text-left px-4 py-2 bg-blue-600 rounded-md transition-colors font-medium";
+            }
+        }
+
+        function calculateMockBOM() {
+            const resultsDiv = document.getElementById('bom-results');
+            resultsDiv.classList.remove('hidden-view');
+            resultsDiv.style.opacity = 0;
+            let opacity = 0;
+            const timer = setInterval(() => {
+                if (opacity >= 1) clearInterval(timer);
+                resultsDiv.style.opacity = opacity;
+                opacity += 0.1;
+            }, 20);
+        }
+    </script>
+</body>
+</html>
