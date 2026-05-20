@@ -3,243 +3,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Production Stock Control & BOM</title>
+    <title>Winko ProStock | Production Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .hidden-view { display: none; }
+        .hidden-view { display: none !important; }
+        /* Custom scrollbar for tables */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800 font-sans">
 
-    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-xl z-10">
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 shrink-0">
         <div class="h-16 flex items-center px-6 border-b border-slate-800 font-bold text-xl tracking-wide">
-            Winko ProStock
+            <span class="text-blue-500 mr-2">⬢</span> Winko ProStock
         </div>
         <nav class="flex-1 px-4 py-6 space-y-2">
-            <button onclick="switchView('inventory-view')" id="btn-inventory" class="w-full text-left px-4 py-2 bg-blue-600 rounded-md transition-colors font-medium">
+            <button onclick="switchTab('inventory')" id="tab-inventory" class="w-full text-left px-4 py-3 bg-blue-600 rounded-lg transition-colors font-medium shadow flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
                 Inventory Master
             </button>
-            <button onclick="switchView('bom-view')" id="btn-bom" class="w-full text-left px-4 py-2 hover:bg-slate-800 rounded-md transition-colors font-medium">
+            <button onclick="switchTab('daily')" id="tab-daily" class="w-full text-left px-4 py-3 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors font-medium flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                Daily Reconciliation
+            </button>
+            <button onclick="switchTab('bom')" id="tab-bom" class="w-full text-left px-4 py-3 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors font-medium flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 Parametric BOM
             </button>
         </nav>
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+            System v2.0.1<br>Semenyih Facility
+        </div>
     </aside>
 
-    <main class="flex-1 flex flex-col overflow-y-auto">
+    <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
         
-        <header class="h-16 bg-white border-b flex items-center justify-between px-8 shadow-sm">
-            <h1 id="page-title" class="text-2xl font-semibold text-slate-700">Inventory Master</h1>
-            <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow text-sm font-medium transition-colors">
-                + New Order
-            </button>
+        <header class="h-16 bg-white border-b flex items-center justify-between px-8 shadow-sm shrink-0">
+            <h1 id="header-title" class="text-2xl font-semibold text-slate-800 tracking-tight">Inventory Master</h1>
+            <div id="current-date" class="text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-md border border-slate-200"></div>
         </header>
 
-        <div class="p-8">
+        <div class="flex-1 overflow-y-auto p-8 relative">
             
-            <div id="inventory-view">
+            <div id="view-inventory" class="view-section">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 border-l-4 border-l-blue-500">
-                        <h3 class="text-sm font-medium text-slate-500 mb-1">Total Stock Value</h3>
-                        <p class="text-3xl font-bold text-slate-800">RM 934,817.01</p>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-blue-500">
+                        <h3 class="text-sm font-medium text-slate-500 mb-1 uppercase tracking-wider">Total Stock Value</h3>
+                        <p id="metric-total-value" class="text-3xl font-bold text-slate-800">RM 0.00</p>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 border-l-4 border-l-green-500">
-                        <h3 class="text-sm font-medium text-slate-500 mb-1">Items In Stock</h3>
-                        <p class="text-3xl font-bold text-green-600">63</p>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-green-500">
+                        <h3 class="text-sm font-medium text-slate-500 mb-1 uppercase tracking-wider">Total Items Tracked</h3>
+                        <p id="metric-total-items" class="text-3xl font-bold text-green-600">0</p>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
-                        <h3 class="text-sm font-medium text-slate-500 mb-1">Active Assemblies</h3>
-                        <p class="text-3xl font-bold text-amber-600">4</p>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
+                        <h3 class="text-sm font-medium text-slate-500 mb-1 uppercase tracking-wider">Low Stock Alerts</h3>
+                        <p id="metric-low-stock" class="text-3xl font-bold text-amber-600">0</p>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                        <h2 class="font-semibold text-slate-700">Live Raw Materials & Components</h2>
-                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search description or category..." class="px-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-72 shadow-sm">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col" style="height: calc(100vh - 300px);">
+                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+                        <h2 class="font-semibold text-slate-700">Live Component Database</h2>
+                        <input type="text" id="search-inventory" onkeyup="filterInventory()" placeholder="Search description or category..." class="px-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-72 shadow-sm">
                     </div>
                     
-                    <div class="overflow-x-auto h-[500px]">
-                        <table id="inventoryTable" class="w-full text-left border-collapse">
-                            <thead class="sticky top-0 shadow-sm">
-                                <tr class="bg-white text-slate-500 text-sm border-b">
+                    <div class="overflow-y-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 bg-white shadow-sm z-10">
+                                <tr class="text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
                                     <th class="px-6 py-4 font-semibold">Category</th>
                                     <th class="px-6 py-4 font-semibold">Description</th>
-                                    <th class="px-6 py-4 font-semibold">Quantity</th>
-                                    <th class="px-6 py-4 font-semibold">Unit Price</th>
-                                    <th class="px-6 py-4 font-semibold">Total Value</th>
-                                    <th class="px-6 py-4 font-semibold">Supplier</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Quantity</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Unit Price</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Total Value</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody" class="text-sm text-slate-600">
+                            <tbody id="inventory-tbody" class="text-sm text-slate-600">
                                 </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div id="bom-view" class="hidden-view">
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden mb-6">
-                    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
-                        <h2 class="font-semibold text-slate-700">Generate Modular Tank BOM</h2>
-                        <p class="text-xs text-slate-500 mt-1">Input grid dimensions (in panels) to automatically calculate required stock.</p>
+            <div id="view-daily" class="view-section hidden-view flex flex-col h-full">
+                <div id="toast-success" class="hidden shrink-0 mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg shadow-sm flex items-center transition-opacity">
+                    <svg class="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    <span class="font-medium">Inventory Successfully Updated! Values have been pushed to the Master Tracker.</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 shrink-0">
+                        <div>
+                            <h2 class="font-semibold text-slate-700">End-of-Day Floor Updates</h2>
+                            <p class="text-xs text-slate-500 mt-1">Enter physical count of items received or consumed today.</p>
+                        </div>
+                        <input type="text" id="search-daily" onkeyup="filterDaily()" placeholder="Search item to update..." class="px-4 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 shadow-sm">
                     </div>
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    
+                    <div class="overflow-y-auto flex-1 bg-white">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 bg-slate-100 shadow-sm z-10">
+                                <tr class="text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
+                                    <th class="px-6 py-4 font-semibold">Item Description</th>
+                                    <th class="px-6 py-4 font-semibold text-center w-32">Start Stock</th>
+                                    <th class="px-6 py-4 font-semibold text-center w-36">Received In (+)</th>
+                                    <th class="px-6 py-4 font-semibold text-center w-36">Used Out (-)</th>
+                                    <th class="px-6 py-4 font-semibold text-center w-32">Final Stock</th>
+                                    <th class="px-6 py-4 font-semibold w-32 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="daily-tbody" class="text-sm text-slate-700">
+                                </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-between items-center shrink-0">
+                        <p class="text-sm text-slate-500">Warning: Committing will permanently update the Master Inventory amounts.</p>
+                        <button onclick="commitDailyLog()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-lg shadow-md text-sm font-semibold transition-colors focus:ring-4 focus:ring-blue-200">
+                            Commit Daily Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-bom" class="view-section hidden-view">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                    <div class="px-6 py-4 border-b border-slate-200 bg-slate-900 text-white flex justify-between items-center">
+                        <div>
+                            <h2 class="font-semibold text-lg">Sectional Tank Configurator</h2>
+                            <p class="text-xs text-slate-300 mt-1">Generates material pull-list based on grid parameters.</p>
+                        </div>
+                        <span class="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-xs font-mono border border-blue-500/30">Engine v1.2</span>
+                    </div>
+                    <div class="p-8">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Length</label>
-                                <input type="number" id="dim-length" placeholder="Panels" class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Length (Panels)</label>
+                                <input type="number" id="bom-l" value="6" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Width</label>
-                                <input type="number" id="dim-width" placeholder="Panels" class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Width (Panels)</label>
+                                <input type="number" id="bom-w" value="4" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Height (Panels)</label>
-                                <select id="dim-height" class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-                                    <option value="1">1 Panel (4ft)</option>
-                                    <option value="2">2 Panels (8ft)</option>
-                                    <option value="3" selected>3 Panels (12ft)</option>
-                                    <option value="4">4 Panels (16ft)</option>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Height</label>
+                                <select id="bom-h" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <option value="1">1 Panel (1m)</option>
+                                    <option value="2">2 Panels (2m)</option>
+                                    <option value="3" selected>3 Panels (3m)</option>
+                                    <option value="4">4 Panels (4m)</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Partition Type</label>
-                                <select class="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Internal Partition</label>
+                                <select class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
                                     <option>None (Single Cell)</option>
-                                    <option>Asymmetrical (e.g. 3+4)</option>
-                                    <option>Symmetrical Half</option>
+                                    <option>Divided Width-wise</option>
                                 </select>
                             </div>
                         </div>
-                        <button onclick="calculateMockBOM()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-md shadow text-sm font-medium transition-colors">
-                            Calculate Requirements
+                        <button onclick="calculateBOM()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-lg shadow-md text-sm font-semibold transition-colors flex items-center justify-center w-64">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            Generate Pull List
                         </button>
                     </div>
                 </div>
 
-                <div id="bom-results" class="hidden-view bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-200 bg-green-50 flex justify-between items-center">
-                        <h2 class="font-semibold text-green-800">Generated Work Order Requirements</h2>
-                        <span class="text-xs font-mono text-green-700">WO-#4921</span>
-                    </div>
-                    <div class="p-6">
-                        <p class="text-sm text-slate-600 mb-4 italic">Note: In the final app, this math will connect to your exact Mild Steel MS/HDG database.</p>
-                        <ul class="space-y-3 text-sm text-slate-700 mb-6">
-                            <li class="flex justify-between border-b border-slate-100 pb-2">
-                                <span><strong>Base Panels</strong> (Calculated from Area)</span>
-                                <span class="font-bold">Required qty generated here</span>
-                            </li>
-                            <li class="flex justify-between border-b border-slate-100 pb-2">
-                                <span><strong>Wall Panels</strong> (Calculated from Perimeter × Height)</span>
-                                <span class="font-bold">Required qty generated here</span>
-                            </li>
-                            <li class="flex justify-between border-b border-slate-100 pb-2">
-                                <span><strong>Roof Panels</strong></span>
-                                <span class="font-bold">Required qty generated here</span>
-                            </li>
-                            <li class="flex justify-between border-b border-slate-100 pb-2">
-                                <span><strong>PVC FOAM TAPE & BUTLY SEALANT</strong></span>
-                                <span class="font-bold">Calculated from seam lengths</span>
-                            </li>
-                        </ul>
+                <div id="bom-results" class="hidden-view bg-white rounded-xl shadow-sm border border-blue-200 overflow-hidden relative">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <div class="p-8">
+                        <h3 class="text-xl font-bold text-slate-800 mb-6 border-b pb-4">Calculated Work Order Requirements</h3>
+                        <div class="grid grid-cols-2 gap-8" id="bom-output-list">
+                            </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </main>
 
     <script>
-        // Data injected from your uploaded CSV file
-        const inventoryData = [
-            {"CATEGORY": "Mild Steel Plate (S275JR) - Raw Materials", "DESCRIPTION": "4.6mm thk x 1340 x 2680mm ", "QUANTITY": 71.0, "UNIT (RM)": 369.58, "AMOUNT (RM)": 26240.18, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
-            {"CATEGORY": "Mild Steel Plate (S275JR) - Raw Materials", "DESCRIPTION": "1.5mm thk x 1340 x 2680mm", "QUANTITY": 200.0, "UNIT (RM)": 145.0, "AMOUNT (RM)": 29000.0, "SUPPLIER NAME": "Infinity Sdn Bhd"},
-            {"CATEGORY": "Mild Steel Plate (S275JR) - Raw Materials", "DESCRIPTION": "4.5mm thk x 1340 x 2680mm", "QUANTITY": 199.0, "UNIT (RM)": 326.0, "AMOUNT (RM)": 64874.0, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
-            {"CATEGORY": "Mild Steel Plate (S275JR) - Raw Materials", "DESCRIPTION": "5.0mm thk x 5' x 10' ", "QUANTITY": 10.0, "UNIT (RM)": 461.3, "AMOUNT (RM)": 4613.0, "SUPPLIER NAME": "KIN KEE HARDWARE"},
-            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 3.0mm", "QUANTITY": 407.0, "UNIT (RM)": 106.98, "AMOUNT (RM)": 43540.86, "SUPPLIER NAME": "KIN KEE HARDWARE"},
-            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 4.3mm", "QUANTITY": 144.0, "UNIT (RM)": 193.5, "AMOUNT (RM)": 27864.0, "SUPPLIER NAME": "TASHIN STEEL"},
-            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 1.5mm", "QUANTITY": 119.0, "UNIT (RM)": 72.5, "AMOUNT (RM)": 8627.5, "SUPPLIER NAME": "Infinity Sdn Bhd"},
-            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "1m x 1m x 5.0mm", "QUANTITY": 148.0, "UNIT (RM)": 238.0, "AMOUNT (RM)": 35224.0, "SUPPLIER NAME": "Hachita Enterprise"},
-            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 4.6mm", "QUANTITY": 344.0, "UNIT (RM)": 184.79, "AMOUNT (RM)": 63567.76, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
-            {"CATEGORY": "Mild Steel Plate (After Raw Materials)", "DESCRIPTION": "4' x 4' x 5.0mm", "QUANTITY": 32.0, "UNIT (RM)": 188.875, "AMOUNT (RM)": 6044.0, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
-            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "3.0mm type HDG", "QUANTITY": 191.0, "UNIT (RM)": 161.68, "AMOUNT (RM)": 30880.88, "SUPPLIER NAME": "KIN KEE HARDWARE"},
-            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "4.5mm type A HDG", "QUANTITY": 297.0, "UNIT (RM)": 256.25, "AMOUNT (RM)": 76106.25, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
-            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "4.5mm type B mild steel painted", "QUANTITY": 284.0, "UNIT (RM)": 171.25, "AMOUNT (RM)": 48635.0, "SUPPLIER NAME": "KEAN SOON HARDWARE"},
-            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "4.6mm x 4' x 4' hdg tank", "QUANTITY": 162.0, "UNIT (RM)": 291.88, "AMOUNT (RM)": 47284.56, "SUPPLIER NAME": "Unknown"},
-            {"CATEGORY": "4' x 4' Tank Plates (After Fab.)", "DESCRIPTION": "6.0mm type A hdg", "QUANTITY": 403.0, "UNIT (RM)": 348.34, "AMOUNT (RM)": 140381.02, "SUPPLIER NAME": "Hachita Enterprise"},
-            {"CATEGORY": "Roof Cover Sheet", "DESCRIPTION": "4' x 4' x 1.5mm thk MS tank cover", "QUANTITY": 186.0, "UNIT (RM)": 72.5, "AMOUNT (RM)": 13485.0, "SUPPLIER NAME": "Unknown"},
-            {"CATEGORY": "Roof Cover Sheet", "DESCRIPTION": "4' x 4' x 1.5mm thk hdg", "QUANTITY": 162.0, "UNIT (RM)": 99.85, "AMOUNT (RM)": 16175.7, "SUPPLIER NAME": "Unknown"},
-            {"CATEGORY": "Mild Steel Cleats", "DESCRIPTION": "5mm (B) hdg", "QUANTITY": 500.0, "UNIT (RM)": 18.9, "AMOUNT (RM)": 9450.0, "SUPPLIER NAME": "Unknown"},
-            {"CATEGORY": "Mild Steel Angles", "DESCRIPTION": "50mm x 50mm x 5mm thk x 6m length", "QUANTITY": 100.0, "UNIT (RM)": 47.5, "AMOUNT (RM)": 4750.0, "SUPPLIER NAME": "KIN KEE HARDWARE"},
-            {"CATEGORY": "Mild Steel Angle Stays", "DESCRIPTION": "50mm x 50mm x 5mm - 67.5\" HDG", "QUANTITY": 262.0, "UNIT (RM)": 21.35, "AMOUNT (RM)": 5593.7, "SUPPLIER NAME": "Unknown"},
-            {"CATEGORY": "Bolts & Nuts(HDG)", "DESCRIPTION": "M14 x 30mm bolts x nuts hdg", "QUANTITY": 72.0, "UNIT (RM)": 400.0, "AMOUNT (RM)": 28800.0, "SUPPLIER NAME": "SLS Bolts & Nuts s/b"},
-            {"CATEGORY": "PVC FOAM TAPE & BUTLY SEALANT", "DESCRIPTION": "PVC foam x 15m (NORTON)", "QUANTITY": 359.0, "UNIT (RM)": 55.35, "AMOUNT (RM)": 19870.65, "SUPPLIER NAME": "Globalike Ind S/B"},
-            {"CATEGORY": "PVC FOAM TAPE & BUTLY SEALANT", "DESCRIPTION": "Aseal Butyl sealant (80 x 24mm thk x 80m)", "QUANTITY": 89.0, "UNIT (RM)": 3.9, "AMOUNT (RM)": 347.1, "SUPPLIER NAME": "Vital Distribution S/B"}
+        // 1. GLOBAL STATE (Loaded from your CSV Data)
+        // We include a diverse mix of your real data so you can see different categories
+        let db = [
+            { id: 1, category: "Mild Steel Plate (S275JR)", desc: "4.6mm thk x 1340 x 2680mm", qty: 71.0, price: 369.58, inputIn: 0, inputOut: 0 },
+            { id: 2, category: "Mild Steel Plate (S275JR)", desc: "1.5mm thk x 1340 x 2680mm", qty: 200.0, price: 145.00, inputIn: 0, inputOut: 0 },
+            { id: 3, category: "Mild Steel Plate (S275JR)", desc: "4.5mm thk x 1340 x 2680mm", qty: 199.0, price: 326.00, inputIn: 0, inputOut: 0 },
+            { id: 4, category: "4' x 4' Tank Plates (HDG)", desc: "4.5mm type A HDG", qty: 297.0, price: 256.25, inputIn: 0, inputOut: 0 },
+            { id: 5, category: "4' x 4' Tank Plates (HDG)", desc: "6.0mm type A HDG", qty: 403.0, price: 348.34, inputIn: 0, inputOut: 0 },
+            { id: 6, category: "Roof Cover Sheet", desc: "4' x 4' x 1.5mm thk hdg", qty: 162.0, price: 99.85, inputIn: 0, inputOut: 0 },
+            { id: 7, category: "Mild Steel Cleats", desc: "5mm (B) hdg", qty: 500.0, price: 18.90, inputIn: 0, inputOut: 0 },
+            { id: 8, category: "Mild Steel Angles", desc: "50mm x 50mm x 5mm thk x 6m length", qty: 100.0, price: 47.50, inputIn: 0, inputOut: 0 },
+            { id: 9, category: "Bolts & Nuts(HDG)", desc: "M14 x 30mm bolts x nuts hdg", qty: 72.0, price: 400.00, inputIn: 0, inputOut: 0 },
+            { id: 10, category: "PVC FOAM TAPE & SEALANT", desc: "Aseal Butyl sealant (80 x 24mm thk x 80m)", qty: 89.0, price: 3.90, inputIn: 0, inputOut: 0 },
+            { id: 11, category: "PVC FOAM TAPE & SEALANT", desc: "PVC foam x 15m (NORTON)", qty: 359.0, price: 55.35, inputIn: 0, inputOut: 0 },
+            { id: 12, category: "Ladders (Fab. Works)", desc: "14'(L) mild steel ladder", qty: 3.0, price: 110.00, inputIn: 0, inputOut: 0 },
+            { id: 13, category: "Piping (Fittings)", desc: "Scour Pipe System (100mm)", qty: 14.0, price: 85.00, inputIn: 0, inputOut: 0 },
+            { id: 14, category: "Washers", desc: "5/8\"Ø HDG x 50kg / bag x 2800pcs", qty: 3.0, price: 470.00, inputIn: 0, inputOut: 0 }
         ];
 
-        // Populate Table dynamically
-        const tbody = document.getElementById('tableBody');
-        inventoryData.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
+        // Set Date
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        // 2. CORE RENDERING FUNCTIONS
+        function renderMasterInventory() {
+            const tbody = document.getElementById('inventory-tbody');
+            tbody.innerHTML = '';
             
-            // Highlight low stock (just as an example, marking quantities < 50)
-            let qtyClass = item.QUANTITY < 50 ? "text-amber-600 font-bold" : "text-slate-700";
+            let totalValue = 0;
+            let lowStockCount = 0;
 
-            tr.innerHTML = `
-                <td class="px-6 py-4 font-medium text-slate-600 text-xs">${item.CATEGORY}</td>
-                <td class="px-6 py-4 text-slate-800 font-medium">${item.DESCRIPTION}</td>
-                <td class="px-6 py-4 ${qtyClass}">${item.QUANTITY}</td>
-                <td class="px-6 py-4">RM ${item["UNIT (RM)"].toFixed(2)}</td>
-                <td class="px-6 py-4 font-medium text-slate-700">RM ${item["AMOUNT (RM)"].toFixed(2)}</td>
-                <td class="px-6 py-4 text-slate-500 text-xs">${item["SUPPLIER NAME"]}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+            db.forEach(item => {
+                const rowValue = item.qty * item.price;
+                totalValue += rowValue;
+                if (item.qty < 20) lowStockCount++;
 
-        function filterTable() {
-            const input = document.getElementById("searchInput").value.toUpperCase();
-            const tr = tbody.getElementsByTagName("tr");
+                let qtyClass = item.qty < 20 ? "text-amber-600 font-bold" : "text-slate-700";
 
-            for (let i = 0; i < tr.length; i++) {
-                let catCol = tr[i].getElementsByTagName("td")[0].innerText;
-                let descCol = tr[i].getElementsByTagName("td")[1].innerText;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
+                        <td class="px-6 py-4 text-xs font-semibold text-slate-500">${item.category}</td>
+                        <td class="px-6 py-4 font-medium text-slate-800">${item.desc}</td>
+                        <td class="px-6 py-4 text-right ${qtyClass}">${item.qty.toFixed(1)}</td>
+                        <td class="px-6 py-4 text-right text-slate-500 font-mono text-xs">RM ${item.price.toFixed(2)}</td>
+                        <td class="px-6 py-4 text-right font-medium text-slate-800">RM ${rowValue.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+            });
+
+            // Update Header Metrics
+            document.getElementById('metric-total-value').innerText = `RM ${totalValue.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('metric-total-items').innerText = db.length;
+            document.getElementById('metric-low-stock').innerText = lowStockCount;
+        }
+
+        function renderDailyReconciliation() {
+            const tbody = document.getElementById('daily-tbody');
+            tbody.innerHTML = '';
+
+            db.forEach((item, index) => {
+                const finalStock = item.qty + item.inputIn - item.inputOut;
                 
-                if (catCol.toUpperCase().includes(input) || descCol.toUpperCase().includes(input)) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
+                let badge = '<span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-md text-xs font-semibold">Optimal</span>';
+                let rowStyle = "";
+                
+                if (finalStock < 20) {
+                    badge = '<span class="bg-amber-100 text-amber-700 px-2.5 py-1 rounded-md text-xs font-semibold">Low Stock</span>';
+                    rowStyle = "bg-amber-50/20";
                 }
+                if (finalStock < 0) {
+                    badge = '<span class="bg-red-100 text-red-700 px-2.5 py-1 rounded-md text-xs font-semibold">Error (Neg)</span>';
+                    rowStyle = "bg-red-50/50";
+                }
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100 ${rowStyle}">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-slate-800">${item.desc}</div>
+                            <div class="text-xs text-slate-400 mt-0.5">${item.category}</div>
+                        </td>
+                        <td class="px-6 py-4 text-center font-mono text-slate-500">${item.qty}</td>
+                        <td class="px-6 py-3 text-center">
+                            <input type="number" min="0" value="${item.inputIn || ''}" oninput="updateDailyInput(${index}, 'inputIn', this.value)"
+                                   class="w-20 px-2 py-1.5 text-center border border-slate-300 rounded shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </td>
+                        <td class="px-6 py-3 text-center">
+                            <input type="number" min="0" value="${item.inputOut || ''}" oninput="updateDailyInput(${index}, 'inputOut', this.value)"
+                                   class="w-20 px-2 py-1.5 text-center border border-slate-300 rounded shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </td>
+                        <td class="px-6 py-4 text-center font-bold font-mono text-lg ${finalStock < 0 ? 'text-red-600' : 'text-slate-800'}">${finalStock}</td>
+                        <td class="px-6 py-4 text-center">${badge}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 3. INTERACTIVE LOGIC
+        function updateDailyInput(index, field, value) {
+            const parsed = parseFloat(value);
+            db[index][field] = isNaN(parsed) ? 0 : parsed;
+            renderDailyReconciliation(); // Re-render to update Final Stock math live
+        }
+
+        function commitDailyLog() {
+            // Check for negative numbers
+            if (db.some(item => (item.qty + item.inputIn - item.inputOut) < 0)) {
+                alert("Cannot commit! Some items result in negative final stock. Please review your entries.");
+                return;
+            }
+
+            // Apply updates to the main qty, reset inputs
+            db = db.map(item => ({
+                ...item,
+                qty: item.qty + item.inputIn - item.inputOut,
+                inputIn: 0,
+                inputOut: 0
+            }));
+
+            // Sync Both Views
+            renderDailyReconciliation();
+            renderMasterInventory();
+
+            // Show Toast
+            const toast = document.getElementById('toast-success');
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 4000);
+        }
+
+        function calculateBOM() {
+            const L = parseInt(document.getElementById('bom-l').value);
+            const W = parseInt(document.getElementById('bom-w').value);
+            const H = parseInt(document.getElementById('bom-h').value);
+            
+            // Dynamic Math Formulas
+            const roofPanels = L * W;
+            const basePanels = L * W;
+            const wallPanels = ((L + W) * 2) * H;
+            const foamRolls = Math.ceil(((roofPanels + basePanels + wallPanels) * 4) / 15); // Rough perimeter math
+
+            const out = document.getElementById('bom-output-list');
+            out.innerHTML = `
+                <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Structural Panels</h4>
+                    <ul class="space-y-3">
+                        <li class="flex justify-between items-center bg-slate-50 p-3 rounded border border-slate-100">
+                            <span class="text-sm font-medium">Wall Panels (4x4)</span>
+                            <span class="font-bold text-blue-600 text-lg">${wallPanels} pcs</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-slate-50 p-3 rounded border border-slate-100">
+                            <span class="text-sm font-medium">Base Panels (Flat)</span>
+                            <span class="font-bold text-blue-600 text-lg">${basePanels} pcs</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-slate-50 p-3 rounded border border-slate-100">
+                            <span class="text-sm font-medium">Roof Cover Sheets</span>
+                            <span class="font-bold text-blue-600 text-lg">${roofPanels} pcs</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Hardware & Sealants</h4>
+                    <ul class="space-y-3">
+                        <li class="flex justify-between items-center bg-slate-50 p-3 rounded border border-slate-100">
+                            <span class="text-sm font-medium">PVC Foam Tape (15m)</span>
+                            <span class="font-bold text-blue-600 text-lg">${foamRolls} rolls</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-slate-50 p-3 rounded border border-slate-100">
+                            <span class="text-sm font-medium">Internal Ladder (${H}m)</span>
+                            <span class="font-bold text-blue-600 text-lg">2 units</span>
+                        </li>
+                    </ul>
+                </div>
+            `;
+            
+            document.getElementById('bom-results').classList.remove('hidden-view');
+        }
+
+        // 4. UI HELPERS
+        function switchTab(viewName) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden-view'));
+            // Reset tab styling
+            document.querySelectorAll('aside button').forEach(el => {
+                el.classList.remove('bg-blue-600', 'text-white', 'shadow');
+                el.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+            });
+
+            // Show active view
+            document.getElementById(`view-${viewName}`).classList.remove('hidden-view');
+            
+            // Highlight active tab
+            const activeBtn = document.getElementById(`tab-${viewName}`);
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow');
+            activeBtn.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+
+            // Change Header Text
+            const titles = { 'inventory': 'Inventory Master', 'daily': 'Daily Reconciliation', 'bom': 'Parametric BOM Engine' };
+            document.getElementById('header-title').innerText = titles[viewName];
+        }
+
+        function filterInventory() {
+            const term = document.getElementById('search-inventory').value.toUpperCase();
+            const rows = document.getElementById('inventory-tbody').getElementsByTagName('tr');
+            for (let row of rows) {
+                const text = row.innerText.toUpperCase();
+                row.style.display = text.includes(term) ? "" : "none";
             }
         }
 
-        function switchView(viewId) {
-            document.getElementById('inventory-view').classList.add('hidden-view');
-            document.getElementById('bom-view').classList.add('hidden-view');
-            
-            document.getElementById('btn-inventory').className = "w-full text-left px-4 py-2 hover:bg-slate-800 rounded-md transition-colors font-medium";
-            document.getElementById('btn-bom').className = "w-full text-left px-4 py-2 hover:bg-slate-800 rounded-md transition-colors font-medium";
-            
-            document.getElementById(viewId).classList.remove('hidden-view');
-            if(viewId === 'inventory-view') {
-                document.getElementById('page-title').innerText = "Inventory Master";
-                document.getElementById('btn-inventory').className = "w-full text-left px-4 py-2 bg-blue-600 rounded-md transition-colors font-medium";
-            } else {
-                document.getElementById('page-title').innerText = "Parametric BOM Engine";
-                document.getElementById('btn-bom').className = "w-full text-left px-4 py-2 bg-blue-600 rounded-md transition-colors font-medium";
+        function filterDaily() {
+            const term = document.getElementById('search-daily').value.toUpperCase();
+            const rows = document.getElementById('daily-tbody').getElementsByTagName('tr');
+            for (let row of rows) {
+                const text = row.innerText.toUpperCase();
+                row.style.display = text.includes(term) ? "" : "none";
             }
         }
 
-        function calculateMockBOM() {
-            const resultsDiv = document.getElementById('bom-results');
-            resultsDiv.classList.remove('hidden-view');
-            resultsDiv.style.opacity = 0;
-            let opacity = 0;
-            const timer = setInterval(() => {
-                if (opacity >= 1) clearInterval(timer);
-                resultsDiv.style.opacity = opacity;
-                opacity += 0.1;
-            }, 20);
-        }
+        // Boot Application
+        renderMasterInventory();
+        renderDailyReconciliation();
+
     </script>
 </body>
 </html>
