@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V158</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V159</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -171,7 +171,6 @@
 
 <datalist id="customerDatalist"></datalist>
 
-<!-- Profile Management Modal -->
 <div id="profileOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index: 10001; align-items:center; justify-content:center;">
     <div class="module-card" style="width: 350px; background: white; padding: 30px;">
         <div class="card-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">👤 Update Password</div>
@@ -200,7 +199,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 12px; top: 35px; cursor: pointer; font-size: 16px;" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 10px; color: #94a3b8; margin-top: 20px;">V158 - RBAC Security & Profile Controls</p>
+        <p style="font-size: 10px; color: #94a3b8; margin-top: 20px;">V159 - Advanced Materials Edition</p>
     </div>
 </div>
 
@@ -233,7 +232,7 @@
                 <input type="number" id="newInvStock" placeholder="Initial Stock Qty" class="admin-input" style="flex:1; min-width: 120px;">
                 <input type="number" id="newInvAlert" placeholder="Low Alert Level" class="admin-input" style="flex:1; min-width: 120px;">
                 <button class="action-btn" style="width:auto; padding:8px 20px;" onclick="addInvItem()">+ Add Item</button>
-                <button class="action-btn" style="width:auto; padding:8px 20px; background:#0284c7;" onclick="autoPopulateInventory()">⬇️ Auto-Populate Master List (225 Items)</button>
+                <button class="action-btn" style="width:auto; padding:8px 20px; background:#0284c7;" onclick="autoPopulateInventory()">⬇️ Auto-Populate Master List</button>
                 <input type="file" id="bulkInvUpload" accept=".csv" style="display:none;" onchange="handleBulkInventoryUpload(event)">
                 <button class="action-btn" style="width:auto; padding:8px 20px; background:#8b5cf6;" onclick="document.getElementById('bulkInvUpload').click()">⬆️ Bulk Upload CSV</button>
             </div>
@@ -510,7 +509,6 @@
     </div>
     
     <div id="customerPrintViewEditor" contenteditable="true">
-        <!-- V130 Classic Header -->
         <div style="display:flex; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; align-items:flex-end;">
             <div style="width:25%;"><img src="winko logo.png" alt="Company Logo" style="width:140px;" onerror="this.style.display='none'"></div>
             <div style="width:75%; text-align:right;">
@@ -525,7 +523,6 @@
             <h1 style="margin:0; font-size:18pt; text-decoration:underline; color:#000; letter-spacing:2px;">QUOTATION</h1>
         </div>
 
-        <!-- Classic Meta Grid -->
         <table style="width:100%; font-size:9.5pt; margin-bottom:20px; border:none;">
             <tr style="border:none;"><td style="width:60%; padding:3px 0; border:none;"><strong>Customer:</strong> <span id="cpCustName"></span></td><td style="width:40%; padding:3px 0; border:none;"><strong>Date:</strong> <span id="cpDate"></span></td></tr>
             <tr style="border:none;"><td style="padding:3px 0; border:none;"><strong>Address:</strong> <span id="cpCustAddress"></span></td><td style="padding:3px 0; border:none;"><strong>Our Ref:</strong> <span id="cpRef"></span></td></tr>
@@ -538,7 +535,6 @@
             <p style="font-size: 10pt; font-weight: 800; text-decoration: underline;">RE: SUPPLY, DELIVER AND INSTALL PRESSED STEEL TANK</p>
         </div>
 
-        <!-- Classic 130 Perfect Table -->
         <table class="editable-section cp-classic-table avoid-break">
             <thead><tr>
                 <th style="width:5%; text-align:center;">Item</th>
@@ -650,7 +646,7 @@
         return false;
     };
 
-    const cv = "V158"; 
+    const cv = "V159"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -694,7 +690,7 @@
     }
     
     let winkoUsers = [
-        { username: "admin", password: "admin", role: "admin" },
+        { username: "admin", password: "adminmaster99", role: "admin" },
         { username: "staff", password: "password123", role: "user" }
     ]; 
     let loggedInUser = null;
@@ -1058,7 +1054,12 @@
     const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'shortExclusions', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
 
     function defaultTank() { 
-        return { id: Date.now(), std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", L: 12, W: 4, H: 12, partitionCol: 0, ladder1Col: 0, ladder2Col: 0, override: "", bom: JSON.parse(JSON.stringify(systemBaseStructure)), nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 }; 
+        return { 
+            id: Date.now(), std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", 
+            L: 12, W: 4, H: 12, partitionCol: 0, ladder1Col: 0, ladder2Col: 0, 
+            thickBase: "4.5", thickRoof: "1.5", thickL1: "4.5", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5",
+            override: "", bom: JSON.parse(JSON.stringify(systemBaseStructure)), nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 
+        }; 
     }
 
     function handleUnitChange() { safeProcess(); }
@@ -1069,24 +1070,61 @@
         let L = parseFloat(t.L) || 0;
         let W = parseFloat(t.W) || 0;
         let H = parseFloat(t.H) || 0;
+
+        // Ensure defaults if missing (for older saved projects)
+        if(!t.thickBase) t.thickBase = "4.5"; if(!t.thickRoof) t.thickRoof = "1.5";
+        if(!t.thickL1) t.thickL1 = "4.5"; if(!t.thickL2) t.thickL2 = "3.0";
+        if(!t.thickL3) t.thickL3 = "3.0"; if(!t.thickL4) t.thickL4 = "1.5";
+        
+        let sizeTag = u === 'ft' ? "(4'x4')" : "(1m x 1m)";
+        let coatShort = "HDG";
+        if (t.coat === 'Painted Steel') coatShort = "Painted";
+        else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304";
+        else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
         
         let panelsL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L));
         let panelsW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W));
         let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
 
-        let roofQty = panelsL * panelsW;
+        let roofQty = Math.max(0, (panelsL * panelsW) - 1); 
+        let manholeQty = 1;
         let baseQty = panelsL * panelsW;
+        
         let wallL1 = (panelsL + panelsW) * 2;
         let wallL2 = panelsH >= 2 ? (panelsL + panelsW) * 2 : 0;
         let wallL3 = panelsH >= 3 ? (panelsL + panelsW) * 2 : 0;
         let wallL4 = panelsH >= 4 ? (panelsL + panelsW) * 2 : 0;
+        
         let partitionPanels = t.partitionCol > 0 ? (panelsW * panelsH) : 0;
+        let totalPanels = manholeQty + roofQty + baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels;
 
         t.bom.forEach((sec, sIdx) => {
             sec.items.forEach((it, iIdx) => {
                 let n = it.name.toLowerCase();
+                
                 if(sec.category !== "Services") {
-                    if (n.includes("manhole panel")) it.qty = 1;
+                    
+                    // --- DYNAMIC PANEL RENAMING ---
+                    if (sec.category === "Panels") {
+                        if (n.includes("base panel") && !n.includes("partition")) it.name = `${t.thickBase}mm Base Panel ${sizeTag} (${coatShort})`;
+                        else if (n.includes("roof panel") && !n.includes("partition")) it.name = `${t.thickRoof}mm Roof Panel ${sizeTag} (${coatShort})`;
+                        else if (n.includes("wall panel (l1)")) it.name = `${t.thickL1}mm Wall Panel (L1) ${sizeTag} (${coatShort})`;
+                        else if (n.includes("wall panel (l2)")) it.name = `${t.thickL2}mm Wall Panel (L2) ${sizeTag} (${coatShort})`;
+                        else if (n.includes("wall panel (l3)")) it.name = `${t.thickL3}mm Wall Panel (L3) ${sizeTag} (${coatShort})`;
+                        else if (n.includes("wall panel (l4)")) it.name = `${t.thickL4}mm Wall Panel (L4) ${sizeTag} (${coatShort})`;
+                        else if (n.includes("manhole panel")) it.name = `Manhole Panel ${sizeTag} (${coatShort})`;
+                        else if (n.includes("partition panel")) it.name = `Partition Panel ${sizeTag} (${coatShort})`;
+                        
+                        // Update tracking variable instantly
+                        n = it.name.toLowerCase(); 
+                        
+                        // Push text update back to the UI visually
+                        let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`);
+                        if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
+                    }
+
+                    // --- PANELS QTY ---
+                    if (n.includes("manhole panel")) it.qty = manholeQty;
                     else if (n.includes("roof panel") && !n.includes("partition")) it.qty = roofQty;
                     else if (n.includes("base panel") && !n.includes("partition")) it.qty = baseQty;
                     else if (n.includes("wall panel (l1)")) it.qty = wallL1;
@@ -1095,32 +1133,40 @@
                     else if (n.includes("wall panel (l4)")) it.qty = wallL4;
                     else if (n.includes("partition panel")) it.qty = partitionPanels;
                     
-                    else if (n.includes("8mm (b) cleat")) it.qty = (wallL1 + wallL2 + wallL3 + wallL4) * 2;
-                    else if (n.includes("type c cleat")) it.qty = roofQty * 2;
+                    // --- CLEATS & STAYS QTY ---
+                    else if (n.includes("8mm (b) cleat") || n.includes("wall cleat")) it.qty = (wallL1 + wallL2 + wallL3 + wallL4) * 2;
+                    else if (n.includes("type c cleat") || n.includes("roof cleat")) it.qty = (roofQty + manholeQty) * 2;
                     else if (n.includes("partition cleat")) it.qty = partitionPanels * 4;
-                    else if (n.includes("(l1 stay")) it.qty = wallL1;
-                    else if (n.includes("(l2 stay")) it.qty = wallL2;
-                    else if (n.includes("(l3 stay")) it.qty = wallL3;
-                    else if (n.includes("pvc foam tape")) it.qty = Math.ceil(((roofQty + baseQty + wallL1 + wallL2 + wallL3 + wallL4)*4)/10);
+                    else if (n.includes("(l1 stay") || n.includes("l1 angle stay")) it.qty = wallL1;
+                    else if (n.includes("(l2 stay") || n.includes("l2 angle stay")) it.qty = wallL2;
+                    else if (n.includes("(l3 stay") || n.includes("l3 angle stay")) it.qty = wallL3;
+                    else if (n.includes("l4 stay")) it.qty = wallL4;
+
+                    // --- STANDARD ACCESSORIES QTY ---
+                    else if (n.includes("ext. ladder") || n.includes("ext ladder")) it.qty = 1;
+                    else if (n.includes("int. ladder") || n.includes("int ladder")) it.qty = 1;
+                    else if (n.includes("water level indicator")) it.qty = 1;
+                    else if (n.includes("air vent")) it.qty = Math.max(1, Math.floor((panelsL * panelsW) / 4));
+                    else if (n.includes("pvc foam tape") || n.includes("sealant")) it.qty = Math.ceil((totalPanels * 4) / 10);
                     
-                    // --- NEW BOLT LOGIC START ---
-                    else if (n.includes("m10") && n.includes("bolt")) {
-                        it.qty = Math.ceil(roofQty * 24); 
+                    // --- BOLTS & NUTS QTY ---
+                    else if (n.includes("m10") && (n.includes("bolt") || n.includes("b/n"))) {
+                        it.qty = Math.ceil((roofQty + manholeQty) * 24); 
                     }
-                    else if (n.includes("m12") && n.includes("bolt")) {
+                    else if (n.includes("m12") && (n.includes("bolt") || n.includes("b/n"))) {
                         it.qty = Math.ceil((baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels) * 28); 
                     }
                     else if (n.includes("expansion bolt")) {
                         it.qty = Math.ceil((panelsL + 1) * (panelsW + 1)); 
                     }
-                    // --- NEW BOLT LOGIC END ---
                 }
+                
                 let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`);
                 if(qInput && sec.category !== "Services") qInput.value = it.qty || 0;
             });
         });
     }
-    
+
     function updateTankField(i, f, v, isNum) { 
         appTanks[i][f] = isNum ? (parseFloat(v)||0) : v; 
         
@@ -1135,7 +1181,7 @@
             }));
         }
         
-        if (['L', 'W', 'H', 'partitionCol'].includes(f)) {
+        if (['L', 'W', 'H', 'partitionCol', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std'].includes(f)) {
             autoCalculateBOM(i);
         }
         safeProcess(); 
@@ -1152,10 +1198,8 @@
     
     function updateBomField(t, s, i, f, v, isNum) { 
         appTanks[t].bom[s].items[i][f] = isNum ? (parseFloat(v)||0) : v; 
-        
         if(f === 'def') appTanks[t].bom[s].items[i].manualPrice = true;
         if(f === 'name') appTanks[t].bom[s].items[i].manualPrice = false;
-
         safeProcess(); 
     }
     
@@ -1182,10 +1226,21 @@
             tH += `<div class="tank-block" style="border-top:2px dashed #cbd5e1; margin-top:24px; padding-top:20px;">
                 <div class="tank-section-title"><span>Tank ${i+1} Specs</span><button class="del-btn no-print" onclick="removeTank(${i})">X REMOVE</button></div>
                 <div class="config-grid"><div class="form-group"><label>Standard</label><select onchange="updateTankField(${i}, 'std', this.value)"><option ${t.std.includes('SANS')?'selected':''}>SANS 10329:2020 Approved by SIRIM & SPAN</option><option ${t.std.includes('SS 22')?'selected':''}>SS 22: 1979</option></select></div><div class="form-group"><label>Material</label><select onchange="updateTankField(${i}, 'coat', this.value)"><option ${t.coat==='Hot Dipped Galvanised'?'selected':''}>Hot Dipped Galvanised</option><option ${t.coat==='Painted Steel'?'selected':''}>Painted Steel</option><option ${t.coat==='Stainless Steel (SS 304)'?'selected':''}>Stainless Steel (SS 304)</option><option ${t.coat==='Stainless Steel (SS 316)'?'selected':''}>Stainless Steel (SS 316)</option></select></div></div>
+                
+                <div class="tank-section-title" style="margin-top:10px; background:#f0fdf4; border-left-color:#22c55e;">🛡️ Panel Thickness Config (mm)</div>
+                <div class="dim-grid" style="background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom: 15px;">
+                    <div class="form-group"><label>Base Panel</label><select onchange="updateTankField(${i}, 'thickBase', this.value)"><option ${t.thickBase=='4.5'?'selected':''}>4.5</option><option ${t.thickBase=='5.0'?'selected':''}>5.0</option><option ${t.thickBase=='6.0'?'selected':''}>6.0</option></select></div>
+                    <div class="form-group"><label>Roof Panel</label><select onchange="updateTankField(${i}, 'thickRoof', this.value)"><option ${t.thickRoof=='1.5'?'selected':''}>1.5</option><option ${t.thickRoof=='2.0'?'selected':''}>2.0</option><option ${t.thickRoof=='3.0'?'selected':''}>3.0</option></select></div>
+                    <div class="form-group"><label>Wall L1 (Bottom)</label><select onchange="updateTankField(${i}, 'thickL1', this.value)"><option ${t.thickL1=='4.5'?'selected':''}>4.5</option><option ${t.thickL1=='5.0'?'selected':''}>5.0</option><option ${t.thickL1=='6.0'?'selected':''}>6.0</option></select></div>
+                    <div class="form-group"><label>Wall L2</label><select onchange="updateTankField(${i}, 'thickL2', this.value)"><option ${t.thickL2=='3.0'?'selected':''}>3.0</option><option ${t.thickL2=='4.0'?'selected':''}>4.0</option><option ${t.thickL2=='4.5'?'selected':''}>4.5</option><option ${t.thickL2=='5.0'?'selected':''}>5.0</option></select></div>
+                    <div class="form-group"><label>Wall L3</label><select onchange="updateTankField(${i}, 'thickL3', this.value)"><option ${t.thickL3=='1.5'?'selected':''}>1.5</option><option ${t.thickL3=='2.0'?'selected':''}>2.0</option><option ${t.thickL3=='3.0'?'selected':''}>3.0</option><option ${t.thickL3=='4.5'?'selected':''}>4.5</option></select></div>
+                    <div class="form-group"><label>Wall L4 (Top)</label><select onchange="updateTankField(${i}, 'thickL4', this.value)"><option ${t.thickL4=='1.5'?'selected':''}>1.5</option><option ${t.thickL4=='2.0'?'selected':''}>2.0</option><option ${t.thickL4=='3.0'?'selected':''}>3.0</option></select></div>
+                </div>
+
                 <div class="dim-grid">
                     <div class="form-group"><label>Length</label><input type="number" value="${t.L}" oninput="updateTankField(${i}, 'L', this.value, true)"></div>
                     <div class="form-group"><label>Width</label><input type="number" value="${t.W}" oninput="updateTankField(${i}, 'W', this.value, true)"></div>
-                    <div class="form-group"><label>Height (Default 12ft)</label><input type="number" value="${t.H}" oninput="updateTankField(${i}, 'H', this.value, true)"></div>
+                    <div class="form-group"><label>Height</label><input type="number" value="${t.H}" oninput="updateTankField(${i}, 'H', this.value, true)"></div>
                     <div class="form-group"><label>Partition Pos (Col)</label><input type="number" value="${t.partitionCol||0}" oninput="updateTankField(${i}, 'partitionCol', this.value, true)"></div>
                     <div class="form-group"><label>Ladder 1 Pos (Col)</label><input type="number" value="${t.ladder1Col||0}" oninput="updateTankField(${i}, 'ladder1Col', this.value, true)"></div>
                     <div class="form-group"><label>Ladder 2 Pos (Col)</label><input type="number" value="${t.ladder2Col||0}" oninput="updateTankField(${i}, 'ladder2Col', this.value, true)"></div>
@@ -1203,7 +1258,7 @@
                     } else {
                         qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`;
                     }
-                    rH += `<tr><td><input type="text" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)"><span id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></span></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
+                    rH += `<tr><td><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)"><span id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></span></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
                 });
             });
             bH += `<div class="module-card collapsed" style="margin-top:16px;"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>⚙️</span> BOM - TANK ${i+1}</div><div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
