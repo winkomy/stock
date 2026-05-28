@@ -694,7 +694,7 @@
     }
     
     let winkoUsers = [
-        { username: "admin", password: "adminmaster99", role: "admin" },
+        { username: "admin", password: "admin", role: "admin" },
         { username: "staff", password: "password123", role: "user" }
     ]; 
     let loggedInUser = null;
@@ -1102,13 +1102,25 @@
                     else if (n.includes("(l2 stay")) it.qty = wallL2;
                     else if (n.includes("(l3 stay")) it.qty = wallL3;
                     else if (n.includes("pvc foam tape")) it.qty = Math.ceil(((roofQty + baseQty + wallL1 + wallL2 + wallL3 + wallL4)*4)/10);
+                    
+                    // --- NEW BOLT LOGIC START ---
+                    else if (n.includes("m10") && n.includes("bolt")) {
+                        it.qty = Math.ceil(roofQty * 24); 
+                    }
+                    else if (n.includes("m12") && n.includes("bolt")) {
+                        it.qty = Math.ceil((baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels) * 28); 
+                    }
+                    else if (n.includes("expansion bolt")) {
+                        it.qty = Math.ceil((panelsL + 1) * (panelsW + 1)); 
+                    }
+                    // --- NEW BOLT LOGIC END ---
                 }
                 let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`);
                 if(qInput && sec.category !== "Services") qInput.value = it.qty || 0;
             });
         });
     }
-
+    
     function updateTankField(i, f, v, isNum) { 
         appTanks[i][f] = isNum ? (parseFloat(v)||0) : v; 
         
