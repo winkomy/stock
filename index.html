@@ -10,104 +10,113 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        * { box-sizing: border-box; font-family: system-ui, sans-serif; }
-        body { background-color: #f8fafc; padding: 0; color: #334155; margin: 0; line-height: 1.5; }
+        /* MODERN UI REFRESH */
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { background-color: #f1f5f9; padding: 0; color: #334155; margin: 0; line-height: 1.5; font-size: 14px; }
         
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { min-width: 250px; padding: 15px 20px; border-radius: 8px; color: white; font-weight: bold; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); animation: slideIn 0.3s ease-out forwards; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
-        .toast.success { background: linear-gradient(to right, #10b981, #059669); }
-        .toast.error { background: linear-gradient(to right, #ef4444, #dc2626); }
-        .toast.info { background: linear-gradient(to right, #3b82f6, #2563eb); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast { min-width: 250px; padding: 15px 20px; border-radius: 10px; color: white; font-weight: 600; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+        .toast.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast.info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        @keyframes slideIn { from { transform: translateX(100%) scale(0.95); opacity: 0; } to { transform: translateX(0) scale(1); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
         
         #securityOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; color: white; text-align: center; }
-        .login-card { background: white; padding: 50px 40px; border-radius: 16px; color: #333; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 90%; max-width: 420px; display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        .login-card input { width: 100%; padding: 14px 16px; margin: 8px 0 15px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; outline: none; background: #f8fafc; transition: all 0.2s ease; font-weight: 500;}
-        .login-card input:focus { border-color: #ea580c; background: #fff; box-shadow: 0 0 0 4px rgba(234,88,12,0.1); }
-        .login-card button { width: 100%; padding: 14px; background: linear-gradient(to right, #ea580c, #c2410c); color: white; border: none; border-radius: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; font-size: 14px; transition: transform 0.2s, box-shadow 0.2s; margin-top: 15px; }
+        .login-card { background: white; padding: 50px 40px; border-radius: 20px; color: #333; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 90%; max-width: 420px; display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        .login-card input { width: 100%; padding: 14px 16px; margin: 8px 0 15px 0; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; background: #f8fafc; transition: all 0.2s ease; font-weight: 500;}
+        .login-card input:focus { border-color: #ea580c; background: #fff; box-shadow: 0 0 0 4px rgba(234,88,12,0.15); }
+        .login-card button { width: 100%; padding: 14px; background: linear-gradient(135deg, #ea580c, #c2410c); color: white; border: none; border-radius: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; font-size: 14px; transition: transform 0.2s, box-shadow 0.2s; margin-top: 15px; box-shadow: 0 4px 6px -1px rgba(234,88,12,0.2); }
         .login-card button:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(234,88,12,0.4); }
         
-        #topNav { display: none; background: #0f172a; padding: 10px 20px; position: sticky; top: 0; z-index: 1000; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
+        #topNav { display: none; background: #0f172a; padding: 12px 24px; position: sticky; top: 0; z-index: 1000; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);}
         .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
-        .nav-btn { background: transparent; color: #cbd5e1; border: none; font-size: 13px; font-weight: 700; cursor: pointer; padding: 8px 12px; border-radius: 4px; transition: 0.2s; }
-        .nav-btn.active, .nav-btn:hover { background: #ea580c; color: white; }
-        .nav-logo { color: white; font-weight: 900; font-size: 1.1em; display:flex; align-items:center; gap:10px; }
+        .nav-btn { background: transparent; color: #94a3b8; border: none; font-size: 13px; font-weight: 600; cursor: pointer; padding: 8px 14px; border-radius: 6px; transition: 0.2s; }
+        .nav-btn.active, .nav-btn:hover { background: #1e293b; color: white; }
+        .nav-btn.active { color: #ea580c; }
+        .nav-logo { color: white; font-weight: 900; font-size: 1.2em; display:flex; align-items:center; gap:10px; letter-spacing: 0.5px;}
         .cloud-indicator { width: 10px; height: 10px; border-radius: 50%; background: #64748b; display: inline-block; }
-        .cloud-indicator.online { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .cloud-indicator.online { background: #10b981; box-shadow: 0 0 10px #10b981; }
         
-        .user-menu-btn { background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .user-menu-btn { background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
         .user-menu-btn:hover { background: #475569; }
         .logout-btn { background: #ef4444; } .logout-btn:hover { background: #dc2626; }
         
-        #mainContent, #adminContent, #customerPreviewContainer, #projectsContent, #inventoryContent { display: none; padding: 20px; }
+        #mainContent, #adminContent, #customerPreviewContainer, #projectsContent, #inventoryContent { display: none; padding: 24px; }
         #checklistPrintView, .print-only, .internal-only-tag { display: none; }
         
         .container { max-width: 1500px; margin: auto; }
-        .app-header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 20px; }
-        .app-header-bar h2 { margin: 0; font-weight: 900; color: #0f172a; }
-        .live-clock { font-size: 0.85em; color: #64748b; font-weight: 600; background: #e2e8f0; padding: 4px 10px; border-radius: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
+        .app-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .app-header-bar h2 { margin: 0; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; font-size: 24px;}
+        .live-clock { font-size: 0.85em; color: #475569; font-weight: 600; background: white; padding: 6px 14px; border-radius: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
         
-        .app-layout { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
-        .col-left { flex: 1.4; min-width: 480px; display: flex; flex-direction: column; gap: 15px; }
-        .col-right { flex: 0.9; min-width: 350px; display: flex; flex-direction: column; gap: 15px; position: sticky; top: 70px; }
+        .app-layout { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+        .col-left { flex: 1.4; min-width: 480px; display: flex; flex-direction: column; gap: 20px; }
+        .col-right { flex: 0.9; min-width: 350px; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 80px; }
         @media (max-width: 1024px) { .col-left, .col-right { flex: 100%; min-width: 100%; position: relative; top: 0; } }
         
-        .module-card { background: #fff; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.3s; }
-        .card-header { font-size: 1.1em; font-weight: 800; color: #0f172a; margin: 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
-        .card-header::after { content: "▼"; font-size: 0.7em; color: #94a3b8; transition: transform 0.3s; }
+        .module-card { background: #fff; border-radius: 12px; padding: 24px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: all 0.3s ease; }
+        .card-header { font-size: 1.1em; font-weight: 700; color: #0f172a; margin: 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .card-header::after { content: "▼"; font-size: 0.7em; color: #94a3b8; transition: transform 0.3s ease; }
         .module-card.collapsed .card-header::after { transform: rotate(-90deg); }
-        .card-body { margin-top: 15px; border-top: 2px solid #f1f5f9; padding-top: 15px; display: block; }
+        .card-body { margin-top: 15px; padding-top: 15px; display: block; border-top: 1px solid #f1f5f9; }
         .module-card.collapsed .card-body { display: none; }
         
-        .config-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
-        .dim-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; width: 100%; }
+        .config-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 12px; }
+        .dim-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 12px; width: 100%; }
         .form-group { display: flex; flex-direction: column; position: relative; }
-        .form-group label { font-size: 0.75em; font-weight: 700; color: #64748b; margin-bottom: 4px; text-transform: uppercase; }
-        .form-group input, .form-group select, .form-group textarea { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; font-weight: 600; background: #f8fafc; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #ea580c; background: #fff; outline: none; }
+        .form-group label { font-size: 0.75em; font-weight: 600; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .form-group input, .form-group select, .form-group textarea { padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 500; background: #f8fafc; transition: all 0.2s ease; color: #1e293b;}
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #3b82f6; background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
         
-        .nozzle-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-end; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .nozzle-row { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-end; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 10px; font-size: 0.85em; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
-        th { background: #f1f5f9; color: #475569; padding: 10px; text-align: left; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; font-size: 0.75em; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 10px; font-size: 0.85em; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
+        th { background: #f8fafc; color: #475569; padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 0.75em; font-weight: 700; letter-spacing: 0.5px;}
         th.text-center { text-align: center; } th.text-right { text-align: right; }
-        td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle;}
-        .col-item { background: #fff; font-weight: 600; width: 45%; color: #1e293b; }
+        td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle;}
+        .col-item { background: #fff; font-weight: 500; width: 45%; color: #1e293b; }
         .col-input { width: 12%; text-align: center; } .col-total { text-align: right; font-weight: 700; width: 19%; background: #fafafa; color: #b91c1c; }
-        .desc-input { width: 100%; padding: 4px; border: 1px solid transparent; background: transparent; font-weight: 600; font-size: 1em; color: #0f172a; }
-        .col-input input { width: 100%; padding: 4px; text-align: center; border: 1px solid #e2e8f0; border-radius: 4px; background: #f8fafc; font-weight: 600; color: #0f172a; }
+        .desc-input { width: 100%; padding: 6px; border: 1px solid transparent; border-radius: 6px; background: transparent; font-weight: 600; font-size: 1em; color: #0f172a; transition: all 0.2s;}
+        .desc-input:focus { border-color: #cbd5e1; background: #fff; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .col-input input { width: 100%; padding: 6px; text-align: center; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; font-weight: 600; color: #0f172a; transition: all 0.2s;}
+        .col-input input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);}
         
-        .price-tag { font-size: 10px; font-weight: 700; color: #a1a1aa; display: block; margin-top: 2px;}
+        .price-tag { font-size: 10px; font-weight: 600; color: #94a3b8; display: block; margin-top: 4px;}
         .price-tag.synced { color: #059669; }
 
-        .summary-box { background: linear-gradient(145deg, #0f172a, #1e293b); color: white; padding: 20px; border-radius: 10px; }
-        .sum-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; color: #cbd5e1; }
+        .summary-box { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 24px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);}
+        .sum-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95em; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; color: #cbd5e1; }
         .sum-row span:last-child { font-weight: 600; color: white; }
-        .sum-row.total { font-size: 1.5em; font-weight: 800; color: #fbbf24; border-bottom: none; border-top: 2px solid rgba(255,255,255,0.2); padding-top: 12px; margin-top: 12px; }
+        .sum-row.total { font-size: 1.5em; font-weight: 800; color: #fbbf24; border-bottom: none; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px; margin-top: 16px; }
         
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .action-btn { flex: 1; min-width: 110px; padding: 12px; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; background: #ea580c; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;}
-        .action-btn:hover { filter: brightness(1.1); }
+        .btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+        .action-btn { flex: 1; min-width: 110px; padding: 12px 16px; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; background: #ea580c; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .action-btn:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .action-btn:active { transform: translateY(0); }
         .export-btn { background: #334155; } .print-btn { background: #059669; }
-        .add-btn { background: #38bdf8; margin-top:10px; width:100%; color: #0f172a; border: 2px dashed #0284c7; } .add-btn:hover { background: #0ea5e9; color:white; }
-        .del-btn { background: #ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold; }
+        .add-btn { background: #f0f9ff; margin-top:10px; width:100%; color: #0369a1; border: 2px dashed #bae6fd; box-shadow: none; } .add-btn:hover { background: #e0f2fe; color:#0284c7; }
+        .del-btn { background: #fee2e2; color:#dc2626; padding:6px 10px; border:none; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold; transition: 0.2s;}
+        .del-btn:hover { background: #fca5a5; color: white;}
         
-        .tank-section-title { background: #e2e8f0; padding: 5px 10px; border-radius: 4px; font-weight: 800; color: #0f172a; margin-bottom: 8px; font-size: 0.85em; text-transform: uppercase; border-left: 4px solid #3b82f6; display:flex; justify-content:space-between; align-items:center; }
+        .tank-section-title { background: #f8fafc; padding: 8px 12px; border-radius: 6px; font-weight: 700; color: #1e293b; margin-bottom: 12px; font-size: 0.85em; text-transform: uppercase; border-left: 4px solid #3b82f6; display:flex; justify-content:space-between; align-items:center; }
         
-        .admin-table { width: 100%; border-collapse: collapse; background: white; color: #0f172a; border-radius: 8px;}
-        .admin-table th { background: #334155; color: white; padding: 12px; font-size: 0.85em; text-transform: uppercase;}
-        .admin-table td { border-color: #e2e8f0; padding: 8px; border-bottom: 1px solid #cbd5e1;}
-        .admin-input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;}
+        .admin-table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; color: #0f172a; border-radius: 8px; border: 1px solid #e2e8f0;}
+        .admin-table th { background: #f8fafc; color: #475569; padding: 14px 12px; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid #e2e8f0;}
+        .admin-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9;}
+        .admin-input { width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-weight: 500; text-align: center; transition: all 0.2s;}
+        .admin-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);}
         
-        .file-upload-wrapper { border: 2px dashed #94a3b8; border-radius: 8px; padding: 20px; text-align: center; background: #f8fafc; transition: all 0.3s; margin-top: 10px;}
+        .file-upload-wrapper { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; background: #f8fafc; transition: all 0.3s ease; margin-top: 12px;}
         .file-upload-wrapper:hover { border-color: #ea580c; background: #fff7ed; }
         .file-upload-wrapper input[type="file"] { display: none; }
-        .file-upload-label { cursor: pointer; display: inline-block; padding: 10px 20px; background: #ea580c; color: white; border-radius: 6px; font-weight: bold; }
+        .file-upload-label { cursor: pointer; display: inline-block; padding: 10px 24px; background: #ea580c; color: white; border-radius: 8px; font-weight: 600; transition: all 0.2s;}
+        .file-upload-label:hover { filter: brightness(1.1); transform: translateY(-1px);}
         
-        #customerPreviewContainer { background: #94a3b8; padding: 20px; overflow-y: auto; flex-direction: column; align-items: center; }
-        .preview-toolbar { background: #0f172a; padding: 10px 20px; border-radius: 6px; margin-bottom: 15px; color: white; display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 210mm;}
-        #customerPrintViewEditor { display: block; background: white; width: 100%; max-width: 210mm; min-height: 297mm; padding: 15mm; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin: 0 auto; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; outline: none; }
-        .editable-section { transition: background 0.2s; border-radius: 4px; padding: 4px; border: 1px solid transparent;}
+        #customerPreviewContainer { background: #94a3b8; padding: 24px; overflow-y: auto; flex-direction: column; align-items: center; }
+        .preview-toolbar { background: #1e293b; padding: 12px 24px; border-radius: 10px; margin-bottom: 20px; color: white; display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 210mm; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);}
+        #customerPrintViewEditor { display: block; background: white; width: 100%; max-width: 210mm; min-height: 297mm; padding: 15mm; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); margin: 0 auto; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; outline: none; border-radius: 4px;}
+        .editable-section { transition: background 0.2s; border-radius: 6px; padding: 4px; border: 1px solid transparent;}
         .editable-section:hover { background: #fef9c3; cursor: text; border: 1px dashed #eab308; }
 
         @media print {
@@ -117,7 +126,7 @@
             #topNav, .no-print, .internal-hide, #toast-container, #securityOverlay { display: none !important; }
             
             .print-only { display: block !important; }
-            .container { max-width: 100%; padding: 0; }
+            .container { max-width: 100%; padding: 0; box-shadow: none !important;}
             tr, td, th { page-break-inside: avoid; }
             .avoid-break { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
@@ -125,19 +134,19 @@
             /* --- INTERNAL PRINT --- */
             body.print-internal #mainContent { display: block !important; }
             body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
-            body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; }
+            body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; gap: 0 !important;}
             body.print-internal .col-right { display: none !important; }
-            body.print-internal .module-card { border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; }
-            body.print-internal .card-header, body.print-internal .card-body { display: block !important; }
+            body.print-internal .module-card { border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; }
+            body.print-internal .card-header, body.print-internal .card-body { display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
             body.print-internal .card-header { border-bottom: 2.5px solid #0f172a !important; margin-bottom: 8px !important; font-size: 12pt !important; padding: 0 0 5px 0 !important;}
             body.print-internal .card-header::after { display: none !important; }
             body.print-internal::before { content: "INTERNAL COSTING - DO NOT SHARE"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60pt; font-weight: 900; color: rgba(239, 68, 68, 0.08); z-index: -1; white-space: nowrap; pointer-events: none; }
             body.print-internal .print-header { display: flex !important; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #ea580c; padding-bottom: 10px; margin-bottom: 15px; }
-            body.print-internal table { font-size: 8.5pt; margin-bottom: 10px; border-collapse: collapse; width: 100%; border: 1.5px solid #0f172a; }
+            body.print-internal table { font-size: 8.5pt; margin-bottom: 10px; border-collapse: collapse; width: 100%; border: 1.5px solid #0f172a; border-radius: 0 !important;}
             body.print-internal th { background-color: #0f172a !important; color: #ffffff !important; padding: 6px 8px;}
             body.print-internal td { border-right: 1px solid #cbd5e1; padding: 4px 8px; border-bottom: 1px solid #cbd5e1;}
             body.print-internal td.text-right { text-align: right; font-weight: 700;}
-            body.print-internal input, body.print-internal .desc-input { border: none !important; background: transparent !important; padding: 0 !important; width: auto;}
+            body.print-internal input, body.print-internal .desc-input { border: none !important; background: transparent !important; padding: 0 !important; width: auto; font-family: Arial !important; color: #000 !important;}
             body.print-internal .summary-box { background: #fff !important; border: 2.5px solid #0f172a !important; border-radius: 8px !important; padding: 0 !important; width: 40% !important; float: right !important;}
             
             body.print-internal .drawings-page { display: block !important; padding-top: 10px !important; clear: both !important;}
@@ -148,9 +157,9 @@
             body.print-customer .preview-toolbar { display: none !important; }
             body.print-customer #customerPrintViewEditor { max-width: none !important; padding: 0 !important; margin: 0 !important; border:none; box-shadow:none;}
             
-            .cp-classic-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 9.5pt; color: #000; }
-            .cp-classic-table th { background: transparent !important; color: #000 !important; padding: 8px 5px; text-align: left; font-weight: bold; border-top: 1.5px solid #000 !important; border-bottom: 1.5px solid #000 !important; text-transform:uppercase; }
-            .cp-classic-table td { padding: 8px 5px; vertical-align: top; border-bottom: 1px dashed #cbd5e1 !important; }
+            .cp-classic-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 9.5pt; color: #000; border-radius: 0 !important;}
+            .cp-classic-table th { background: transparent !important; color: #000 !important; padding: 8px 5px; text-align: left; font-weight: bold; border-top: 1.5px solid #000 !important; border-bottom: 1.5px solid #000 !important; text-transform:uppercase; border-radius: 0 !important;}
+            .cp-classic-table td { padding: 8px 5px; vertical-align: top; border-bottom: 1px dashed #cbd5e1 !important; border-radius: 0 !important;}
             .cp-classic-table td.text-center { text-align: center; }
             .cp-classic-table td.text-right { text-align: right; }
 
@@ -165,15 +174,15 @@
 
 <datalist id="customerDatalist"></datalist>
 
-<div id="profileOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index: 10001; align-items:center; justify-content:center;">
+<div id="profileOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); backdrop-filter: blur(4px); z-index: 10001; align-items:center; justify-content:center;">
     <div class="module-card" style="width: 350px; background: white; padding: 30px;">
-        <div class="card-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">👤 Update Password</div>
+        <div class="card-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 20px;">👤 Update Password</div>
         <div class="form-group">
             <label>New Password</label>
             <input type="password" id="myNewPassword" placeholder="Enter new password">
         </div>
-        <div style="display:flex; gap:10px; margin-top: 20px;">
-            <button class="action-btn" onclick="saveMyPassword()" style="flex:1;">Save Password</button>
+        <div style="display:flex; gap:12px; margin-top: 24px;">
+            <button class="action-btn" onclick="saveMyPassword()" style="flex:1;">Save</button>
             <button class="action-btn export-btn" onclick="document.getElementById('profileOverlay').style.display='none'" style="flex:1;">Cancel</button>
         </div>
     </div>
@@ -181,25 +190,25 @@
 
 <div id="securityOverlay">
     <div class="login-card">
-        <h2 style="margin: 0 0 5px 0; color: #0f172a; font-weight: 900; font-size: 24px;">WINKO ERP</h2>
+        <h2 style="margin: 0 0 5px 0; color: #0f172a; font-weight: 900; font-size: 26px; letter-spacing: -0.5px;">WINKO ERP</h2>
         <p style="color:#64748b; margin-top: 0; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;" id="loginTitleText">Enterprise Quoting Gateway</p>
-        <div style="width: 100%; text-align: left; margin-top: 30px;">
-            <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-left: 4px;">Username</label>
+        <div style="width: 100%; text-align: left; margin-top: 32px;">
+            <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-left: 4px;">Username</label>
             <input type="text" id="userInput" placeholder="Enter username" onkeypress="if(event.key==='Enter') document.getElementById('passInput').focus()">
         </div>
-        <div style="position: relative; width: 100%; text-align: left; margin-top: 5px;">
-            <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-left: 4px;">Password</label>
+        <div style="position: relative; width: 100%; text-align: left; margin-top: 8px;">
+            <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-left: 4px;">Password</label>
             <input type="password" id="passInput" placeholder="••••••••" onkeypress="if(event.key==='Enter') processSecureLogin()" style="width: 100%; padding-right: 40px;">
-            <span onclick="togglePass('passInput')" style="position: absolute; right: 12px; top: 35px; cursor: pointer; font-size: 16px;" title="Show/Hide Password">👁️</span>
+            <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 10px; color: #94a3b8; margin-top: 20px;">V161 - Multi-Partition Edition</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V161 - Modern Edition</p>
     </div>
 </div>
 
 <div id="topNav">
     <div class="nav-logo" id="navLogoText">WINKO ERP <span id="cloudStatusDot" class="cloud-indicator" title="Offline Local Mode"></span>
-        <div style="display:flex; gap:8px; margin-left:15px; border-left: 2px solid rgba(255,255,255,0.2); padding-left:15px;">
+        <div style="display:flex; gap:12px; margin-left:20px; border-left: 1px solid rgba(255,255,255,0.1); padding-left:20px;">
             <button class="user-menu-btn" onclick="openMyProfile()">👤 My Profile</button>
             <button class="user-menu-btn logout-btn" onclick="logout()">🚪 Logout</button>
         </div>
@@ -218,19 +227,19 @@
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📊</span> Stock Level Graph</div>
         <div class="card-body" style="height: 350px; position: relative; padding-bottom: 20px;"><canvas id="invChartCanvas"></canvas></div>
     </div>
-    <div class="module-card" style="margin-top: 20px;">
+    <div class="module-card" style="margin-top: 24px;">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📦</span> Master Inventory & Pricing</div>
         <div class="card-body">
-            <div style="display:flex; gap:10px; margin-bottom:20px; background:#f1f5f9; padding:15px; border-radius:8px; align-items: center; flex-wrap: wrap;">
+            <div style="display:flex; gap:12px; margin-bottom:20px; background:#f8fafc; padding:16px; border-radius:8px; align-items: center; flex-wrap: wrap; border: 1px solid #e2e8f0;">
                 <input type="text" id="newInvName" placeholder="Item Name" class="admin-input" style="flex:2; text-align:left; min-width: 200px;">
                 <input type="number" id="newInvStock" placeholder="Initial Stock Qty" class="admin-input" style="flex:1; min-width: 120px;">
                 <input type="number" id="newInvAlert" placeholder="Low Alert Level" class="admin-input" style="flex:1; min-width: 120px;">
-                <button class="action-btn" style="width:auto; padding:8px 20px;" onclick="addInvItem()">+ Add Item</button>
-                <button class="action-btn" style="width:auto; padding:8px 20px; background:#0284c7;" onclick="autoPopulateInventory()">⬇️ Auto-Populate Master List</button>
+                <button class="action-btn" style="width:auto; padding:10px 20px;" onclick="addInvItem()">+ Add Item</button>
+                <button class="action-btn" style="width:auto; padding:10px 20px; background:#0284c7;" onclick="autoPopulateInventory()">⬇️ Auto-Populate Master List</button>
                 <input type="file" id="bulkInvUpload" accept=".csv" style="display:none;" onchange="handleBulkInventoryUpload(event)">
-                <button class="action-btn" style="width:auto; padding:8px 20px; background:#8b5cf6;" onclick="document.getElementById('bulkInvUpload').click()">⬆️ Bulk Upload CSV</button>
+                <button class="action-btn" style="width:auto; padding:10px 20px; background:#8b5cf6;" onclick="document.getElementById('bulkInvUpload').click()">⬆️ Bulk Upload CSV</button>
             </div>
-            <div style="margin-bottom: 15px;"><input type="text" id="invSearchBox" placeholder="🔍 Search Inventory..." onkeyup="renderInventoryUI()" style="padding: 10px; width: 100%; max-width: 400px; border-radius: 6px; border: 1px solid #cbd5e1; outline:none; font-weight:bold;"></div>
+            <div style="margin-bottom: 16px;"><input type="text" id="invSearchBox" placeholder="🔍 Search Inventory..." onkeyup="renderInventoryUI()" style="padding: 12px; width: 100%; max-width: 400px; border-radius: 8px; border: 1px solid #cbd5e1; outline:none; font-weight:500; transition: border-color 0.2s;" onfocus="this.style.borderColor='#3b82f6'"></div>
             <div style="overflow-x: auto;">
                 <table class="admin-table">
                     <thead><tr><th>Item Name</th><th class="text-center">Stock Level</th><th class="text-center">Alert Level</th><th class="text-center">Unit Cost (RM)</th><th class="text-center">Action</th></tr></thead>
@@ -245,7 +254,7 @@
     <div class="module-card">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📂</span> Project Bank & History</div>
         <div class="card-body">
-            <div style="margin-bottom: 15px;"><input type="text" id="projSearchBox" placeholder="🔍 Search Job No, Customer, or Project Name..." onkeyup="renderProjectBank()" style="padding: 10px; width: 100%; max-width: 500px; border-radius: 6px; border: 1px solid #cbd5e1; outline:none; font-weight:bold;"></div>
+            <div style="margin-bottom: 16px;"><input type="text" id="projSearchBox" placeholder="🔍 Search Job No, Customer, or Project Name..." onkeyup="renderProjectBank()" style="padding: 12px; width: 100%; max-width: 500px; border-radius: 8px; border: 1px solid #cbd5e1; outline:none; font-weight:500; transition: border-color 0.2s;" onfocus="this.style.borderColor='#3b82f6'"></div>
             <div style="overflow-x: auto;">
                 <table class="admin-table">
                     <thead><tr><th>Job No</th><th>Project Name</th><th>Customer</th><th class="text-right">Total Value (RM)</th><th>Saved Date</th><th class="text-center">Action</th></tr></thead>
@@ -260,25 +269,25 @@
     <div class="module-card">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>💾</span> System Backup & Restore</div>
         <div class="card-body">
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 10px;">Protect your Cloud Data! Download an offline snapshot or overwrite the cloud with a previous snapshot.</p>
-            <div class="btn-group" style="align-items: center; justify-content: flex-start; gap: 20px;">
-                <button class="action-btn print-btn" style="background:#10b981; max-width: 300px;" onclick="backupSystem()">⬇️ Download Cloud Snapshot</button>
-                <div class="file-upload-wrapper" style="flex:none; width: 300px; padding: 10px; margin: 0; border-color:#ef4444;">
-                    <label for="restoreFileInput" class="file-upload-label" style="background:#ef4444; font-size:12px;">⬆️ Upload Backup to Restore Cloud</label>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px; font-weight: 500;">Protect your Cloud Data! Download an offline snapshot or overwrite the cloud with a previous snapshot.</p>
+            <div class="btn-group" style="align-items: center; justify-content: flex-start; gap: 24px;">
+                <button class="action-btn print-btn" style="background:#10b981; max-width: 300px; padding: 14px;" onclick="backupSystem()">⬇️ Download Cloud Snapshot</button>
+                <div class="file-upload-wrapper" style="flex:none; width: 300px; padding: 12px; margin: 0; border-color:#ef4444; background: #fff5f5;">
+                    <label for="restoreFileInput" class="file-upload-label" style="background:#ef4444; font-size:13px;">⬆️ Upload Backup to Restore Cloud</label>
                     <input type="file" id="restoreFileInput" accept=".json" onchange="restoreSystem(event)">
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="module-card" style="margin-top: 20px;">
+    <div class="module-card" style="margin-top: 24px;">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>🔑</span> Account Management</div>
         <div class="card-body">
-            <div style="display:flex; gap:10px; margin-bottom:20px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1; align-items:center;">
-                <input type="text" id="newUsername" placeholder="New Username" class="admin-input" style="flex:1;">
-                <input type="password" id="newPassword" placeholder="New Password" class="admin-input" style="flex:1;">
+            <div style="display:flex; gap:12px; margin-bottom:20px; background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0; align-items:center;">
+                <input type="text" id="newUsername" placeholder="New Username" class="admin-input" style="flex:1; text-align:left;">
+                <input type="password" id="newPassword" placeholder="New Password" class="admin-input" style="flex:1; text-align:left;">
                 <select id="newRole" class="admin-input" style="flex:1;"><option value="user">Standard User</option><option value="admin">Master Admin</option></select>
-                <button class="action-btn" style="width:auto; background:#3b82f6;" onclick="addUser()">+ Create User</button>
+                <button class="action-btn" style="width:auto; background:#3b82f6; padding: 10px 20px;" onclick="addUser()">+ Create User</button>
             </div>
             <table class="admin-table">
                 <thead><tr><th style="width:25%;">Username</th><th style="width:35%;">Password</th><th style="width:20%;">Role</th><th style="width:20%; text-align:center;">Action</th></tr></thead>
@@ -287,16 +296,16 @@
         </div>
     </div>
 
-    <div class="module-card" style="margin-top: 20px;">
+    <div class="module-card" style="margin-top: 24px;">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>🏢</span> Global Company Profile</div>
         <div class="card-body">
-            <button class="action-btn print-btn" style="width:auto; padding: 8px 15px; background:#10b981; margin-bottom:15px;" onclick="saveCompanyProfile()">💾 Save Company Profile to Cloud</button>
+            <button class="action-btn print-btn" style="width:auto; padding: 10px 20px; background:#10b981; margin-bottom:20px;" onclick="saveCompanyProfile()">💾 Save Company Profile to Cloud</button>
             <div class="config-grid">
                 <div class="tank-section-title" style="grid-column: span 2; margin-top:0px; background:#fef3c7; border-left-color:#f59e0b;">🔢 Document Sequencing</div>
                 <div class="form-group"><label>Quote Prefix</label><input type="text" id="profilePrefix"></div>
                 <div class="form-group"><label>Next Sequence No.</label><input type="number" id="profileSeq"></div>
 
-                <div class="tank-section-title" style="grid-column: span 2; margin-top:10px; background:#e0e7ff; border-left-color:#4f46e5;">🏢 Basic Info</div>
+                <div class="tank-section-title" style="grid-column: span 2; margin-top:12px; background:#eff6ff; border-left-color:#3b82f6;">🏢 Basic Info</div>
                 <div class="form-group"><label>Company Name</label><input type="text" id="profileName"></div>
                 <div class="form-group"><label>Company Reg No.</label><input type="text" id="profileReg"></div>
                 <div class="form-group" style="grid-column: span 2;"><label>Full Address</label><input type="text" id="profileAddress"></div>
@@ -304,21 +313,21 @@
                 <div class="form-group"><label>Website / Email</label><input type="text" id="profileWebsite"></div>
                 <div class="form-group"><label>Default SST Tax Rate (%)</label><input type="number" id="profileTax"></div>
                 
-                <div class="tank-section-title" style="grid-column: span 2; margin-top:10px; background:#e0e7ff; border-left-color:#4f46e5;">📈 Costing Multipliers</div>
+                <div class="tank-section-title" style="grid-column: span 2; margin-top:12px; background:#eff6ff; border-left-color:#3b82f6;">📈 Costing Multipliers</div>
                 <div class="form-group"><label>Painted Steel Multiplier</label><input type="number" step="0.01" id="mat_painted"></div>
                 <div class="form-group"><label>SS 304 Multiplier</label><input type="number" step="0.01" id="mat_ss304"></div>
                 <div class="form-group"><label>SS 316 Multiplier</label><input type="number" step="0.01" id="mat_ss316"></div>
                 
-                <div class="form-group" style="grid-column: span 2; margin-top: 10px;"><label>Global Default Terms & Conditions</label><textarea id="profileTerms" rows="6"></textarea></div>
+                <div class="form-group" style="grid-column: span 2; margin-top: 12px;"><label>Global Default Terms & Conditions</label><textarea id="profileTerms" rows="6"></textarea></div>
             </div>
         </div>
     </div>
 
-    <div class="module-card" style="margin-top: 20px;">
+    <div class="module-card" style="margin-top: 24px;">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>👥</span> Customer CRM Directory</div>
         <div class="card-body">
-            <div style="margin-bottom: 15px; display:flex; gap:10px;">
-                <input type="text" id="custSearchBox" placeholder="🔍 Search Customers..." onkeyup="renderCustomerAdmin()" class="admin-input" style="max-width: 300px; text-align:left;">
+            <div style="margin-bottom: 16px; display:flex; gap:12px;">
+                <input type="text" id="custSearchBox" placeholder="🔍 Search Customers..." onkeyup="renderCustomerAdmin()" class="admin-input" style="max-width: 350px; text-align:left;">
             </div>
             <table class="admin-table">
                 <thead><tr><th style="width:25%;">Company Name</th><th style="width:20%;">Attention</th><th style="width:45%;">Address</th><th style="width:10%; text-align:center;">Action</th></tr></thead>
@@ -327,12 +336,12 @@
         </div>
     </div>
 
-    <div class="module-card" style="margin-top: 20px;">
+    <div class="module-card" style="margin-top: 24px;">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>⚙️</span> Dynamic Base BOM (Fallbacks)</div>
         <div class="card-body">
-            <div style="display: flex; gap: 10px; margin-bottom:15px;">
-                <button class="action-btn print-btn" style="width:auto; padding: 8px 12px; background:#38bdf8; color:#0f172a;" onclick="addAdminCat()">+ Add New Category</button>
-                <button class="action-btn print-btn" style="width:auto; padding: 8px 12px; background:#10b981;" onclick="saveAdminDefaults()">💾 Save Master Structure to Cloud</button>
+            <div style="display: flex; gap: 12px; margin-bottom:20px;">
+                <button class="action-btn print-btn" style="width:auto; padding: 10px 16px; background:#e0f2fe; color:#0369a1; border: 1px solid #bae6fd;" onclick="addAdminCat()">+ Add New Category</button>
+                <button class="action-btn print-btn" style="width:auto; padding: 10px 16px; background:#10b981;" onclick="saveAdminDefaults()">💾 Save Master Structure to Cloud</button>
             </div>
             <table class="admin-table">
                 <thead><tr><th style="width:10%; text-align:center;">Action</th><th style="width:50%;">Item Name</th><th style="width:20%;">Default Wt (kg)</th><th style="width:20%;">Fallback Cost (RM)</th></tr></thead>
@@ -347,9 +356,9 @@
         <div class="app-header-bar no-print">
             <h2>Project Workspace</h2>
             <div class="live-clock">
-                <span id="liveClock" style="margin-right: 5px;"></span>
-                <button class="action-btn print-btn" style="margin:0; padding: 8px 15px; background: #ea580c; border-radius: 20px;" onclick="saveToMemory()">💾 Save Quote</button>
-                <button class="action-btn print-btn" style="margin:0; padding: 8px 15px; background: #8b5cf6; border-radius: 20px; font-size: 12px;" onclick="confirmOrderAndDeduct()">📦 Confirm & Deduct Stock</button>
+                <span id="liveClock" style="margin-right: 8px;"></span>
+                <button class="action-btn print-btn" style="margin:0; padding: 10px 20px; background: #ea580c; border-radius: 20px;" onclick="saveToMemory()">💾 Save Quote</button>
+                <button class="action-btn print-btn" style="margin:0; padding: 10px 20px; background: #8b5cf6; border-radius: 20px;" onclick="confirmOrderAndDeduct()">📦 Confirm & Deduct Stock</button>
             </div>
         </div>
         
@@ -380,7 +389,7 @@
                             <div class="form-group"><label>Project Name</label><input type="text" id="projectName" oninput="safeProcess()"></div>
                             
                             <div class="form-group">
-                                <label style="color:#0ea5e9;">Customer Company <span style="font-size:10px; color:#64748b;">(Auto-Search & Fill)</span></label>
+                                <label style="color:#2563eb;">Customer Company <span style="font-size:10px; color:#64748b; font-weight:normal; text-transform:none;">(Auto-Search & Fill)</span></label>
                                 <input type="text" id="custCompany" list="customerDatalist" oninput="checkCustomerAutoFill()" placeholder="Type to search CRM...">
                             </div>
                             
@@ -395,23 +404,23 @@
                 <div class="module-card no-print">
                     <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📐</span> 2. Engineering Configuration</div>
                     <div class="card-body">
-                        <div class="config-grid" style="margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #e2e8f0;">
+                        <div class="config-grid" style="margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid #e2e8f0;">
                             <div class="form-group" style="grid-column: span 2;"><label>Global Unit System</label><select id="unitChoice" onchange="handleUnitChange()"><option value="ft">Imperial (4'x4')</option><option value="m_122">Imperial (1.22m)</option><option value="m_100">Metric (1m)</option></select></div>
                         </div>
 
                         <div id="dynamicTanksContainer"></div>
-                        <button class="action-btn add-btn" onclick="addNewTank()">+ ADD ANOTHER TANK</button>
+                        <button class="action-btn add-btn" style="margin-top: 20px; padding: 14px;" onclick="addNewTank()">+ ADD ANOTHER TANK</button>
 
-                        <div class="tank-section-title" style="margin-top:30px; background:#fef3c7; border-left-color:#f59e0b;">➕ Additional Custom Items / Services</div>
+                        <div class="tank-section-title" style="margin-top:32px; background:#fef3c7; border-left-color:#f59e0b;">➕ Additional Custom Items / Services</div>
                         <div id="dynamicCustomContainer"></div>
-                        <button class="action-btn add-btn" onclick="addNewCustomItem()" style="background:#e0e7ff; border-color:#6366f1; color:#3730a3;">+ ADD CUSTOM ITEM</button>
+                        <button class="action-btn add-btn" onclick="addNewCustomItem()" style="background:#eef2ff; border-color:#c7d2fe; color:#4f46e5; padding: 12px; margin-top: 12px;">+ ADD CUSTOM ITEM</button>
                     </div>
                 </div>
 
                 <div class="module-card drawings-page internal-hide-except-print">
                     <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📏</span> 3. Auto-Drawings (Panel Layout)</div>
                     <div class="card-body">
-                        <p style="font-size:11px; color:#64748b; margin-top:0;">* Pure Schematics: Partitions (red dashed) & Ladders (orange) applied automatically.</p>
+                        <p style="font-size:12px; color:#64748b; margin-top:0; font-weight:500;">* Pure Schematics: Partitions (red dashed) & Ladders (orange) applied automatically.</p>
                         <div id="dynamicDrawingsContainer"></div>
                     </div>
                 </div>
@@ -419,10 +428,10 @@
                 <div class="module-card no-print">
                     <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>💰</span> 4. Commercial Terms</div>
                     <div class="card-body">
-                        <div class="dim-grid" style="background: #ecfdf5; padding:15px; border:2px solid #10b981;">
-                            <div class="form-group"><label>Proj. Mark-Up (Extra %)</label><input type="number" id="markupPct" value="0" oninput="safeProcess()"></div>
-                            <div class="form-group"><label>Discount (%)</label><input type="number" id="discountPct" value="0" oninput="safeProcess()"></div>
-                            <div class="form-group"><label>SST Tax (%)</label><input type="number" id="sstPct" oninput="safeProcess()"></div>
+                        <div class="dim-grid" style="background: #ecfdf5; padding:20px; border-radius: 8px; border:1px solid #a7f3d0; margin-bottom: 24px;">
+                            <div class="form-group"><label style="color:#065f46;">Proj. Mark-Up (Extra %)</label><input type="number" id="markupPct" value="0" oninput="safeProcess()"></div>
+                            <div class="form-group"><label style="color:#065f46;">Discount (%)</label><input type="number" id="discountPct" value="0" oninput="safeProcess()"></div>
+                            <div class="form-group"><label style="color:#065f46;">SST Tax (%)</label><input type="number" id="sstPct" oninput="safeProcess()"></div>
                         </div>
                         <div class="config-grid">
                             <div class="form-group" style="grid-column: span 2;"><label>Validity</label><input type="text" id="tcValidity" value="14 Days from quotation date." oninput="safeProcess()"></div>
@@ -434,7 +443,13 @@
                             <div class="form-group"><label>Sign-off Phone</label><input type="text" id="signPhone" value="019-2215558" oninput="safeProcess()"></div>
                         </div>
                         <div class="form-group"><label>Short Exclusions</label><textarea id="shortExclusions" rows="5" oninput="safeProcess()">- Float valve chamber or top sumps&#10;- Flanges, nozzles, pipes, vortex, valves, electrode sensor, pumps and filter.&#10;- Scaffolding&#10;- Unloading and hoisting of materials.&#10;- HIRARC, permit application, medical test and site safety supervisor.</textarea></div>
-                        <div class="form-group"><label>Full T&C</label><textarea id="fullTermsNotes" rows="10" oninput="safeProcess()"></textarea></div>
+                        <div class="form-group" style="margin-top: 16px;">
+                            <label style="display: flex; justify-content: space-between;">
+                                <span>Full T&C</span>
+                                <a href="#" onclick="setVal('fullTermsNotes', companyProfile.terms); safeProcess(); return false;" style="color:#3b82f6; text-decoration:none; font-weight:700; text-transform:none; letter-spacing: 0;">⟳ Sync from Master</a>
+                            </label>
+                            <textarea id="fullTermsNotes" rows="10" oninput="safeProcess()"></textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -442,12 +457,12 @@
             </div>
 
             <div class="col-right">
-                <div style="position: sticky; top: 80px;">
+                <div style="position: sticky; top: 90px;">
                     <div class="summary-box no-print">
                         <div class="sum-row"><span>Est. Capacity:</span> <span id="sumCapacity_screen" style="color:#38bdf8;">0 L</span></div>
-                        <div class="sum-row"><span>Total Panels:</span> <span id="sumPanels_screen" style="color:#a855f7;">0</span></div>
+                        <div class="sum-row"><span>Total Panels:</span> <span id="sumPanels_screen" style="color:#c084fc;">0</span></div>
                         <div class="sum-row"><span>Est. Weight:</span> <span id="sumWeight_screen" style="color:#fdba74;">0 kg</span></div>
-                        <hr style="border: 1px solid rgba(255,255,255,0.15); margin: 15px 0;">
+                        <hr style="border: 1px solid rgba(255,255,255,0.08); margin: 16px 0;">
                         <div class="sum-row"><span>Raw Base Cost:</span> <span>RM <span id="sumBaseCost_screen">0.00</span></span></div>
                         <div class="sum-row" style="color: #c084fc;"><span>Custom Add-ons:</span> <span>+ RM <span id="sumCustomCost_screen">0.00</span></span></div>
                         <div class="sum-row" style="color: #34d399;"><span>Project Mark-Up:</span> <span>+ RM <span id="sumMarkup_screen">0.00</span></span></div>
@@ -457,11 +472,11 @@
                         <div class="sum-row total"><span>TOTAL:</span> <span>RM <span id="grandTotal_screen">0.00</span></span></div>
                     </div>
 
-                    <div class="btn-group no-print">
-                        <button class="action-btn export-btn" onclick="exportCSV()">Export CSV</button>
-                        <button class="action-btn print-btn" style="background: #334155;" onclick="triggerPrint('internal')">Internal PDF</button>
-                        <button class="action-btn print-btn" onclick="triggerPrint('customer')">Customer PDF</button>
-                        <button class="action-btn print-btn" style="background: #0284c7;" onclick="triggerPrint('checklist')">📋 SO & Material</button>
+                    <div class="btn-group no-print" style="margin-top: 24px;">
+                        <button class="action-btn export-btn" style="flex: 1 1 45%; padding: 14px;" onclick="exportCSV()">Export CSV</button>
+                        <button class="action-btn print-btn" style="flex: 1 1 45%; padding: 14px; background: #334155;" onclick="triggerPrint('internal')">Internal PDF</button>
+                        <button class="action-btn print-btn" style="flex: 1 1 100%; padding: 16px; font-size: 14px;" onclick="triggerPrint('customer')">📄 Customer PDF</button>
+                        <button class="action-btn print-btn" style="flex: 1 1 100%; padding: 16px; font-size: 14px; background: #0284c7;" onclick="triggerPrint('checklist')">📋 SO & Material Check</button>
                     </div>
                 </div> 
             </div>
@@ -498,8 +513,8 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0;">Customer Quote Editor (V130 Perfect Format)</h3><p style="margin:0; font-size:12px;">Classic layout with No SST tax shown. Click to overwrite text before printing.</p></div>
-        <button class="action-btn print-btn" style="width: auto; background:#059669;" onclick="triggerPrint('customer_from_preview')">Print Final PDF</button>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V130 Perfect Format)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Classic layout with No SST tax shown. Click to overwrite text before printing.</p></div>
+        <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
     <div id="customerPrintViewEditor" contenteditable="true">
@@ -517,7 +532,7 @@
             <h1 style="margin:0; font-size:18pt; text-decoration:underline; color:#000; letter-spacing:2px;">QUOTATION</h1>
         </div>
 
-        <table style="width:100%; font-size:9.5pt; margin-bottom:20px; border:none;">
+        <table style="width:100%; font-size:9.5pt; margin-bottom:20px; border:none; background: transparent;">
             <tr style="border:none;"><td style="width:60%; padding:3px 0; border:none;"><strong>Customer:</strong> <span id="cpCustName"></span></td><td style="width:40%; padding:3px 0; border:none;"><strong>Date:</strong> <span id="cpDate"></span></td></tr>
             <tr style="border:none;"><td style="padding:3px 0; border:none;"><strong>Address:</strong> <span id="cpCustAddress"></span></td><td style="padding:3px 0; border:none;"><strong>Our Ref:</strong> <span id="cpRef"></span></td></tr>
             <tr style="border:none;"><td style="padding:3px 0; border:none;"><strong>Attention:</strong> <span id="cpAttention"></span></td><td style="padding:3px 0; border:none;"></td></tr>
@@ -547,7 +562,7 @@
             
             <div class="editable-section avoid-break" style="font-size:9pt; margin-bottom:20px;">
                 <div style="font-weight:bold; font-size: 10pt; text-decoration:underline; margin-bottom:10px;">TERMS & CONDITIONS</div>
-                <table style="border:none; width:100%; border-collapse:collapse;">
+                <table style="border:none; width:100%; border-collapse:collapse; background: transparent;">
                     <tr style="border:none;"><td style="width:150px; font-weight:bold; border:none; padding:5px 0;">Quotation Validity:</td><td id="cpValidity" style="border:none; padding:5px 0;"></td></tr>
                     <tr style="border:none;"><td style="font-weight:bold; border:none; padding:5px 0; vertical-align: top;">Terms of Payment:</td><td id="cpPayment" style="border:none; padding:5px 0;"></td></tr>
                     <tr style="border:none;"><td style="font-weight:bold; border:none; padding:5px 0;">Delivery Lead Time:</td><td style="border:none; padding:5px 0;"><span id="cpLeadTime"></span></td></tr>
@@ -585,19 +600,19 @@
 
     <div class="avoid-break" style="margin-bottom:20px;">
         <div style="background:#f1f5f9; padding:5px 10px; font-weight:bold; border:1px solid #000; border-bottom:none;">NOZZLE & PIPE HOLE SPECIFICATIONS</div>
-        <table style="width:100%; border-collapse:collapse; border:1px solid #000; font-size:9pt;">
+        <table style="width:100%; border-collapse:collapse; border:1px solid #000; font-size:9pt; background: transparent;">
             <thead><tr style="background:#e2e8f0;">
-                <th style="border:1px solid #000; padding:6px; text-align:center;">Type</th>
-                <th style="border:1px solid #000; padding:6px; text-align:center;">Size</th>
-                <th style="border:1px solid #000; padding:6px; text-align:center;">Qty</th>
-                <th style="border:1px solid #000; padding:6px; text-align:left;">Position Remarks</th>
+                <th style="border:1px solid #000; padding:6px; text-align:center; background: #e2e8f0; color: #000;">Type</th>
+                <th style="border:1px solid #000; padding:6px; text-align:center; background: #e2e8f0; color: #000;">Size</th>
+                <th style="border:1px solid #000; padding:6px; text-align:center; background: #e2e8f0; color: #000;">Qty</th>
+                <th style="border:1px solid #000; padding:6px; text-align:left; background: #e2e8f0; color: #000;">Position Remarks</th>
             </tr></thead>
             <tbody id="so_nozzle_body"></tbody>
         </table>
     </div>
 
     <div style="border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 10px 0; margin-bottom: 15px; background: #f8fafc;">
-        <div style="display:flex; font-weight:bold; font-size: 9.5pt;">
+        <div style="display:flex; font-weight:bold; font-size: 9.5pt; color: #000;">
             <div style="width: 6%; text-align:center;">Item</div>
             <div style="width: 74%;">Description & Specifications</div>
             <div style="width: 10%; text-align:center;">Unit</div>
@@ -655,9 +670,9 @@
         let toast = document.createElement('div');
         toast.className = `toast ${type}`;
         let icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️');
-        toast.innerHTML = `<div>${icon} &nbsp; ${message}</div> <button style="background:none; border:none; color:white; cursor:pointer; font-weight:bold; font-size:16px;" onclick="this.parentElement.remove()">×</button>`;
+        toast.innerHTML = `<div>${icon} &nbsp; ${message}</div> <button style="background:none; border:none; color:white; cursor:pointer; font-weight:bold; font-size:18px; padding:0 5px;" onclick="this.parentElement.remove()">×</button>`;
         tc.appendChild(toast);
-        setTimeout(() => { toast.style.animation = 'fadeOut 0.5s ease forwards'; setTimeout(() => toast.remove(), 500); }, 3500);
+        setTimeout(() => { toast.style.animation = 'fadeOut 0.4s ease forwards'; setTimeout(() => toast.remove(), 400); }, 3500);
     }
     
     function togglePass(id) { let el = document.getElementById(id); if(el) { el.type = el.type === "password" ? "text" : "password"; } }
@@ -895,7 +910,7 @@
         let filter = getVal('projSearchBox').toLowerCase(); let h = '';
         Object.keys(window.cloudMemoryBank).forEach(k => {
             let p = window.cloudMemoryBank[k]; if(filter && !k.toLowerCase().includes(filter) && !(p.customer||'').toLowerCase().includes(filter)) return;
-            h += `<tr><td><strong>${k}</strong></td><td>${p.projectName||'-'}</td><td>${p.customer||'-'}</td><td class="text-right">RM ${p.total||'0.00'}</td><td>${p.date||'-'}</td><td class="text-center"><button class="action-btn" style="padding:6px 12px; width:auto; font-size:11px;" onclick="loadFromMemory('${k}')">Load</button></td></tr>`;
+            h += `<tr><td><strong>${k}</strong></td><td>${p.projectName||'-'}</td><td>${p.customer||'-'}</td><td class="text-right">RM ${p.total||'0.00'}</td><td>${p.date||'-'}</td><td class="text-center"><button class="action-btn" style="padding:8px 16px; width:auto; font-size:12px; background:#3b82f6;" onclick="loadFromMemory('${k}')">Load</button></td></tr>`;
         }); setHtml('projectBankBody', h || '<tr><td colspan="6" class="text-center">No projects found.</td></tr>');
     }
     function renderProjectBank() { drawProjectBankTable(); }
@@ -943,12 +958,18 @@
         let coatShort = "HDG"; if (t.coat === 'Painted Steel') coatShort = "Painted"; else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
         
         let panelsL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); let panelsW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
-        let roofQty = Math.max(0, (panelsL * panelsW) - 1); let manholeQty = 1; let baseQty = panelsL * panelsW;
-        let wallL1 = (panelsL + panelsW) * 2; let wallL2 = panelsH >= 2 ? (panelsL + panelsW) * 2 : 0; let wallL3 = panelsH >= 3 ? (panelsL + panelsW) * 2 : 0; let wallL4 = panelsH >= 4 ? (panelsL + panelsW) * 2 : 0;
         
         if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
         let num_partitions = t.partitions.filter(p => p > 0).length;
         let partitionPanels = num_partitions * (panelsW * panelsH);
+        
+        // --- FIXED PARTITION MATH ---
+        let manholeQty = num_partitions + 1; 
+        let roofQty = Math.max(0, (panelsL * panelsW) - manholeQty);
+        // ----------------------------
+        
+        let baseQty = panelsL * panelsW;
+        let wallL1 = (panelsL + panelsW) * 2; let wallL2 = panelsH >= 2 ? (panelsL + panelsW) * 2 : 0; let wallL3 = panelsH >= 3 ? (panelsL + panelsW) * 2 : 0; let wallL4 = panelsH >= 4 ? (panelsL + panelsW) * 2 : 0;
         let totalPanels = manholeQty + roofQty + baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels;
 
         let angleCat = t.bom.find(s => s.category === "Angle Stay");
@@ -996,8 +1017,8 @@
                     else if (n.includes("l4 stay")) it.qty = wallL4;
 
                     else if (n.includes("ext. ladder") || n.includes("ext ladder")) it.qty = 1;
-                    else if (n.includes("int. ladder") || n.includes("int ladder")) it.qty = 1;
-                    else if (n.includes("water level indicator")) it.qty = 1;
+                    else if (n.includes("int. ladder") || n.includes("int ladder")) it.qty = manholeQty;
+                    else if (n.includes("water level indicator")) it.qty = manholeQty;
                     else if (n.includes("air vent")) it.qty = Math.max(1, Math.floor((panelsL * panelsW) / 4));
                     else if (n.includes("pvc foam tape") || n.includes("sealant")) it.qty = Math.ceil((totalPanels * 4) / 10);
                     
@@ -1044,26 +1065,26 @@
             if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
             
             t.partitions.forEach((p, pIdx) => {
-                partHtml += `<div style="display:flex; gap:10px; align-items:flex-end; margin-bottom:10px;">
+                partHtml += `<div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:12px;">
                     <div class="form-group" style="flex:1;"><label style="color:#be185d;">Partition ${pIdx+1} Column</label><input type="number" value="${p}" oninput="updatePartition(${i}, ${pIdx}, this.value)"></div>
-                    <button class="del-btn" style="height:35px; padding:0 15px;" onclick="removePartition(${i}, ${pIdx})">X Remove</button>
+                    <button class="del-btn" style="height:40px; padding:0 20px; font-size:12px;" onclick="removePartition(${i}, ${pIdx})">X Remove</button>
                 </div>`;
             });
             
-            let addPartBtn = t.partitions.length < 3 ? `<button class="action-btn" style="width:auto; padding:6px 15px; font-size:11px; background:#ec4899;" onclick="addPartition(${i})">+ Add Partition Wall</button>` : `<span style="font-size:11px; color:#ef4444; font-weight:bold;">Max 3 Partitions Reached</span>`;
+            let addPartBtn = t.partitions.length < 3 ? `<button class="action-btn" style="width:auto; padding:8px 16px; font-size:12px; background:#fbcfe8; color: #be185d; box-shadow:none;" onclick="addPartition(${i})">+ Add Partition Wall</button>` : `<span style="font-size:12px; color:#ef4444; font-weight:bold;">Max 3 Partitions Reached</span>`;
 
             let partAnglesHtml = t.partitions.length > 0 ? `
-            <div class="dim-grid" style="margin-top:15px; border-top:1px dashed #fbcfe8; padding-top:15px;">
+            <div class="dim-grid" style="margin-top:16px; border-top:1px dashed #fbcfe8; padding-top:16px;">
                 <div class="form-group"><label style="color:#db2777;">Partition L1 Stay (Type)</label><input type="text" value="${t.partL1Angle || '67.5\" (L1 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL1Angle', this.value)"></div>
                 <div class="form-group"><label style="color:#db2777;">Partition L2 Stay (Type)</label><input type="text" value="${t.partL2Angle || '92.5\" (L2 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL2Angle', this.value)"></div>
                 <div class="form-group"><label style="color:#db2777;">Partition L3 Stay (Type)</label><input type="text" value="${t.partL3Angle || '135.5\" (L3 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL3Angle', this.value)"></div>
             </div>` : ``;
 
-            tH += `<div class="tank-block" style="border-top:2px dashed #cbd5e1; margin-top:24px; padding-top:20px;">
+            tH += `<div class="tank-block" style="border-top:2px dashed #cbd5e1; margin-top:32px; padding-top:24px;">
                 <div class="tank-section-title"><span>Tank ${i+1} Specs</span><button class="del-btn no-print" onclick="removeTank(${i})">X REMOVE</button></div>
                 <div class="config-grid"><div class="form-group"><label>Standard</label><select onchange="updateTankField(${i}, 'std', this.value)"><option ${t.std.includes('SANS')?'selected':''}>SANS 10329:2020 Approved by SIRIM & SPAN</option><option ${t.std.includes('SS 22')?'selected':''}>SS 22: 1979</option></select></div><div class="form-group"><label>Material</label><select onchange="updateTankField(${i}, 'coat', this.value)"><option ${t.coat==='Hot Dipped Galvanised'?'selected':''}>Hot Dipped Galvanised</option><option ${t.coat==='Painted Steel'?'selected':''}>Painted Steel</option><option ${t.coat==='Stainless Steel (SS 304)'?'selected':''}>Stainless Steel (SS 304)</option><option ${t.coat==='Stainless Steel (SS 316)'?'selected':''}>Stainless Steel (SS 316)</option></select></div></div>
-                <div class="tank-section-title" style="margin-top:10px; background:#f0fdf4; border-left-color:#22c55e;">🛡️ Panel Thickness Config (mm)</div>
-                <div class="dim-grid" style="background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom: 15px;">
+                <div class="tank-section-title" style="margin-top:16px; background:#f0fdf4; border-left-color:#22c55e;">🛡️ Panel Thickness Config (mm)</div>
+                <div class="dim-grid" style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom: 20px;">
                     <div class="form-group"><label>Base Panel</label><select onchange="updateTankField(${i}, 'thickBase', this.value)"><option ${t.thickBase=='4.5'?'selected':''}>4.5</option><option ${t.thickBase=='5.0'?'selected':''}>5.0</option><option ${t.thickBase=='6.0'?'selected':''}>6.0</option></select></div>
                     <div class="form-group"><label>Roof Panel</label><select onchange="updateTankField(${i}, 'thickRoof', this.value)"><option ${t.thickRoof=='1.5'?'selected':''}>1.5</option><option ${t.thickRoof=='2.0'?'selected':''}>2.0</option><option ${t.thickRoof=='3.0'?'selected':''}>3.0</option></select></div>
                     <div class="form-group"><label>Wall L1 (Bottom)</label><select onchange="updateTankField(${i}, 'thickL1', this.value)"><option ${t.thickL1=='4.5'?'selected':''}>4.5</option><option ${t.thickL1=='5.0'?'selected':''}>5.0</option><option ${t.thickL1=='6.0'?'selected':''}>6.0</option></select></div>
@@ -1079,34 +1100,34 @@
                     <div class="form-group"><label>Ladder 2 Pos (Col)</label><input type="number" value="${t.ladder2Col||0}" oninput="updateTankField(${i}, 'ladder2Col', this.value, true)"></div>
                 </div>
                 
-                <div class="tank-section-title" style="margin-top:15px; background:#fce7f3; border-left-color:#ec4899;">🧱 Partitions (Max 3)</div>
-                <div style="background:#fdf2f8; padding:15px; border-radius:6px; border:1px solid #fbcfe8; margin-bottom:15px;">
+                <div class="tank-section-title" style="margin-top:20px; background:#fce7f3; border-left-color:#ec4899;">🧱 Partitions (Max 3)</div>
+                <div style="background:#fdf2f8; padding:20px; border-radius:8px; border:1px solid #fbcfe8; margin-bottom:20px;">
                     ${partHtml} ${addPartBtn} ${partAnglesHtml}
                 </div>
 
-                <div class="tank-section-title" style="margin-top:10px; background:#fff7ed; border-left-color:#ea580c;">🚰 Nozzles</div>${nozHtml}<button class="add-btn" style="width:auto; padding:4px 8px; font-size:12px;" onclick="addNozzle(${i})">+ Add Nozzle</button>
+                <div class="tank-section-title" style="margin-top:16px; background:#fff7ed; border-left-color:#ea580c;">🚰 Nozzles</div>${nozHtml}<button class="add-btn" style="width:auto; padding:8px 16px; font-size:12px; background: #ffedd5; color: #c2410c; border: 1px dashed #fdba74;" onclick="addNozzle(${i})">+ Add Nozzle</button>
             </div>`;
             
             let rH = "";
             t.bom.forEach((sec, sIdx) => {
-                rH += `<tr><td colspan="5" style="background:#f1f5f9; font-weight:700;">${sec.category}</td></tr>`;
+                rH += `<tr><td colspan="5" style="background:#f8fafc; font-weight:700; border-bottom: 2px solid #e2e8f0;">${sec.category}</td></tr>`;
                 sec.items.forEach((it, iIdx) => {
                     let isZero = (sec.category !== "Services" && (!it.qty || it.qty == 0)); let rowStyle = isZero ? "display:none;" : ""; 
                     let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
                     rH += `<tr style="${rowStyle}" class="bom-row-${i}"><td><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)"><span id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></span></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
                 });
             });
-            bH += `<div class="module-card collapsed" style="margin-top:16px;"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><span>⚙️ BOM - TANK ${i+1}</span><button class="action-btn export-btn no-print" style="padding:4px 8px; font-size:10px; width:auto; margin-right:15px;" onclick="event.stopPropagation(); document.querySelectorAll('.bom-row-${i}').forEach(el=>el.style.display='table-row')">👁️ Show Hidden Items</button></div></div><div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
+            bH += `<div class="module-card collapsed" style="margin-top:20px; border: 1px solid #e2e8f0;"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><span>⚙️ BOM - TANK ${i+1}</span><button class="action-btn export-btn no-print" style="padding:6px 12px; font-size:11px; width:auto; margin-right:20px;" onclick="event.stopPropagation(); document.querySelectorAll('.bom-row-${i}').forEach(el=>el.style.display='table-row')">👁️ Show Hidden Items</button></div></div><div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
         });
         setHtml('dynamicTanksContainer', tH); setHtml('dynamicBomContainer', bH);
         
-        let cH = ""; appCustomItems.forEach((c, i) => { cH += `<div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;"><div style="flex:3;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Item Name</label><input type="text" class="admin-input" style="width:100%;" value="${c.name}" oninput="updateCustomItem(${i}, 'name', this.value)"></div><div style="flex:1;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Qty</label><input type="number" class="admin-input" style="width:100%;" value="${c.qty}" oninput="updateCustomItem(${i}, 'qty', this.value, true)"></div><div style="flex:1;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Unit</label><input type="text" class="admin-input" style="width:100%;" value="${c.unit}" oninput="updateCustomItem(${i}, 'unit', this.value)"></div><div style="flex:1.5;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Cost/Unit (RM)</label><input type="number" class="admin-input" style="width:100%;" value="${c.cost}" oninput="updateCustomItem(${i}, 'cost', this.value, true)"></div><div style="flex:0.5; text-align:center;"><label style="display:block; font-size:10px; color:transparent;">x</label><button class="del-btn" onclick="removeCustomItem(${i})">X</button></div></div>`; });
+        let cH = ""; appCustomItems.forEach((c, i) => { cH += `<div style="display:flex; gap:16px; margin-bottom:12px; align-items:center; background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0;"><div style="flex:3;"><label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Item Name</label><input type="text" class="admin-input" style="width:100%; text-align:left;" value="${c.name}" oninput="updateCustomItem(${i}, 'name', this.value)"></div><div style="flex:1;"><label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Qty</label><input type="number" class="admin-input" style="width:100%;" value="${c.qty}" oninput="updateCustomItem(${i}, 'qty', this.value, true)"></div><div style="flex:1;"><label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Unit</label><input type="text" class="admin-input" style="width:100%;" value="${c.unit}" oninput="updateCustomItem(${i}, 'unit', this.value)"></div><div style="flex:1.5;"><label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Cost/Unit (RM)</label><input type="number" class="admin-input" style="width:100%;" value="${c.cost}" oninput="updateCustomItem(${i}, 'cost', this.value, true)"></div><div style="flex:0.5; text-align:center;"><label style="display:block; font-size:11px; color:transparent;">x</label><button class="del-btn" style="width:100%; padding:10px 0;" onclick="removeCustomItem(${i})">X</button></div></div>`; });
         setHtml('dynamicCustomContainer', cH);
     }
 
     function createSVG(cols, rows, title, isWall, partitionsArr, ladder1Col, ladder2Col) {
         let pSize = 50; let w = Math.max(1, cols) * pSize; let h = Math.max(1, rows) * pSize; let pad = 15; 
-        let svg = `<div style="text-align:center; background:#fff; padding:15px; border:1.5px solid #000; border-radius:6px; display:flex; flex-direction:column; align-items:center; margin-bottom:15px; max-width: 45%; flex: 1 1 40%; min-width: 250px;"><h4 style="margin:0 0 15px 0; font-size:11pt; font-weight:bold; color:#000; text-transform:uppercase;">${title}</h4><svg viewBox="0 0 ${w + pad*2} ${h + pad*2}" style="width: 100%; height: auto; max-height: 400px;" xmlns="http://www.w3.org/2000/svg"><g transform="translate(${pad}, ${pad})">`;
+        let svg = `<div style="text-align:center; background:#fff; padding:20px; border:1.5px solid #cbd5e1; border-radius:8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display:flex; flex-direction:column; align-items:center; margin-bottom:20px; max-width: 45%; flex: 1 1 40%; min-width: 250px;"><h4 style="margin:0 0 15px 0; font-size:11pt; font-weight:700; color:#1e293b; text-transform:uppercase; letter-spacing:0.5px;">${title}</h4><svg viewBox="0 0 ${w + pad*2} ${h + pad*2}" style="width: 100%; height: auto; max-height: 400px;" xmlns="http://www.w3.org/2000/svg"><g transform="translate(${pad}, ${pad})">`;
         for(let r=0; r<rows; r++) { for(let c=0; c<cols; c++) { let px = c*pSize; let py = r*pSize; svg += `<rect x="${px}" y="${py}" width="${pSize}" height="${pSize}" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>`; if(isWall) { svg += `<line x1="${px}" y1="${py}" x2="${px+pSize}" y2="${py+pSize}" stroke="#94a3b8" stroke-width="0.8"/><line x1="${px+pSize}" y1="${py}" x2="${px}" y2="${py+pSize}" stroke="#94a3b8" stroke-width="0.8"/>`; } } }
         
         if(title === 'Front View') {
@@ -1126,7 +1147,7 @@
             let pL = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.L/4) : Math.floor(t.L)); let pW = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.W/4) : Math.floor(t.W)); let pH = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.H/4) : Math.floor(t.H));
             let pColsArr = t.partitions || []; if (t.partitionCol > 0 && pColsArr.length === 0) pColsArr.push(t.partitionCol);
             let l1 = parseInt(t.ladder1Col) || 0; let l2 = parseInt(t.ladder2Col) || 0;
-            h += `<div class="tank-section-title" style="margin-top:20px; background:#e0e7ff; border-left-color:#4f46e5; color: #000;">TANK ${i+1} BLUEPRINTS</div><div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; page-break-inside: avoid;">${createSVG(pL, pH, 'Front View', true, pColsArr, l1, l2)}${createSVG(pW, pH, 'Side View', true, [], 0, 0)}${createSVG(pL, pW, 'Roof Plan', false, pColsArr, 0, 0)}${createSVG(pL, pW, 'Base Plan', false, pColsArr, 0, 0)}</div>`;
+            h += `<div class="tank-section-title" style="margin-top:24px; background:#e0e7ff; border-left-color:#4f46e5; color: #1e293b;">TANK ${i+1} BLUEPRINTS</div><div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; page-break-inside: avoid;">${createSVG(pL, pH, 'Front View', true, pColsArr, l1, l2)}${createSVG(pW, pH, 'Side View', true, [], 0, 0)}${createSVG(pL, pW, 'Roof Plan', false, pColsArr, 0, 0)}${createSVG(pL, pW, 'Base Plan', false, pColsArr, 0, 0)}</div>`;
         });
         setHtml('dynamicDrawingsContainer', h); setHtml('so_drawings_container', h);
     }
@@ -1195,7 +1216,7 @@
         if (type === 'customer') { switchTab('preview'); setTimeout(() => { document.body.className = 'print-customer'; window.print(); }, 200); } else if (type === 'customer_from_preview') { document.body.className = 'print-customer'; setTimeout(() => window.print(), 100); } else if (type === 'internal') { document.body.className = 'print-internal'; setTimeout(() => window.print(), 100); } else if (type === 'checklist') { setTxt('so_customer', getVal('custCompany')); setTxt('so_project', getVal('projectName')); setTxt('so_custpo', getVal('custPoNo')); document.body.className = 'print-checklist'; setTimeout(() => window.print(), 100); }
     } window.addEventListener('afterprint', () => { document.body.className = ''; });
 
-    function buildAdminTable() { let h = ''; systemBaseStructure.forEach((sec, cIdx) => { h += `<tr style="background:#f1f5f9;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:4px 8px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`; sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0"></td></tr>`; }); }); setHtml('adminBody', h); }
+    function buildAdminTable() { let h = ''; systemBaseStructure.forEach((sec, cIdx) => { h += `<tr style="background:#f8fafc;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:6px 12px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`; sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" style="text-align:left;" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0"></td></tr>`; }); }); setHtml('adminBody', h); }
     function addAdminCat() { systemBaseStructure.push({category: "New Category", markup: 0, items: []}); buildAdminTable(); }
     function addAdminItem(c) { systemBaseStructure[c].items.push({name:"New Item", wt:0, def:0}); buildAdminTable(); }
     function removeAdminItem(c, i) { systemBaseStructure[c].items.splice(i, 1); buildAdminTable(); }
