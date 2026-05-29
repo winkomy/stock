@@ -3,161 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V161</title>
+    <title>Winko ERP - V200 Pro Edition</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        * { box-sizing: border-box; font-family: system-ui, sans-serif; }
-        body { background-color: #f8fafc; padding: 0; color: #334155; margin: 0; line-height: 1.5; }
+        /* --- V200 ULTRA-MODERN UI/UX SYSTEM --- */
+        :root { --bg: #f1f5f9; --surface: #ffffff; --text-main: #0f172a; --text-muted: #64748b; --border: #cbd5e1; --primary: #0284c7; --primary-hover: #0369a1; --accent: #ea580c; --accent-hover: #c2410c; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        * { box-sizing: border-box; font-family: var(--font); margin: 0; padding: 0; }
+        body { background-color: var(--bg); color: var(--text-main); line-height: 1.4; font-size: 13px; }
         
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { min-width: 250px; padding: 15px 20px; border-radius: 8px; color: white; font-weight: bold; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); animation: slideIn 0.3s ease-out forwards; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
-        .toast.success { background: linear-gradient(to right, #10b981, #059669); }
-        .toast.error { background: linear-gradient(to right, #ef4444, #dc2626); }
-        .toast.info { background: linear-gradient(to right, #3b82f6, #2563eb); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        #securityOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; color: white; text-align: center; }
-        .login-card { background: white; padding: 50px 40px; border-radius: 16px; color: #333; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 90%; max-width: 420px; display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        .login-card input { width: 100%; padding: 14px 16px; margin: 8px 0 15px 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; outline: none; background: #f8fafc; transition: all 0.2s ease; font-weight: 500;}
-        .login-card input:focus { border-color: #ea580c; background: #fff; box-shadow: 0 0 0 4px rgba(234,88,12,0.1); }
-        .login-card button { width: 100%; padding: 14px; background: linear-gradient(to right, #ea580c, #c2410c); color: white; border: none; border-radius: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; font-size: 14px; transition: transform 0.2s, box-shadow 0.2s; margin-top: 15px; }
-        .login-card button:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(234,88,12,0.4); }
-        
-        #topNav { display: none; background: #0f172a; padding: 10px 20px; position: sticky; top: 0; z-index: 1000; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
-        .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
-        .nav-btn { background: transparent; color: #cbd5e1; border: none; font-size: 13px; font-weight: 700; cursor: pointer; padding: 8px 12px; border-radius: 4px; transition: 0.2s; }
-        .nav-btn.active, .nav-btn:hover { background: #ea580c; color: white; }
-        .nav-logo { color: white; font-weight: 900; font-size: 1.1em; display:flex; align-items:center; gap:10px; }
-        .cloud-indicator { width: 10px; height: 10px; border-radius: 50%; background: #64748b; display: inline-block; }
-        .cloud-indicator.online { background: #10b981; box-shadow: 0 0 8px #10b981; }
-        
-        .user-menu-btn { background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
-        .user-menu-btn:hover { background: #475569; }
-        .logout-btn { background: #ef4444; } .logout-btn:hover { background: #dc2626; }
-        
-        #mainContent, #adminContent, #customerPreviewContainer, #projectsContent, #inventoryContent { display: none; padding: 20px; }
-        #checklistPrintView, .print-only, .internal-only-tag { display: none; }
-        
-        .container { max-width: 1500px; margin: auto; }
-        .app-header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 20px; }
-        .app-header-bar h2 { margin: 0; font-weight: 900; color: #0f172a; }
-        .live-clock { font-size: 0.85em; color: #64748b; font-weight: 600; background: #e2e8f0; padding: 4px 10px; border-radius: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
-        
+        /* Layouts & Containers */
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         .app-layout { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
-        .col-left { flex: 1.4; min-width: 480px; display: flex; flex-direction: column; gap: 15px; }
-        .col-right { flex: 0.9; min-width: 350px; display: flex; flex-direction: column; gap: 15px; position: sticky; top: 70px; }
+        .col-left { flex: 1.5; min-width: 500px; display: flex; flex-direction: column; gap: 15px; }
+        .col-right { flex: 0.8; min-width: 320px; display: flex; flex-direction: column; gap: 15px; position: sticky; top: 70px; }
         @media (max-width: 1024px) { .col-left, .col-right { flex: 100%; min-width: 100%; position: relative; top: 0; } }
-        
-        .module-card { background: #fff; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.3s; }
-        .card-header { font-size: 1.1em; font-weight: 800; color: #0f172a; margin: 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
-        .card-header::after { content: "▼"; font-size: 0.7em; color: #94a3b8; transition: transform 0.3s; }
+
+        /* Module Cards (Ultra Compact) */
+        .module-card { background: var(--surface); border-radius: 10px; padding: 15px 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border: 1px solid var(--border); transition: all 0.3s; margin-bottom: 15px;}
+        .card-header { font-size: 14px; font-weight: 800; color: var(--text-main); margin: 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .card-header::after { content: "▼"; font-size: 10px; color: var(--text-muted); transition: transform 0.3s; }
         .module-card.collapsed .card-header::after { transform: rotate(-90deg); }
-        .card-body { margin-top: 15px; border-top: 2px solid #f1f5f9; padding-top: 15px; display: block; }
+        .card-body { margin-top: 10px; border-top: 1px solid var(--bg); padding-top: 12px; display: block; }
         .module-card.collapsed .card-body { display: none; }
-        
-        .config-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
-        .dim-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; width: 100%; }
-        .form-group { display: flex; flex-direction: column; position: relative; }
-        .form-group label { font-size: 0.75em; font-weight: 700; color: #64748b; margin-bottom: 4px; text-transform: uppercase; }
-        .form-group input, .form-group select, .form-group textarea { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; font-weight: 600; background: #f8fafc; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #ea580c; background: #fff; outline: none; }
-        
-        .nozzle-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-end; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 10px; font-size: 0.85em; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
-        th { background: #f1f5f9; color: #475569; padding: 10px; text-align: left; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; font-size: 0.75em; }
-        th.text-center { text-align: center; } th.text-right { text-align: right; }
-        td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle;}
-        .col-item { background: #fff; font-weight: 600; width: 45%; color: #1e293b; }
-        .col-input { width: 12%; text-align: center; } .col-total { text-align: right; font-weight: 700; width: 19%; background: #fafafa; color: #b91c1c; }
-        .desc-input { width: 100%; padding: 4px; border: 1px solid transparent; background: transparent; font-weight: 600; font-size: 1em; color: #0f172a; }
-        .col-input input { width: 100%; padding: 4px; text-align: center; border: 1px solid #e2e8f0; border-radius: 4px; background: #f8fafc; font-weight: 600; color: #0f172a; }
+        /* Grids & Forms */
+        .config-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .dim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input, .form-group select, .form-group textarea { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 600; background: var(--bg); transition: all 0.2s; color: var(--text-main); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); background: var(--surface); outline: none; box-shadow: 0 0 0 3px rgba(2,132,199,0.15); }
         
-        .price-tag { font-size: 10px; font-weight: 700; color: #a1a1aa; display: block; margin-top: 2px;}
-        .price-tag.synced { color: #059669; }
+        /* Buttons */
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .action-btn { flex: 1; min-width: 110px; padding: 10px 15px; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; background: var(--primary); display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .action-btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+        .btn-accent { background: var(--accent); } .btn-success { background: var(--success); } .btn-dark { background: var(--text-main); }
+        .btn-outline { background: transparent; border: 2px dashed var(--primary); color: var(--primary); box-shadow: none; } .btn-outline:hover { background: var(--primary); color: white; }
+        .del-btn { background: var(--danger); color:white; padding:4px 8px; border:none; border-radius:4px; font-size:10px; cursor:pointer; font-weight:bold; transition:0.2s; } .del-btn:hover { background: #b91c1c; }
+        .sync-btn { background: var(--bg); color: var(--primary); border: 1px solid var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 9px; cursor: pointer; display: flex; align-items: center; gap: 3px; font-weight: bold; } .sync-btn:hover { background: var(--primary); color: white; }
 
-        .summary-box { background: linear-gradient(145deg, #0f172a, #1e293b); color: white; padding: 20px; border-radius: 10px; }
-        .sum-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; color: #cbd5e1; }
-        .sum-row span:last-child { font-weight: 600; color: white; }
-        .sum-row.total { font-size: 1.5em; font-weight: 800; color: #fbbf24; border-bottom: none; border-top: 2px solid rgba(255,255,255,0.2); padding-top: 12px; margin-top: 12px; }
-        
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .action-btn { flex: 1; min-width: 110px; padding: 12px; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; background: #ea580c; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;}
-        .action-btn:hover { filter: brightness(1.1); }
-        .export-btn { background: #334155; } .print-btn { background: #059669; }
-        .add-btn { background: #38bdf8; margin-top:10px; width:100%; color: #0f172a; border: 2px dashed #0284c7; } .add-btn:hover { background: #0ea5e9; color:white; }
-        .del-btn { background: #ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold; }
-        
-        .tank-section-title { background: #e2e8f0; padding: 5px 10px; border-radius: 4px; font-weight: 800; color: #0f172a; margin-bottom: 8px; font-size: 0.85em; text-transform: uppercase; border-left: 4px solid #3b82f6; display:flex; justify-content:space-between; align-items:center; }
-        
-        .admin-table { width: 100%; border-collapse: collapse; background: white; color: #0f172a; border-radius: 8px;}
-        .admin-table th { background: #334155; color: white; padding: 12px; font-size: 0.85em; text-transform: uppercase;}
-        .admin-table td { border-color: #e2e8f0; padding: 8px; border-bottom: 1px solid #cbd5e1;}
-        .admin-input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;}
-        
-        .file-upload-wrapper { border: 2px dashed #94a3b8; border-radius: 8px; padding: 20px; text-align: center; background: #f8fafc; transition: all 0.3s; margin-top: 10px;}
-        .file-upload-wrapper:hover { border-color: #ea580c; background: #fff7ed; }
-        .file-upload-wrapper input[type="file"] { display: none; }
-        .file-upload-label { cursor: pointer; display: inline-block; padding: 10px 20px; background: #ea580c; color: white; border-radius: 6px; font-weight: bold; }
-        
-        #customerPreviewContainer { background: #94a3b8; padding: 20px; overflow-y: auto; flex-direction: column; align-items: center; }
-        .preview-toolbar { background: #0f172a; padding: 10px 20px; border-radius: 6px; margin-bottom: 15px; color: white; display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 210mm;}
-        #customerPrintViewEditor { display: block; background: white; width: 100%; max-width: 210mm; min-height: 297mm; padding: 15mm; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin: 0 auto; color: #0f172a; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; outline: none; }
-        .editable-section { transition: background 0.2s; border-radius: 4px; padding: 4px; border: 1px solid transparent;}
-        .editable-section:hover { background: #fef9c3; cursor: text; border: 1px dashed #eab308; }
+        /* Summary Box */
+        .summary-box { background: linear-gradient(145deg, #0f172a, #1e293b); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); }
+        .sum-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; color: #cbd5e1; }
+        .sum-row span:last-child { font-weight: 700; color: white; }
+        .sum-row.total { font-size: 20px; font-weight: 900; color: var(--warning); border-bottom: none; border-top: 2px solid rgba(255,255,255,0.2); padding-top: 12px; margin-top: 12px; }
 
+        /* Tables */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+        th { background: var(--bg); color: var(--text-muted); padding: 8px; text-align: left; border-bottom: 1px solid var(--border); text-transform: uppercase; font-size: 10px; font-weight: 800;}
+        td { padding: 6px 8px; border-bottom: 1px solid var(--bg); vertical-align: middle; background: var(--surface);}
+        .text-center { text-align: center; } .text-right { text-align: right; }
+        .col-input input { width: 100%; padding: 4px; text-align: center; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); font-weight: 600; color: var(--text-main); }
+        .desc-input { width: 100%; padding: 4px; border: 1px solid transparent; background: transparent; font-weight: 600; font-size: 12px; color: var(--text-main); }
+        .desc-input:focus { border: 1px solid var(--primary); background: var(--surface); border-radius:4px; outline:none;}
+        
+        .price-tag { font-size: 9px; font-weight: 800; color: #94a3b8; display: block; margin-top: 2px; }
+        .price-tag.synced { color: var(--success); }
+
+        /* Header & Nav */
+        .app-header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
+        .app-header-bar h2 { margin: 0; font-weight: 900; color: var(--text-main); font-size: 22px;}
+        #topNav { display: none; background: #0f172a; padding: 10px 20px; position: sticky; top: 0; z-index: 1000; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        .nav-links { display: flex; gap: 5px; flex-wrap: wrap; }
+        .nav-btn { background: transparent; color: #94a3b8; border: none; font-size: 12px; font-weight: 700; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: 0.2s; }
+        .nav-btn.active, .nav-btn:hover { background: var(--primary); color: white; }
+        .nav-logo { color: white; font-weight: 900; font-size: 16px; display:flex; align-items:center; gap:10px; letter-spacing: 1px;}
+        .cloud-indicator { width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block; }
+        .cloud-indicator.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        
+        /* Security & Toasts */
+        #securityOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card { background: white; padding: 40px 30px; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 90%; max-width: 350px; text-align: center; }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { min-width: 250px; padding: 12px 15px; border-radius: 8px; color: white; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); animation: slideIn 0.3s ease-out forwards; display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+        .toast.success { background: var(--success); } .toast.error { background: var(--danger); } .toast.info { background: var(--primary); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Specific Elements */
+        .tank-section-title { background: var(--bg); padding: 6px 10px; border-radius: 6px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; font-size: 11px; text-transform: uppercase; border-left: 4px solid var(--primary); display:flex; justify-content:space-between; align-items:center; }
+        #mainContent, #adminContent, #customerPreviewContainer, #projectsContent, #inventoryContent { display: none; }
+        #checklistPrintView, .print-only, .internal-only-tag { display: none; }
+        .file-upload-wrapper { border: 2px dashed var(--border); border-radius: 8px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s;} .file-upload-wrapper:hover { border-color: var(--primary); background: #e0f2fe; }
+        
+        /* Print Styles - EXACT MATCH FOR QUOTES */
         @media print {
             @page { size: A4; margin: 10mm 15mm; }
-            body { background: white; padding: 0; font-size: 9pt; color: #000; font-family: Arial, Helvetica, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            
-            #topNav, .no-print, .internal-hide, #toast-container, #securityOverlay { display: none !important; }
-            
+            body { background: white; color: #000; font-size: 9pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            #topNav, .no-print, #toast-container, #securityOverlay { display: none !important; }
             .print-only { display: block !important; }
-            .container { max-width: 100%; padding: 0; }
-            tr, td, th { page-break-inside: avoid; }
-            .avoid-break { page-break-inside: avoid; }
+            .container { max-width: 100%; padding: 0; margin: 0;}
             .page-break { page-break-before: always; }
+            .avoid-break { page-break-inside: avoid; }
             
-            /* --- INTERNAL PRINT --- */
+            /* Internal Print */
             body.print-internal #mainContent { display: block !important; }
-            body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
-            body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; }
+            body.print-internal .col-left { display: block !important; width: 100% !important; }
             body.print-internal .col-right { display: none !important; }
             body.print-internal .module-card { border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; }
             body.print-internal .card-header, body.print-internal .card-body { display: block !important; }
-            body.print-internal .card-header { border-bottom: 2.5px solid #0f172a !important; margin-bottom: 8px !important; font-size: 12pt !important; padding: 0 0 5px 0 !important;}
             body.print-internal .card-header::after { display: none !important; }
-            body.print-internal::before { content: "INTERNAL COSTING - DO NOT SHARE"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60pt; font-weight: 900; color: rgba(239, 68, 68, 0.08); z-index: -1; white-space: nowrap; pointer-events: none; }
-            body.print-internal .print-header { display: flex !important; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #ea580c; padding-bottom: 10px; margin-bottom: 15px; }
-            body.print-internal table { font-size: 8.5pt; margin-bottom: 10px; border-collapse: collapse; width: 100%; border: 1.5px solid #0f172a; }
-            body.print-internal th { background-color: #0f172a !important; color: #ffffff !important; padding: 6px 8px;}
-            body.print-internal td { border-right: 1px solid #cbd5e1; padding: 4px 8px; border-bottom: 1px solid #cbd5e1;}
-            body.print-internal td.text-right { text-align: right; font-weight: 700;}
-            body.print-internal input, body.print-internal .desc-input { border: none !important; background: transparent !important; padding: 0 !important; width: auto;}
-            body.print-internal .summary-box { background: #fff !important; border: 2.5px solid #0f172a !important; border-radius: 8px !important; padding: 0 !important; width: 40% !important; float: right !important;}
+            body.print-internal .print-header { display: flex !important; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid var(--accent); padding-bottom: 10px; margin-bottom: 15px; }
+            body.print-internal::before { content: "INTERNAL COSTING"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60pt; font-weight: 900; color: rgba(239, 68, 68, 0.08); z-index: -1; pointer-events: none; }
             
-            body.print-internal .drawings-page { display: block !important; padding-top: 10px !important; clear: both !important;}
-
-            /* --- CUSTOMER PRINT --- */
+            /* Customer Print */
             body.print-customer #mainContent, body.print-customer #adminContent, body.print-customer #inventoryContent, body.print-customer #projectsContent, body.print-customer #checklistPrintView { display: none !important; }
-            body.print-customer #customerPreviewContainer { display: flex !important; padding: 0 !important; margin: 0 !important; background: white !important; }
+            body.print-customer #customerPreviewContainer { display: block !important; padding: 0 !important; background: white !important; }
             body.print-customer .preview-toolbar { display: none !important; }
             body.print-customer #customerPrintViewEditor { max-width: none !important; padding: 0 !important; margin: 0 !important; border:none; box-shadow:none;}
-            
-            .cp-classic-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 9.5pt; color: #000; }
+            .cp-classic-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 9.5pt; color: #000; border: none;}
             .cp-classic-table th { background: transparent !important; color: #000 !important; padding: 8px 5px; text-align: left; font-weight: bold; border-top: 1.5px solid #000 !important; border-bottom: 1.5px solid #000 !important; text-transform:uppercase; }
             .cp-classic-table td { padding: 8px 5px; vertical-align: top; border-bottom: 1px dashed #cbd5e1 !important; }
-            .cp-classic-table td.text-center { text-align: center; }
-            .cp-classic-table td.text-right { text-align: right; }
 
-            /* --- CHECKLIST PRINT --- */
-            body.print-checklist #mainContent, body.print-checklist #customerPreviewContainer, body.print-checklist #adminContent, body.print-checklist #inventoryContent, body.print-checklist #projectsContent { display: none !important; }
-            body.print-checklist #checklistPrintView { display: block !important; font-size: 9.5pt; padding: 0; color: #000; }
-            .chk-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; text-align: center; line-height: 12px; margin-right: 4px; font-weight:bold;}
+            /* SO Print */
+            body.print-checklist #mainContent, body.print-checklist #customerPreviewContainer { display: none !important; }
+            body.print-checklist #checklistPrintView { display: block !important; font-size: 9.5pt; color: #000; }
         }
     </style>
 </head>
@@ -165,1059 +129,461 @@
 
 <datalist id="customerDatalist"></datalist>
 
-<div id="profileOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index: 10001; align-items:center; justify-content:center;">
-    <div class="module-card" style="width: 350px; background: white; padding: 30px;">
-        <div class="card-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">👤 Update Password</div>
-        <div class="form-group">
-            <label>New Password</label>
-            <input type="password" id="myNewPassword" placeholder="Enter new password">
-        </div>
-        <div style="display:flex; gap:10px; margin-top: 20px;">
-            <button class="action-btn" onclick="saveMyPassword()" style="flex:1;">Save Password</button>
-            <button class="action-btn export-btn" onclick="document.getElementById('profileOverlay').style.display='none'" style="flex:1;">Cancel</button>
-        </div>
-    </div>
-</div>
-
 <div id="securityOverlay">
     <div class="login-card">
-        <h2 style="margin: 0 0 5px 0; color: #0f172a; font-weight: 900; font-size: 24px;">WINKO ERP</h2>
-        <p style="color:#64748b; margin-top: 0; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;" id="loginTitleText">Enterprise Quoting Gateway</p>
-        <div style="width: 100%; text-align: left; margin-top: 30px;">
-            <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-left: 4px;">Username</label>
-            <input type="text" id="userInput" placeholder="Enter username" onkeypress="if(event.key==='Enter') document.getElementById('passInput').focus()">
+        <h2 style="margin:0 0 5px 0; color:#0f172a; font-weight:900; font-size:24px;">WINKO ERP</h2>
+        <p style="color:var(--text-muted); font-size:11px; font-weight:800; letter-spacing:1px;">V200 PRO EDITION</p>
+        <div style="margin-top: 25px; text-align:left;">
+            <label style="font-size:10px; font-weight:800; color:var(--text-muted);">USERNAME</label>
+            <input type="text" id="userInput" placeholder="Enter username" style="width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid var(--border); outline:none;" onkeypress="if(event.key==='Enter') document.getElementById('passInput').focus()">
         </div>
-        <div style="position: relative; width: 100%; text-align: left; margin-top: 5px;">
-            <label style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-left: 4px;">Password</label>
-            <input type="password" id="passInput" placeholder="••••••••" onkeypress="if(event.key==='Enter') processSecureLogin()" style="width: 100%; padding-right: 40px;">
-            <span onclick="togglePass('passInput')" style="position: absolute; right: 12px; top: 35px; cursor: pointer; font-size: 16px;" title="Show/Hide Password">👁️</span>
+        <div style="margin-top: 15px; text-align:left;">
+            <label style="font-size:10px; font-weight:800; color:var(--text-muted);">PASSWORD</label>
+            <input type="password" id="passInput" placeholder="••••••••" style="width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid var(--border); outline:none;" onkeypress="if(event.key==='Enter') processSecureLogin()">
         </div>
-        <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 10px; color: #94a3b8; margin-top: 20px;">V161 - Multi-Partition Edition</p>
+        <button class="action-btn" style="width:100%; margin-top:20px; padding:12px; font-size:14px;" onclick="processSecureLogin()">SECURE LOGIN</button>
     </div>
 </div>
 
 <div id="topNav">
-    <div class="nav-logo" id="navLogoText">WINKO ERP <span id="cloudStatusDot" class="cloud-indicator" title="Offline Local Mode"></span>
-        <div style="display:flex; gap:8px; margin-left:15px; border-left: 2px solid rgba(255,255,255,0.2); padding-left:15px;">
-            <button class="user-menu-btn" onclick="openMyProfile()">👤 My Profile</button>
-            <button class="user-menu-btn logout-btn" onclick="logout()">🚪 Logout</button>
-        </div>
+    <div class="nav-logo">WINKO <span style="color:var(--primary);">ERP</span> <span id="cloudStatusDot" class="cloud-indicator" title="Offline Local Mode"></span>
+        <button class="del-btn" style="margin-left: 15px; background:transparent; border:1px solid var(--danger); color:var(--danger);" onclick="logout()">Logout</button>
     </div>
     <div class="nav-links">
         <button class="nav-btn active" id="btnTabQuote" onclick="switchTab('quote')">📝 Workspace</button>
-        <button class="nav-btn" id="btnTabProjects" onclick="switchTab('projects')">📂 Project Bank</button>
+        <button class="nav-btn" id="btnTabProjects" onclick="switchTab('projects')">📂 Projects</button>
         <button class="nav-btn" id="btnTabInv" onclick="switchTab('inventory')">📦 Inventory</button>
-        <button class="nav-btn" id="btnTabPreview" onclick="switchTab('preview')">📄 Edit Quote PDF</button>
+        <button class="nav-btn" id="btnTabPreview" onclick="switchTab('preview')">📄 Customer PDF</button>
         <button class="nav-btn" id="btnTabAdmin" onclick="switchTab('admin')">⚙️ Master Control</button>
     </div>
 </div>
 
 <div id="inventoryContent"><div class="container">
     <div class="module-card">
-        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📊</span> Stock Level Graph</div>
-        <div class="card-body" style="height: 350px; position: relative; padding-bottom: 20px;"><canvas id="invChartCanvas"></canvas></div>
+        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📊</span> Live Stock Levels</div>
+        <div class="card-body" style="height: 300px; position: relative;"><canvas id="invChartCanvas"></canvas></div>
     </div>
-    <div class="module-card" style="margin-top: 20px;">
-        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📦</span> Master Inventory & Pricing</div>
+    <div class="module-card">
+        <div class="card-header"><span>📦</span> Master Inventory</div>
         <div class="card-body">
-            <div style="display:flex; gap:10px; margin-bottom:20px; background:#f1f5f9; padding:15px; border-radius:8px; align-items: center; flex-wrap: wrap;">
-                <input type="text" id="newInvName" placeholder="Item Name" class="admin-input" style="flex:2; text-align:left; min-width: 200px;">
-                <input type="number" id="newInvStock" placeholder="Initial Stock Qty" class="admin-input" style="flex:1; min-width: 120px;">
-                <input type="number" id="newInvAlert" placeholder="Low Alert Level" class="admin-input" style="flex:1; min-width: 120px;">
-                <button class="action-btn" style="width:auto; padding:8px 20px;" onclick="addInvItem()">+ Add Item</button>
-                <button class="action-btn" style="width:auto; padding:8px 20px; background:#0284c7;" onclick="autoPopulateInventory()">⬇️ Auto-Populate Master List</button>
-                <input type="file" id="bulkInvUpload" accept=".csv" style="display:none;" onchange="handleBulkInventoryUpload(event)">
-                <button class="action-btn" style="width:auto; padding:8px 20px; background:#8b5cf6;" onclick="document.getElementById('bulkInvUpload').click()">⬆️ Bulk Upload CSV</button>
+            <div style="display:flex; gap:10px; margin-bottom:15px; background:var(--bg); padding:15px; border-radius:8px; align-items:center; flex-wrap:wrap;">
+                <input type="text" id="newInvName" placeholder="Exact Item Name" style="flex:2; padding:8px; border-radius:4px; border:1px solid var(--border);">
+                <input type="number" id="newInvStock" placeholder="Stock Qty" style="flex:1; padding:8px; border-radius:4px; border:1px solid var(--border);">
+                <input type="number" id="newInvCost" placeholder="Cost (RM)" style="flex:1; padding:8px; border-radius:4px; border:1px solid var(--border);">
+                <button class="action-btn" style="width:auto;" onclick="addInvItem()">+ Add Single</button>
+                <button class="action-btn btn-dark" style="width:auto;" onclick="autoPopulateInventory()">⬇️ Auto-Gen All Panels</button>
             </div>
-            <div style="margin-bottom: 15px;"><input type="text" id="invSearchBox" placeholder="🔍 Search Inventory..." onkeyup="renderInventoryUI()" style="padding: 10px; width: 100%; max-width: 400px; border-radius: 6px; border: 1px solid #cbd5e1; outline:none; font-weight:bold;"></div>
-            <div style="overflow-x: auto;">
-                <table class="admin-table">
-                    <thead><tr><th>Item Name</th><th class="text-center">Stock Level</th><th class="text-center">Alert Level</th><th class="text-center">Unit Cost (RM)</th><th class="text-center">Action</th></tr></thead>
-                    <tbody id="inventoryBody"></tbody>
-                </table>
-            </div>
+            <input type="text" id="invSearchBox" placeholder="🔍 Search Items..." onkeyup="renderInventoryUI()" style="padding:10px; width:100%; max-width:400px; margin-bottom:15px; border-radius:6px; border:1px solid var(--border);">
+            <table style="width:100%;">
+                <thead><tr><th>Item Name</th><th class="text-center">Stock</th><th class="text-center">Alert</th><th class="text-center">Unit Cost (RM)</th><th class="text-center">Act</th></tr></thead>
+                <tbody id="inventoryBody"></tbody>
+            </table>
         </div>
     </div>
 </div></div>
 
 <div id="projectsContent"><div class="container">
     <div class="module-card">
-        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📂</span> Project Bank & History</div>
+        <div class="card-header"><span>📂</span> Cloud Project Bank</div>
         <div class="card-body">
-            <div style="margin-bottom: 15px;"><input type="text" id="projSearchBox" placeholder="🔍 Search Job No, Customer, or Project Name..." onkeyup="renderProjectBank()" style="padding: 10px; width: 100%; max-width: 500px; border-radius: 6px; border: 1px solid #cbd5e1; outline:none; font-weight:bold;"></div>
-            <div style="overflow-x: auto;">
-                <table class="admin-table">
-                    <thead><tr><th>Job No</th><th>Project Name</th><th>Customer</th><th class="text-right">Total Value (RM)</th><th>Saved Date</th><th class="text-center">Action</th></tr></thead>
-                    <tbody id="projectBankBody"></tbody>
-                </table>
-            </div>
+            <input type="text" id="projSearchBox" placeholder="🔍 Search Job No or Customer..." onkeyup="drawProjectBankTable()" style="padding:10px; width:100%; max-width:400px; margin-bottom:15px; border-radius:6px; border:1px solid var(--border);">
+            <table>
+                <thead><tr><th>Job No</th><th>Project Name</th><th>Customer</th><th class="text-right">Total (RM)</th><th>Date</th><th class="text-center">Load</th></tr></thead>
+                <tbody id="projectBankBody"></tbody>
+            </table>
         </div>
     </div>
 </div></div>
 
 <div id="adminContent"><div class="container">
     <div class="module-card">
-        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>💾</span> System Backup & Restore</div>
+        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>🏢</span> Global Company Profile</div>
         <div class="card-body">
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 10px;">Protect your Cloud Data! Download an offline snapshot or overwrite the cloud with a previous snapshot.</p>
-            <div class="btn-group" style="align-items: center; justify-content: flex-start; gap: 20px;">
-                <button class="action-btn print-btn" style="background:#10b981; max-width: 300px;" onclick="backupSystem()">⬇️ Download Cloud Snapshot</button>
-                <div class="file-upload-wrapper" style="flex:none; width: 300px; padding: 10px; margin: 0; border-color:#ef4444;">
-                    <label for="restoreFileInput" class="file-upload-label" style="background:#ef4444; font-size:12px;">⬆️ Upload Backup to Restore Cloud</label>
-                    <input type="file" id="restoreFileInput" accept=".json" onchange="restoreSystem(event)">
-                </div>
+            <button class="action-btn btn-success" style="width:auto; margin-bottom:15px;" onclick="saveCompanyProfile()">💾 Save Profile to Cloud</button>
+            <div class="config-grid">
+                <div class="tank-section-title" style="grid-column: span 2;">🔢 Document Setup</div>
+                <div class="form-group"><label>Quote Prefix</label><input type="text" id="profilePrefix"></div>
+                <div class="form-group"><label>Next Sequence No.</label><input type="number" id="profileSeq"></div>
+                <div class="form-group"><label>Default SST Tax Rate (%)</label><input type="number" id="profileTax"></div>
+                
+                <div class="tank-section-title" style="grid-column: span 2; margin-top:10px;">🏢 Basic Info</div>
+                <div class="form-group"><label>Company Name</label><input type="text" id="profileName"></div>
+                <div class="form-group"><label>Reg No.</label><input type="text" id="profileReg"></div>
+                <div class="form-group" style="grid-column: span 2;"><label>Full Address</label><input type="text" id="profileAddress"></div>
+                <div class="form-group"><label>Contact</label><input type="text" id="profileContact"></div>
+                <div class="form-group"><label>Website</label><input type="text" id="profileWebsite"></div>
+                
+                <div class="tank-section-title" style="grid-column: span 2; margin-top:10px;">📄 Master Terms & Exclusions</div>
+                <div class="form-group" style="grid-column: span 2;"><label>Default Short Exclusions</label><textarea id="profileExclusions" rows="4"></textarea></div>
+                <div class="form-group" style="grid-column: span 2;"><label>Default Full T&C</label><textarea id="profileTerms" rows="6"></textarea></div>
             </div>
         </div>
     </div>
     
-    <div class="module-card" style="margin-top: 20px;">
-        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>🔑</span> Account Management</div>
-        <div class="card-body">
-            <div style="display:flex; gap:10px; margin-bottom:20px; background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e1; align-items:center;">
-                <input type="text" id="newUsername" placeholder="New Username" class="admin-input" style="flex:1;">
-                <input type="password" id="newPassword" placeholder="New Password" class="admin-input" style="flex:1;">
-                <select id="newRole" class="admin-input" style="flex:1;"><option value="user">Standard User</option><option value="admin">Master Admin</option></select>
-                <button class="action-btn" style="width:auto; background:#3b82f6;" onclick="addUser()">+ Create User</button>
-            </div>
-            <table class="admin-table">
-                <thead><tr><th style="width:25%;">Username</th><th style="width:35%;">Password</th><th style="width:20%;">Role</th><th style="width:20%; text-align:center;">Action</th></tr></thead>
-                <tbody id="userTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="module-card" style="margin-top: 20px;">
-        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>🏢</span> Global Company Profile</div>
-        <div class="card-body">
-            <button class="action-btn print-btn" style="width:auto; padding: 8px 15px; background:#10b981; margin-bottom:15px;" onclick="saveCompanyProfile()">💾 Save Company Profile to Cloud</button>
-            <div class="config-grid">
-                <div class="tank-section-title" style="grid-column: span 2; margin-top:0px; background:#fef3c7; border-left-color:#f59e0b;">🔢 Document Sequencing</div>
-                <div class="form-group"><label>Quote Prefix</label><input type="text" id="profilePrefix"></div>
-                <div class="form-group"><label>Next Sequence No.</label><input type="number" id="profileSeq"></div>
-
-                <div class="tank-section-title" style="grid-column: span 2; margin-top:10px; background:#e0e7ff; border-left-color:#4f46e5;">🏢 Basic Info</div>
-                <div class="form-group"><label>Company Name</label><input type="text" id="profileName"></div>
-                <div class="form-group"><label>Company Reg No.</label><input type="text" id="profileReg"></div>
-                <div class="form-group" style="grid-column: span 2;"><label>Full Address</label><input type="text" id="profileAddress"></div>
-                <div class="form-group"><label>Contact Line</label><input type="text" id="profileContact"></div>
-                <div class="form-group"><label>Website / Email</label><input type="text" id="profileWebsite"></div>
-                <div class="form-group"><label>Default SST Tax Rate (%)</label><input type="number" id="profileTax"></div>
-                
-                <div class="tank-section-title" style="grid-column: span 2; margin-top:10px; background:#e0e7ff; border-left-color:#4f46e5;">📈 Costing Multipliers</div>
-                <div class="form-group"><label>Painted Steel Multiplier</label><input type="number" step="0.01" id="mat_painted"></div>
-                <div class="form-group"><label>SS 304 Multiplier</label><input type="number" step="0.01" id="mat_ss304"></div>
-                <div class="form-group"><label>SS 316 Multiplier</label><input type="number" step="0.01" id="mat_ss316"></div>
-                
-                <div class="form-group" style="grid-column: span 2; margin-top: 10px;"><label>Global Default Terms & Conditions</label><textarea id="profileTerms" rows="6"></textarea></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="module-card" style="margin-top: 20px;">
-        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>👥</span> Customer CRM Directory</div>
-        <div class="card-body">
-            <div style="margin-bottom: 15px; display:flex; gap:10px;">
-                <input type="text" id="custSearchBox" placeholder="🔍 Search Customers..." onkeyup="renderCustomerAdmin()" class="admin-input" style="max-width: 300px; text-align:left;">
-            </div>
-            <table class="admin-table">
-                <thead><tr><th style="width:25%;">Company Name</th><th style="width:20%;">Attention</th><th style="width:45%;">Address</th><th style="width:10%; text-align:center;">Action</th></tr></thead>
-                <tbody id="customerAdminBody"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="module-card" style="margin-top: 20px;">
+    <div class="module-card">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>⚙️</span> Dynamic Base BOM (Fallbacks)</div>
         <div class="card-body">
-            <div style="display: flex; gap: 10px; margin-bottom:15px;">
-                <button class="action-btn print-btn" style="width:auto; padding: 8px 12px; background:#38bdf8; color:#0f172a;" onclick="addAdminCat()">+ Add New Category</button>
-                <button class="action-btn print-btn" style="width:auto; padding: 8px 12px; background:#10b981;" onclick="saveAdminDefaults()">💾 Save Master Structure to Cloud</button>
-            </div>
-            <table class="admin-table">
-                <thead><tr><th style="width:10%; text-align:center;">Action</th><th style="width:50%;">Item Name</th><th style="width:20%;">Default Wt (kg)</th><th style="width:20%;">Fallback Cost (RM)</th></tr></thead>
+            <button class="action-btn btn-dark" style="width:auto; margin-bottom:15px;" onclick="saveAdminDefaults()">💾 Save BOM Structure to Cloud</button>
+            <table>
+                <thead><tr><th style="width:10%; text-align:center;">Act</th><th style="width:50%;">Item Name</th><th style="width:20%;">Wt (kg)</th><th style="width:20%;">Fallback RM</th></tr></thead>
                 <tbody id="adminBody"></tbody>
             </table>
         </div>
     </div>
 </div></div>
 
-<div id="mainContent">
-    <div class="container">
-        <div class="app-header-bar no-print">
-            <h2>Project Workspace</h2>
-            <div class="live-clock">
-                <span id="liveClock" style="margin-right: 5px;"></span>
-                <button class="action-btn print-btn" style="margin:0; padding: 8px 15px; background: #ea580c; border-radius: 20px;" onclick="saveToMemory()">💾 Save Quote</button>
-                <button class="action-btn print-btn" style="margin:0; padding: 8px 15px; background: #8b5cf6; border-radius: 20px; font-size: 12px;" onclick="confirmOrderAndDeduct()">📦 Confirm & Deduct Stock</button>
-            </div>
-        </div>
-        
-        <div class="print-only internal-only-tag">Strictly Confidential - Internal Costing</div>
-        <div class="print-header print-only">
-            <div class="header-left">
-                <img src="winko logo.png" alt="Company Logo" style="width:100px; height:auto;" onerror="this.style.display='none'">
-                <div style="margin-left: 15px;">
-                    <h1 style="margin:0; font-size:14pt;"><span id="printHeaderName1">COMPANY NAME</span> <span style="font-size: 10pt; color: #475569;" id="printHeaderReg1">REG NO</span></h1>
-                    <p style="margin:0; font-size:8pt;" id="printHeaderAddr1">ADDRESS</p>
-                </div>
-            </div>
-            <div class="header-right"><h2 style="margin:0; color:#ea580c;">INTERNAL QUOTATION</h2><p style="margin:0;">Quote No: <span id="metaQuoteId"></span></p><p style="margin:0;">Date: <span id="metaDate"></span></p></div>
-        </div>
-
-        <div class="quote-meta print-only">
-            <div class="meta-box"><div class="meta-item"><span class="meta-label">Prepared For:</span> <span id="metaProject" style="font-weight:700;"></span></div><div class="meta-item"><span class="meta-label">Standard:</span> <span id="metaStd" style="font-weight:700;"></span></div></div>
-            <div class="meta-box"><div class="meta-item"><span class="meta-label">Dimensions:</span> <span id="metaDims" style="font-weight:700;"></span></div><div class="meta-item"><span class="meta-label">Material:</span> <span id="metaCoat" style="font-weight:700;"></span></div></div>
-        </div>
-
-        <div class="app-layout">
-            <div class="col-left">
-                <div class="module-card no-print">
-                    <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📋</span> 1. Project Info</div>
-                    <div class="card-body">
-                        <div class="config-grid">
-                            <div class="form-group"><label>Quote / Job No.</label><input type="text" id="quoteIdInput" oninput="safeProcess()"></div>
-                            <div class="form-group"><label>Project Name</label><input type="text" id="projectName" oninput="safeProcess()"></div>
-                            
-                            <div class="form-group">
-                                <label style="color:#0ea5e9;">Customer Company <span style="font-size:10px; color:#64748b;">(Auto-Search & Fill)</span></label>
-                                <input type="text" id="custCompany" list="customerDatalist" oninput="checkCustomerAutoFill()" placeholder="Type to search CRM...">
-                            </div>
-                            
-                            <div class="form-group"><label>Attention</label><input type="text" id="custAttn" oninput="safeProcess()"></div>
-                            <div class="form-group"><label>PO No.</label><input type="text" id="custPoNo" oninput="safeProcess()"></div>
-                            <div class="form-group"><label>Delivery Target</label><input type="text" id="custDelDate" oninput="safeProcess()"></div>
-                            <div class="form-group" style="grid-column: span 2;"><label>Address</label><textarea id="custAddr" rows="2" oninput="safeProcess()"></textarea></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="module-card no-print">
-                    <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📐</span> 2. Engineering Configuration</div>
-                    <div class="card-body">
-                        <div class="config-grid" style="margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #e2e8f0;">
-                            <div class="form-group" style="grid-column: span 2;"><label>Global Unit System</label><select id="unitChoice" onchange="handleUnitChange()"><option value="ft">Imperial (4'x4')</option><option value="m_122">Imperial (1.22m)</option><option value="m_100">Metric (1m)</option></select></div>
-                        </div>
-
-                        <div id="dynamicTanksContainer"></div>
-                        <button class="action-btn add-btn" onclick="addNewTank()">+ ADD ANOTHER TANK</button>
-
-                        <div class="tank-section-title" style="margin-top:30px; background:#fef3c7; border-left-color:#f59e0b;">➕ Additional Custom Items / Services</div>
-                        <div id="dynamicCustomContainer"></div>
-                        <button class="action-btn add-btn" onclick="addNewCustomItem()" style="background:#e0e7ff; border-color:#6366f1; color:#3730a3;">+ ADD CUSTOM ITEM</button>
-                    </div>
-                </div>
-
-                <div class="module-card drawings-page internal-hide-except-print">
-                    <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📏</span> 3. Auto-Drawings (Panel Layout)</div>
-                    <div class="card-body">
-                        <p style="font-size:11px; color:#64748b; margin-top:0;">* Pure Schematics: Partitions (red dashed) & Ladders (orange) applied automatically.</p>
-                        <div id="dynamicDrawingsContainer"></div>
-                    </div>
-                </div>
-                
-                <div class="module-card no-print">
-                    <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>💰</span> 4. Commercial Terms</div>
-                    <div class="card-body">
-                        <div class="dim-grid" style="background: #ecfdf5; padding:15px; border:2px solid #10b981;">
-                            <div class="form-group"><label>Proj. Mark-Up (Extra %)</label><input type="number" id="markupPct" value="0" oninput="safeProcess()"></div>
-                            <div class="form-group"><label>Discount (%)</label><input type="number" id="discountPct" value="0" oninput="safeProcess()"></div>
-                            <div class="form-group"><label>SST Tax (%)</label><input type="number" id="sstPct" oninput="safeProcess()"></div>
-                        </div>
-                        <div class="config-grid">
-                            <div class="form-group" style="grid-column: span 2;"><label>Validity</label><input type="text" id="tcValidity" value="14 Days from quotation date." oninput="safeProcess()"></div>
-                            <div class="form-group" style="grid-column: span 2;"><label>Market</label><select id="marketChoice" onchange="safeProcess()"><option value="local">Local</option><option value="export">Export</option></select></div>
-                            <div class="form-group" style="grid-column: span 2;"><label>Lead-time</label><input type="text" id="tcLead" value="6 - 10 weeks from confirmation." oninput="safeProcess()"></div>
-                            <div class="form-group" style="grid-column: span 2;"><label>Delivery Location</label><input type="text" id="tcDelivery" value="Deliver to site exclude unloading." oninput="safeProcess()"></div>
-                            <div class="form-group" style="grid-column: span 2;"><label>Payment Terms</label><textarea id="tcPayment" rows="2" oninput="safeProcess()">30% Down Payment&;50% Before Delivery</textarea></div>
-                            <div class="form-group"><label>Sign-off Name</label><input type="text" id="signName" value="LEE JL" oninput="safeProcess()"></div>
-                            <div class="form-group"><label>Sign-off Phone</label><input type="text" id="signPhone" value="019-2215558" oninput="safeProcess()"></div>
-                        </div>
-                       
-    <label style="display:flex; justify-content:space-between; align-items:center;">
-        Full T&C 
-        <button type="button" style="background:#3b82f6; color:white; border:none; padding:3px 8px; border-radius:4px; font-size:10px; cursor:pointer; font-weight:bold;" onclick="document.getElementById('fullTermsNotes').value = companyProfile.terms; safeProcess(); showToast('Master T&C Loaded!');">🔄 Sync from Master Control</button>
-    </label>
-    <textarea id="fullTermsNotes" rows="10" oninput="safeProcess()"></textarea>
-</div>
-                    </div>
-                </div>
-
-                <div id="dynamicBomContainer"></div>
-            </div>
-
-            <div class="col-right">
-                <div style="position: sticky; top: 80px;">
-                    <div class="summary-box no-print">
-                        <div class="sum-row"><span>Est. Capacity:</span> <span id="sumCapacity_screen" style="color:#38bdf8;">0 L</span></div>
-                        <div class="sum-row"><span>Total Panels:</span> <span id="sumPanels_screen" style="color:#a855f7;">0</span></div>
-                        <div class="sum-row"><span>Est. Weight:</span> <span id="sumWeight_screen" style="color:#fdba74;">0 kg</span></div>
-                        <hr style="border: 1px solid rgba(255,255,255,0.15); margin: 15px 0;">
-                        <div class="sum-row"><span>Raw Base Cost:</span> <span>RM <span id="sumBaseCost_screen">0.00</span></span></div>
-                        <div class="sum-row" style="color: #c084fc;"><span>Custom Add-ons:</span> <span>+ RM <span id="sumCustomCost_screen">0.00</span></span></div>
-                        <div class="sum-row" style="color: #34d399;"><span>Project Mark-Up:</span> <span>+ RM <span id="sumMarkup_screen">0.00</span></span></div>
-                        <div class="sum-row" style="font-weight:700;"><span>Gross Subtotal:</span> <span>RM <span id="sumSubtotal_screen">0.00</span></span></div>
-                        <div class="sum-row" style="color: #fbbf24;"><span>Discount:</span> <span>- RM <span id="sumDiscount_screen">0.00</span></span></div>
-                        <div class="sum-row"><span>SST Tax:</span> <span>+ RM <span id="sumSST_screen">0.00</span></span></div>
-                        <div class="sum-row total"><span>TOTAL:</span> <span>RM <span id="grandTotal_screen">0.00</span></span></div>
-                    </div>
-
-                    <div class="btn-group no-print">
-                        <button class="action-btn export-btn" onclick="exportCSV()">Export CSV</button>
-                        <button class="action-btn print-btn" style="background: #334155;" onclick="triggerPrint('internal')">Internal PDF</button>
-                        <button class="action-btn print-btn" onclick="triggerPrint('customer')">Customer PDF</button>
-                        <button class="action-btn print-btn" style="background: #0284c7;" onclick="triggerPrint('checklist')">📋 SO & Material</button>
-                    </div>
-                </div> 
-            </div>
-        </div>
-
-        <div class="print-only avoid-break" id="internalPrintFooter">
-            <div class="footer-flex">
-                <div style="display:flex; gap:15px; width:55%;">
-                    <div style="flex:1; border:1.5px solid #000; padding:8px; border-radius:6px; height:80px; display:flex; flex-direction:column; justify-content:space-between;">
-                        <span style="font-weight:800; font-size:8pt; color:#475569;">COSTING BY:</span><strong style="text-align:center; border-top:1px dashed #cbd5e1; padding-top:4px;" id="intSigSales"></strong>
-                    </div>
-                    <div style="flex:1; border:1.5px solid #000; padding:8px; border-radius:6px; height:80px; display:flex; flex-direction:column; justify-content:space-between;">
-                        <span style="font-weight:800; font-size:8pt; color:#475569;">ENGINEERING:</span><strong style="text-align:center; border-top:1px dashed #cbd5e1; padding-top:4px;"></strong>
-                    </div>
-                </div>
-
-                <div style="width:40%; border:2.5px solid #000; border-radius:8px; padding:0; overflow:hidden; margin-left:auto;">
-                    <table style="width:100%; border-collapse:collapse; margin:0; font-size:9pt;">
-                        <tr><td style="padding:4px 10px; font-weight:800; font-size:7.5pt; color:#475569;">CAPACITY:</td><td id="sumCapacity_print" style="text-align:right; font-weight:700; color:#0284c7;">0 L</td></tr>
-                        <tr><td style="padding:4px 10px; font-weight:800; font-size:7.5pt; color:#475569;">WEIGHT:</td><td id="sumWeight_print" style="text-align:right; font-weight:700; color:#ea580c;">0 kg</td></tr>
-                        <tr><td style="padding:6px 10px; font-weight:800; font-size:7.5pt; color:#475569; border-top:1.5px solid #cbd5e1;">RAW COST:</td><td style="text-align:right; font-weight:700; border-top:1.5px solid #cbd5e1;">RM <span id="sumBaseCost_print">0.00</span></td></tr>
-                        <tr><td style="padding:4px 10px; font-weight:800; font-size:7.5pt; color:#475569;">CUSTOM ADD:</td><td style="text-align:right; font-weight:800; color:#c084fc;">+ RM <span id="sumCustomCost_print">0.00</span></td></tr>
-                        <tr><td style="padding:4px 10px; font-weight:800; font-size:7.5pt; color:#475569;">PROJ. MARKUP:</td><td style="text-align:right; font-weight:800; color:#059669;">+ RM <span id="sumMarkup_print">0.00</span></td></tr>
-                        <tr><td style="padding:4px 10px; font-weight:800; font-size:7.5pt; color:#475569;">GROSS:</td><td style="text-align:right; font-weight:800;">RM <span id="sumSubtotal_print">0.00</span></td></tr>
-                        <tr><td style="padding:4px 10px; font-weight:800; font-size:7.5pt; color:#475569;">DISCOUNT:</td><td style="text-align:right; font-weight:700; color:#d97706;">- RM <span id="sumDiscount_print">0.00</span></td></tr>
-                        <tr><td style="padding:6px 10px; font-weight:800; font-size:7.5pt; color:#475569; border-bottom:1.5px solid #cbd5e1;">SST TAX:</td><td style="text-align:right; font-weight:700; border-bottom:1.5px solid #cbd5e1;">+ RM <span id="sumSST_print">0.00</span></td></tr>
-                        <tr style="background:#0f172a; color:white;"><td style="padding:8px 10px; font-weight:900; font-size:11pt;">FINAL:</td><td style="text-align:right; font-weight:900; font-size:11pt;">RM <span id="grandTotal_print">0.00</span></td></tr>
-                    </table>
-                </div>
-            </div>
+<div id="mainContent"><div class="container">
+    <div class="app-header-bar no-print">
+        <h2>Project Workspace</h2>
+        <div style="display:flex; gap:10px;">
+            <button class="action-btn btn-accent" onclick="saveToMemory()">💾 Save Quote</button>
+            <button class="action-btn btn-dark" onclick="confirmOrderAndDeduct()">📦 Confirm & Deduct Stock</button>
         </div>
     </div>
-</div>
 
-<div id="customerPreviewContainer">
-    <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0;">Customer Quote Editor (V130 Perfect Format)</h3><p style="margin:0; font-size:12px;">Classic layout with No SST tax shown. Click to overwrite text before printing.</p></div>
-        <button class="action-btn print-btn" style="width: auto; background:#059669;" onclick="triggerPrint('customer_from_preview')">Print Final PDF</button>
+    <div class="app-layout">
+        <div class="col-left">
+            <div class="module-card no-print">
+                <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📋</span> 1. Project Info</div>
+                <div class="card-body">
+                    <div class="config-grid">
+                        <div class="form-group"><label>Quote / Job No.</label><input type="text" id="quoteIdInput" oninput="safeProcess()"></div>
+                        <div class="form-group"><label>Project Name</label><input type="text" id="projectName" oninput="safeProcess()"></div>
+                        <div class="form-group"><label style="color:var(--primary);">Customer (Auto-Search)</label><input type="text" id="custCompany" list="customerDatalist" oninput="checkCustomerAutoFill()"></div>
+                        <div class="form-group"><label>Attention</label><input type="text" id="custAttn" oninput="safeProcess()"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Address</label><textarea id="custAddr" rows="2" oninput="safeProcess()"></textarea></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="module-card no-print">
+                <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📐</span> 2. Engineering Configuration</div>
+                <div class="card-body">
+                    <div class="form-group" style="margin-bottom:15px;"><label>Global Unit System</label><select id="unitChoice" onchange="safeProcess()"><option value="ft">Imperial (4'x4')</option><option value="m_100">Metric (1m)</option></select></div>
+                    <div id="dynamicTanksContainer"></div>
+                    <button class="action-btn btn-outline" onclick="addNewTank()" style="width:100%; margin-top:10px;">+ ADD NEW TANK</button>
+                    
+                    <div class="tank-section-title" style="margin-top:20px; border-left-color:var(--warning);">➕ Custom Add-ons</div>
+                    <div id="dynamicCustomContainer"></div>
+                    <button class="action-btn btn-outline" onclick="addNewCustomItem()" style="width:100%; margin-top:10px; border-color:var(--warning); color:var(--warning);">+ ADD CUSTOM ITEM</button>
+                </div>
+            </div>
+
+            <div class="module-card drawings-page internal-hide-except-print">
+                <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📏</span> 3. Auto-Drawings</div>
+                <div class="card-body"><div id="dynamicDrawingsContainer"></div></div>
+            </div>
+            
+            <div class="module-card no-print">
+                <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>💰</span> 4. Commercial Terms</div>
+                <div class="card-body">
+                    <div class="dim-grid" style="background:#f0fdf4; padding:15px; border-radius:6px; border:1px solid #bbf7d0; margin-bottom:15px;">
+                        <div class="form-group"><label>Proj. Mark-Up (%)</label><input type="number" id="markupPct" value="0" oninput="safeProcess()"></div>
+                        <div class="form-group"><label>Discount (%)</label><input type="number" id="discountPct" value="0" oninput="safeProcess()"></div>
+                        <div class="form-group"><label style="color:var(--danger);">SST Tax (%) *Hidden on PDF</label><input type="number" id="sstPct" oninput="safeProcess()"></div>
+                    </div>
+                    <div class="config-grid">
+                        <div class="form-group" style="grid-column: span 2;"><label>Validity</label><input type="text" id="tcValidity" value="14 Days from quotation date." oninput="safeProcess()"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Delivery Terms</label><input type="text" id="tcDelivery" value="Deliver to site exclude unloading." oninput="safeProcess()"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Payment Terms</label><textarea id="tcPayment" rows="2" oninput="safeProcess()">30% Down Payment&#10;50% Before Delivery</textarea></div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top:15px;">
+                        <label style="display:flex; justify-content:space-between; align-items:center;">Short Exclusions <button type="button" class="sync-btn" onclick="setVal('shortExclusions', companyProfile.exclusions || ''); safeProcess(); showToast('Master Exclusions Synced');">🔄 Sync Master</button></label>
+                        <textarea id="shortExclusions" rows="4" oninput="safeProcess()"></textarea>
+                    </div>
+                    <div class="form-group" style="margin-top:15px;">
+                        <label style="display:flex; justify-content:space-between; align-items:center;">Full T&C <button type="button" class="sync-btn" onclick="setVal('fullTermsNotes', companyProfile.terms); safeProcess(); showToast('Master T&C Synced');">🔄 Sync Master</button></label>
+                        <textarea id="fullTermsNotes" rows="8" oninput="safeProcess()"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dynamicBomContainer"></div>
+        </div>
+
+        <div class="col-right no-print">
+            <div class="summary-box">
+                <div class="sum-row"><span>Total Cap:</span> <span id="sumCapacity_screen" style="color:#38bdf8;">0 L</span></div>
+                <hr style="border: 1px solid rgba(255,255,255,0.15); margin: 15px 0;">
+                <div class="sum-row"><span>Raw Base Cost:</span> <span>RM <span id="sumBaseCost_screen">0.00</span></span></div>
+                <div class="sum-row" style="color: #c084fc;"><span>Custom Add-ons:</span> <span>+ RM <span id="sumCustomCost_screen">0.00</span></span></div>
+                <div class="sum-row" style="color: #34d399;"><span>Mark-Up:</span> <span>+ RM <span id="sumMarkup_screen">0.00</span></span></div>
+                <div class="sum-row" style="font-weight:700;"><span>Gross Subtotal:</span> <span>RM <span id="sumSubtotal_screen">0.00</span></span></div>
+                <div class="sum-row" style="color: #fbbf24;"><span>Discount:</span> <span>- RM <span id="sumDiscount_screen">0.00</span></span></div>
+                <div class="sum-row" style="color: var(--danger);"><span>SST Tax (Hidden):</span> <span>+ RM <span id="sumSST_screen">0.00</span></span></div>
+                <div class="sum-row total"><span>GRAND TOTAL:</span> <span>RM <span id="grandTotal_screen">0.00</span></span></div>
+            </div>
+
+            <div class="btn-group" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;">
+                <button class="action-btn" onclick="triggerPrint('customer')" style="width:100%; padding:15px; font-size:14px; box-shadow: 0 10px 15px -3px rgba(2,132,199,0.4);">📄 Preview Customer PDF</button>
+                <button class="action-btn btn-dark" onclick="triggerPrint('internal')" style="width:100%;">🔒 Print Internal Costing</button>
+                <button class="action-btn btn-success" onclick="triggerPrint('checklist')" style="width:100%;">📋 Print Production SO</button>
+            </div>
+        </div>
     </div>
     
-    <div id="customerPrintViewEditor" contenteditable="true">
+    <div class="print-only avoid-break" id="internalPrintFooter" style="margin-top:30px;">
+        <table style="width:40%; float:right; font-size:10pt; border:2px solid #000;">
+            <tr><td style="font-weight:bold;">RAW COST:</td><td style="text-align:right;">RM <span id="sumBaseCost_print">0.00</span></td></tr>
+            <tr><td style="font-weight:bold;">MARKUP:</td><td style="text-align:right;">+ RM <span id="sumMarkup_print">0.00</span></td></tr>
+            <tr><td style="font-weight:bold;">DISCOUNT:</td><td style="text-align:right;">- RM <span id="sumDiscount_print">0.00</span></td></tr>
+            <tr><td style="font-weight:bold;">SST TAX:</td><td style="text-align:right;">+ RM <span id="sumSST_print">0.00</span></td></tr>
+            <tr style="background:#0f172a; color:white;"><td style="font-weight:900;">FINAL:</td><td style="text-align:right; font-weight:900;">RM <span id="grandTotal_print">0.00</span></td></tr>
+        </table>
+    </div>
+</div></div>
+
+<div id="customerPreviewContainer">
+    <div class="preview-toolbar no-print" style="background:#0f172a; padding:15px; display:flex; justify-content:space-between; align-items:center; color:white; position:sticky; top:0; z-index:100;">
+        <div style="flex:1;"><h3>Customer Quote Editor (V200)</h3><p style="font-size:11px; margin-top:2px;">SST is perfectly hidden inside the grand total. Click text below to live edit.</p></div>
+        <button class="action-btn btn-success" style="width:auto; padding:10px 20px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
+    </div>
+    
+    <div id="customerPrintViewEditor" contenteditable="true" style="background:white; max-width:210mm; min-height:297mm; margin: 20px auto; padding:15mm; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-size:9.5pt; outline:none; color:#000;">
         <div style="display:flex; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; align-items:flex-end;">
             <div style="width:25%;"><img src="winko logo.png" alt="Company Logo" style="width:140px;" onerror="this.style.display='none'"></div>
             <div style="width:75%; text-align:right;">
-                <h2 style="margin:0 0 5px 0; font-size:16pt; font-weight:900; color:#000; text-transform:uppercase;"><span id="cpHeaderName">COMPANY NAME</span></h2>
-                <p style="margin:0; font-size:8.5pt; font-weight:bold; color:#000;" id="cpHeaderReg">REG NO</p>
-                <p style="margin:2px 0; font-size:8.5pt; color:#000;" id="cpHeaderAddr">ADDRESS</p>
-                <p style="margin:2px 0; font-size:8.5pt; color:#000;"><strong><span id="cpHeaderContact">PHONE</span> | <span id="cpHeaderWeb">WEB</span></strong></p>
+                <h2 style="margin:0 0 5px 0; font-size:16pt; font-weight:900; text-transform:uppercase;" id="cpHeaderName">COMPANY NAME</h2>
+                <p style="margin:0; font-weight:bold;" id="cpHeaderReg">REG NO</p>
+                <p style="margin:2px 0;" id="cpHeaderAddr">ADDRESS</p>
+                <p style="margin:2px 0;"><strong><span id="cpHeaderContact">PHONE</span> | <span id="cpHeaderWeb">WEB</span></strong></p>
             </div>
         </div>
 
-        <div style="text-align:right; margin-bottom: 10px;">
-            <h1 style="margin:0; font-size:18pt; text-decoration:underline; color:#000; letter-spacing:2px;">QUOTATION</h1>
-        </div>
+        <div style="text-align:right; margin-bottom: 10px;"><h1 style="margin:0; font-size:18pt; text-decoration:underline; letter-spacing:2px;">QUOTATION</h1></div>
 
-        <table style="width:100%; font-size:9.5pt; margin-bottom:20px; border:none;">
+        <table style="width:100%; margin-bottom:20px; border:none;">
             <tr style="border:none;"><td style="width:60%; padding:3px 0; border:none;"><strong>Customer:</strong> <span id="cpCustName"></span></td><td style="width:40%; padding:3px 0; border:none;"><strong>Date:</strong> <span id="cpDate"></span></td></tr>
             <tr style="border:none;"><td style="padding:3px 0; border:none;"><strong>Address:</strong> <span id="cpCustAddress"></span></td><td style="padding:3px 0; border:none;"><strong>Our Ref:</strong> <span id="cpRef"></span></td></tr>
             <tr style="border:none;"><td style="padding:3px 0; border:none;"><strong>Attention:</strong> <span id="cpAttention"></span></td><td style="padding:3px 0; border:none;"></td></tr>
             <tr style="border:none;"><td colspan="2" style="padding:3px 0; border:none;"><strong>Project:</strong> <span id="cpProject"></span></td></tr>
         </table>
 
-        <div class="editable-section" style="margin-bottom: 15px;">
-            <p style="font-size: 9.5pt; margin-bottom: 10px;">With reference to your enquiry, we are pleased to provide our quotation for the following tanks:-</p>
-            <p style="font-size: 10pt; font-weight: 800; text-decoration: underline;">RE: SUPPLY, DELIVER AND INSTALL PRESSED STEEL TANK</p>
+        <div style="margin-bottom: 15px;">
+            <p style="margin-bottom: 10px;">With reference to your enquiry, we are pleased to provide our quotation for the following tanks:-</p>
+            <p style="font-weight: 800; text-decoration: underline;">RE: SUPPLY, DELIVER AND INSTALL PRESSED STEEL TANK</p>
         </div>
 
-        <table class="editable-section cp-classic-table avoid-break">
-            <thead><tr>
-                <th style="width:5%; text-align:center;">Item</th>
-                <th style="width:60%;">Description</th>
-                <th style="width:10%; text-align:center;">Qty</th>
-                <th style="width:25%; text-align:right;">Total Price</th>
-            </tr></thead>
+        <table class="cp-classic-table avoid-break">
+            <thead><tr><th style="width:5%; text-align:center;">Item</th><th style="width:60%;">Description</th><th style="width:10%; text-align:center;">Qty</th><th style="width:25%; text-align:right;">Total Price</th></tr></thead>
             <tbody id="cpDynamicTanksBody"></tbody>
         </table>
 
         <div class="page-break">
-           
+            <div class="avoid-break" style="margin-bottom:20px;">
+                <div style="font-weight:bold; font-size: 10pt; text-decoration:underline; margin-bottom:10px;">Exclusion</div>
+                <div id="cpShortExclusionsText" style="padding-left:10px;"></div>
+            </div>
             
-            <div class="editable-section avoid-break" style="font-size:9pt; margin-bottom:20px;">
+            <div class="avoid-break" style="margin-bottom:20px;">
                 <div style="font-weight:bold; font-size: 10pt; text-decoration:underline; margin-bottom:10px;">TERMS & CONDITIONS</div>
-                <table style="border:none; width:100%; border-collapse:collapse;">
-                    <tr style="border:none;"><td style="width:150px; font-weight:bold; border:none; padding:5px 0;">Quotation Validity:</td><td id="cpValidity" style="border:none; padding:5px 0;"></td></tr>
-                    <tr style="border:none;"><td style="font-weight:bold; border:none; padding:5px 0; vertical-align: top;">Terms of Payment:</td><td id="cpPayment" style="border:none; padding:5px 0;"></td></tr>
-                    <tr style="border:none;"><td style="font-weight:bold; border:none; padding:5px 0;">Delivery Lead Time:</td><td style="border:none; padding:5px 0;"><span id="cpLeadTime"></span></td></tr>
-                    <tr style="border:none;"><td style="font-weight:bold; border:none; padding:5px 0;">Delivery Location:</td><td style="border:none; padding:5px 0;"><span id="cpDeliveryTerm"></span></td></tr>
+                <table style="border:none; width:100%;">
+                    <tr style="border:none;"><td style="width:150px; font-weight:bold; border:none; padding:5px 0;">Validity:</td><td id="cpValidity" style="border:none; padding:5px 0;"></td></tr>
+                    <tr style="border:none;"><td style="font-weight:bold; border:none; padding:5px 0; vertical-align: top;">Payment:</td><td id="cpPayment" style="border:none; padding:5px 0;"></td></tr>
+                    <tr style="border:none;"><td style="font-weight:bold; border:none; padding:5px 0;">Delivery:</td><td id="cpDeliveryTerm" style="border:none; padding:5px 0;"></td></tr>
                 </table>
             </div>
 
-            <div class="editable-section avoid-break" id="cpFullTermsText" style="font-size:9pt; white-space:pre-wrap; margin-bottom:30px;"></div>
+            <div class="avoid-break" id="cpFullTermsText" style="white-space:pre-wrap; margin-bottom:30px;"></div>
             
-            <div class="editable-section avoid-break" style="margin-top:20px;">
-                <div style="font-size:9.5pt; margin-bottom: 50px;">Best Regards.</div>
+            <div class="avoid-break" style="margin-top:20px;">
+                <div style="margin-bottom: 50px;">Best Regards.</div>
                 <div style="font-weight:bold; font-size: 11pt;" id="cpSignCompany"></div>
-                <div style="font-weight:bold; margin-top: 5px;" id="cpSignName"></div>
-                <div id="cpSignPhone"></div>
             </div>
         </div>
     </div>
 </div>
 
 <div id="checklistPrintView">
-    <div style="text-align:right; font-weight:bold; margin-bottom:5px;"><span class="chk-box" id="box_local"></span> LOCAL &nbsp;&nbsp;&nbsp; <span class="chk-box" id="box_export"></span> EXPORT</div>
     <div style="text-align:center; font-size: 14pt; font-weight: bold; text-decoration: underline; margin-bottom: 25px;">SALES ORDER</div>
-
-    <div style="display:flex; justify-content:space-between; margin-bottom:25px; font-size: 9.5pt; line-height: 1.6;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:25px; line-height: 1.6;">
         <div style="width: 50%;">
             <div style="display:flex;"><div style="width:110px; font-weight:bold;">Customer</div><div>: <span id="so_customer"></span></div></div>
-            <div style="display:flex;"><div style="width:110px; font-weight:bold;">Project Name</div><div>: <span id="so_project"></span></div></div>
-            <div style="display:flex;"><div style="width:110px; font-weight:bold;">PO No</div><div>: <span id="so_custpo"></span></div></div>
+            <div style="display:flex;"><div style="width:110px; font-weight:bold;">Project</div><div>: <span id="so_project"></span></div></div>
         </div>
         <div style="width: 45%;">
-            <div style="display:flex;"><div style="width:120px; font-weight:bold;">Project No.</div><div>: <span id="so_projno"></span></div></div>
-            <div style="display:flex;"><div style="width:120px; font-weight:bold;">Delivery Target</div><div>: <span id="so_deldate"></span></div></div>
+            <div style="display:flex;"><div style="width:120px; font-weight:bold;">Quote Ref</div><div>: <span id="so_projno"></span></div></div>
         </div>
     </div>
-
-    <div class="avoid-break" style="margin-bottom:20px;">
-        <div style="background:#f1f5f9; padding:5px 10px; font-weight:bold; border:1px solid #000; border-bottom:none;">NOZZLE & PIPE HOLE SPECIFICATIONS</div>
-        <table style="width:100%; border-collapse:collapse; border:1px solid #000; font-size:9pt;">
-            <thead><tr style="background:#e2e8f0;">
-                <th style="border:1px solid #000; padding:6px; text-align:center;">Type</th>
-                <th style="border:1px solid #000; padding:6px; text-align:center;">Size</th>
-                <th style="border:1px solid #000; padding:6px; text-align:center;">Qty</th>
-                <th style="border:1px solid #000; padding:6px; text-align:left;">Position Remarks</th>
-            </tr></thead>
-            <tbody id="so_nozzle_body"></tbody>
-        </table>
-    </div>
-
-    <div style="border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 10px 0; margin-bottom: 15px; background: #f8fafc;">
-        <div style="display:flex; font-weight:bold; font-size: 9.5pt;">
-            <div style="width: 6%; text-align:center;">Item</div>
-            <div style="width: 74%;">Description & Specifications</div>
-            <div style="width: 10%; text-align:center;">Unit</div>
-            <div style="width: 10%; text-align:center;">Qty</div>
-        </div>
-    </div>
-
     <div id="so_table_body" style="font-size: 9pt;"></div>
-
-    <div class="avoid-break" style="margin-top: 25px; font-size: 9pt;">
-        <strong>Note :</strong><br>
-        <div id="so_special_remarks" contenteditable="true" style="margin-top:5px; min-height: 20px; outline:none; margin-left: 5px; color:#475569; white-space:pre-wrap; border: 1px dashed transparent;">[Additional remarks here...]</div>
-    </div>
-    
-    <div class="avoid-break" style="display:flex; justify-content:space-between; margin-top:60px; font-size:9pt; text-align:center;">
-        <div style="width:30%;">
-            <div style="border-top:1px solid #000; padding-top:5px; font-weight:bold;">Prepared By,</div>
-            <div style="text-align:left; margin-top:30px;">Name:<br>Date:</div>
-        </div>
-        <div style="width:30%;">
-            <div style="border-top:1px solid #000; padding-top:5px; font-weight:bold;">Checked & Approval By,</div>
-            <div style="text-align:left; margin-top:30px;">Name:<br>Date:</div>
-        </div>
-        <div style="width:30%;">
-            <div style="border-top:1px solid #000; padding-top:5px; font-weight:bold;">Received By,</div>
-            <div>(Production)</div>
-            <div style="text-align:left; margin-top:15px;">Name:<br>Date:</div>
-        </div>
-    </div>
-    
     <div id="so_drawings_container" class="page-break" style="margin-top: 40px; border-top: 2px dashed #000; padding-top: 20px;"></div>
 </div>
 
 <script>
-    // --- GLOBAL ERROR CATCHER ---
-    window.onerror = function(msg, url, line, col, error) {
-        let tc = document.getElementById('toast-container');
-        if(!tc) { tc = document.createElement('div'); tc.id = 'toast-container'; document.body.appendChild(tc); }
-        tc.innerHTML += `<div class="toast error" style="background:#dc2626; color:white; padding:15px; margin-bottom:10px; border-radius:8px;"><div>❌ <strong>SYSTEM CRASHED:</strong><br>${msg}<br>Line: ${line}</div></div>`;
-        return false;
-    };
-
-    const cv = "V161"; 
-    
+    // --- V200 Core Javascript ---
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
+    const setVal = (id, v) => { let e = document.getElementById(id); if(e) e.value = v; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
     const setTxt = (id, v) => { let e = document.getElementById(id); if(e) e.innerText = v; };
-    const setVal = (id, v) => { let e = document.getElementById(id); if(e) e.value = v; };
     const setHtml = (id, v) => { let e = document.getElementById(id); if(e) e.innerHTML = v; };
-    const setDisp = (id, show) => { let e = document.getElementById(id); if(e) e.style.display = show ? 'block' : 'none'; };
 
-    function showToast(message, type = 'success') {
+    function showToast(msg, type='success') {
         let tc = document.getElementById('toast-container');
         if(!tc) { tc = document.createElement('div'); tc.id = 'toast-container'; document.body.appendChild(tc); }
-        let toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        let icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️');
-        toast.innerHTML = `<div>${icon} &nbsp; ${message}</div> <button style="background:none; border:none; color:white; cursor:pointer; font-weight:bold; font-size:16px;" onclick="this.parentElement.remove()">×</button>`;
-        tc.appendChild(toast);
-        setTimeout(() => { toast.style.animation = 'fadeOut 0.5s ease forwards'; setTimeout(() => toast.remove(), 500); }, 3500);
+        let t = document.createElement('div'); t.className = `toast ${type}`;
+        t.innerHTML = `<div>${type==='success'?'✅':'❌'} ${msg}</div> <button style="background:none; border:none; color:white; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>`;
+        tc.appendChild(t); setTimeout(() => { t.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => t.remove(), 300); }, 3000);
     }
-    
-    function togglePass(id) { let el = document.getElementById(id); if(el) { el.type = el.type === "password" ? "text" : "password"; } }
 
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyC4ypeNoU9D_gFxjaDSZA11PJrqh4sOdbM",
-        authDomain: "winko-erp.firebaseapp.com",
-        databaseURL: "https://winko-erp-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "winko-erp",
-        storageBucket: "winko-erp.firebasestorage.app",
-        messagingSenderId: "867891901683",
-        appId: "1:867891901683:web:a38bfd4c0715fcddbf3386"
-    };
-
+    const FIREBASE_CONFIG = { apiKey: "AIzaSyC4ypeNoU9D_gFxjaDSZA11PJrqh4sOdbM", projectId: "winko-erp", databaseURL: "https://winko-erp-default-rtdb.asia-southeast1.firebasedatabase.app" };
     let cloudDB = null;
-    try {
-        if(typeof firebase !== 'undefined' && FIREBASE_CONFIG.apiKey !== "") {
-            firebase.initializeApp(FIREBASE_CONFIG);
-            cloudDB = firebase.firestore();
-        }
-    } catch(err) {
-        console.warn("Firebase blocked or failed. Running strictly in offline mode.", err);
-    }
-    
-    let winkoUsers = [ { username: "admin", password: "adminmaster99", role: "admin" } ]; 
-    let loggedInUser = null;
+    try { if(typeof firebase !== 'undefined') { firebase.initializeApp(FIREBASE_CONFIG); cloudDB = firebase.firestore(); } } catch(e) { console.warn("Offline Mode"); }
 
-    let winkoCustomers = {}; 
-    let winkoInventory = {}; 
-    let invChart = null;
-    window.cloudMemoryBank = {};
-    
-    let companyProfile = {
-        name: "JUTARAMA INDUSTRIES (M) SDN. BHD.", reg: "20260103014 (749861-V)",
-        address: "No. 19, Kawasan Perindustrian Mega 2, Jln Mega 2/1, 43500 Semenyih, Selangor, Malaysia.",
-        contact: "Tel: (60)-8727 7540", website: "Web: www.winko.my", taxRate: 5, quotePrefix: "QP-26-", quoteSeq: 1001,         
-        matMult: { painted: 0.85, ss304: 3.0, ss316: 4.5 },
-        terms: "Scope of Supply\n1. Standard tank accessories such as bolt, nut, washer, foam tape, air vent, 600x600mm access manhole, internal stays & brackets, internal & external ladder, water level indicator, subject to manufacturer's design and standard and item mentioned in quotation.\n2. Pipe hole opening at factory (Exclude flange). Pipe hole opening on site will be an additional charge.\n\nExcluded from the Supply\n1. Float valve chamber or top sump.\n2. Flanges, nozzles, pipes, valves, vortex, electrode sensor, pumps and filter.\n3. RC works and RC plinths.\n4. Scaffolding & safety platform for installation.\n5. Unloading, shifting and hoisting of materials at site.\n6. Safety training courses, equipment and medical test require to install tank.\n\nNote:\n1. Tank design to sit on 1M Center to center RC tank support/Plinths with at least 500mm height and 200mm width. Design to be provided by others.\n2. RC plinths MUST be level with maximum tolerance of ± 3mm.\n3. Leak test should be done within 3 months from completion of tank installation to maintain the quality of foam tape.\n4. The customer shall be responsible for the security of materials at site after delivery. Missing item shall be replaced with additional charges."
+    let companyProfile = { 
+        name: "JUTARAMA INDUSTRIES (M) SDN. BHD.", reg: "20260103014", address: "Semenyih, Selangor", contact: "Tel: (60)-8727 7540", website: "www.winko.my", 
+        taxRate: 5, quotePrefix: "QP-26-", quoteSeq: 1001, exclusions: "- Scaffolding\n- Flanges & Pumps\n- Unloading", terms: "30% Deposit required."
     };
     
+    let winkoInventory = {}; let windowMemory = {}; let appTanks = []; let appCustomItems = [];
+    
+    // Condensed Base Structure to save space
     let systemBaseStructure = [
-        { category: "Panels", markup: 0, items: [
-            {name: "Manhole Panel (4'x4') (HDG)", def: 450, wt: 55}, 
-            {name: "1.5mm Roof Panel (4'x4') (HDG)", def: 162.75, wt: 26},
-            {name: "4.5mm Base Panel (4'x4') (HDG)", def: 263.50, wt: 68},
-            {name: "4.5mm Wall Panel (L1) (4'x4') (HDG)", def: 263.50, wt: 68},
-            {name: "3.0mm Wall Panel (L2) (4'x4') (HDG)", def: 162.75, wt: 48},
-            {name: "3.0mm Wall Panel (L3) (4'x4') (HDG)", def: 162.75, wt: 48},
-            {name: "1.5mm Wall Panel (L4) (4'x4') (HDG)", def: 162.75, wt: 26},
-            {name: "Partition Panel (4'x4') (HDG)", def: 253.50, wt: 48}
-        ] },
-        { category: "Cleat & Trusses", markup: 0, items: [
-            {name: "Partition Cleat HDG", def: 15.00, wt: 1.2},
-            {name: "8mm (B) Cleat HDG", def: 16.50, wt: 1.8},
-            {name: "Type C Cleat HDG", def: 30, wt: 2.5}, 
-            {name: "Ø1\" Pipe (HDG AAA)", def: 18.00, wt: 1.6},
-            {name: "Ø1.5\" Pipe (HDG AAA)", def: 26.60, wt: 2.2},
-            {name: "50x50x1.9mm SHS Truss (4' HDG)", def: 28.20, wt: 5.0},
-            {name: "50x50x1.9mm SHS Truss (8' HDG)", def: 59.00, wt: 10.0},
-            {name: "50x50x1.9mm SHS Truss (12' HDG)", def: 74.40, wt: 15.0}
-        ] },
-        { category: "Angle Stay", markup: 0, items: [
-            {name: "67.5\" (L1 Stay - 50x50x5mm)", def: 27.25, wt: 4.5},
-            {name: "92.5\" (L2 Stay - 50x50x5mm)", def: 38.50, wt: 7.2},
-            {name: "135.5\" (L3 Stay - 50x50x5mm)", def: 49.60, wt: 14.5},
-            {name: "15' 8.5\" (L4 Stay)", def: 125, wt: 19.8},
-            {name: "Partition L1 Stay", def: 27.25, wt: 4.5, _isPartStay: 1},
-            {name: "Partition L2 Stay", def: 38.50, wt: 7.2, _isPartStay: 2},
-            {name: "Partition L3 Stay", def: 49.60, wt: 14.5, _isPartStay: 3}
-        ] },
-        { category: "Accessories", markup: 0, items: [
-            {name: "Ext. Ladder (HDG)", def: 55, wt: 3.5}, 
-            {name: "Int. Ladder (HDG)", def: 75, wt: 3.5}, 
-            {name: "Water Level Indicator (Mechanical)", def: 220, wt: 2.5}, 
-            {name: "Air Vent (PVC)", def: 85, wt: 1.5}, 
-            {name: "PVC Foam Tape (10m x 3mm)", def: 8.00, wt: 0.8},
-            {name: "Aseal Butyl Sealant (80m)", def: 1.70, wt: 0.2},
-            {name: "M10 x 35mm HDG (Bolt, Nut & Washer)", def: 1.20, wt: 0.10}, 
-            {name: "M12 x 45mm HDG (Bolt, Nut & Washer)", def: 1.50, wt: 0.15}, 
-            {name: "M14 x 30mm HDG (Box/Unit cost)", def: 8.65, wt: 0.20},
-            {name: "M16 x 40mm HDG HT B/N", def: 1.10, wt: 0.25},
-            {name: "M12 x 100mm Expansion Bolt (HDG)", def: 3.00, wt: 0.30}, 
-            {name: "M16 x 120mm Expansion Bolt (HDG)", def: 5.00, wt: 0.50}, 
-            {name: "PVC Bolt Head Cover (M12)", def: 0.20, wt: 0.01}, 
-            {name: "M12 EPDM Rubber Washer", def: 0.40, wt: 0.01}
-        ]},
-        { category: "Services", markup: 0, items: [
-            {name: "Installation & Labor", def: 3500, wt: 0}, 
-            {name: "Transport", def: 850, wt: 0}
-        ]}
+        { category: "Panels", items: [{name:"Manhole Panel (4'x4') (HDG)", def:450}, {name:"1.5mm Roof Panel (4'x4') (HDG)", def:162.75}, {name:"4.5mm Base Panel (4'x4') (HDG)", def:263.50}, {name:"4.5mm Wall Panel (L1) (4'x4') (HDG)", def:263.50}] },
+        { category: "Angle Stay", items: [{name:"67.5\" (L1 Stay - 50x50x5mm)", def:27.25, _isPartStay:0}, {name:"Partition L1 Stay", def:27.25, _isPartStay:1}] },
+        { category: "Accessories", items: [{name:"Ext. Ladder (HDG)", def:55}, {name:"M12 x 45mm HDG (Bolt, Nut & Washer)", def:1.50}] },
+        { category: "Services", items: [{name:"Installation & Labor", def:3500}] }
     ];
 
     function initCloudListeners() {
         if (!cloudDB) return;
-        try {
-            cloudDB.collection("winko_settings").doc("master_bom").onSnapshot(doc => { if(doc.exists) { systemBaseStructure = doc.data().data || doc.data() || systemBaseStructure; if(document.getElementById('adminContent').style.display === 'block') buildAdminTable(); } });
-            cloudDB.collection("winko_settings").doc("crm").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); winkoCustomers = d.data || d || winkoCustomers; updateCustomerDatalist(); if(document.getElementById('adminContent').style.display === 'block') renderCustomerAdmin(); } });
-            cloudDB.collection("winko_settings").doc("inventory").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); winkoInventory = d.data || d || winkoInventory; if(document.getElementById('inventoryContent').style.display === 'block') renderInventoryUI(); safeProcess(); } });
-            cloudDB.collection("winko_settings").doc("company").onSnapshot(doc => { if(doc.exists) { companyProfile = doc.data(); applyCompanyProfileToAdmin(); applyCompanyProfileToHeaders(); } });
-            cloudDB.collection("winko_settings").doc("users").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); let newUsers = d.data || d; if(Array.isArray(newUsers) && newUsers.length > 0) { winkoUsers = newUsers; if(document.getElementById('adminContent').style.display === 'block') renderUserTable(); } } });
-            cloudDB.collection("winko_projects").onSnapshot(snapshot => { let m = {}; snapshot.forEach(doc => { m[doc.id] = doc.data(); }); window.cloudMemoryBank = m; if(document.getElementById('projectsContent').style.display === 'block') drawProjectBankTable(); });
-        } catch(e) { console.warn("Snapshot error", e); }
+        cloudDB.collection("winko_settings").doc("company").onSnapshot(doc => { if(doc.exists) { companyProfile = doc.data(); applyProfile(); } });
+        cloudDB.collection("winko_settings").doc("master_bom").onSnapshot(doc => { if(doc.exists) systemBaseStructure = doc.data().data || systemBaseStructure; });
+        cloudDB.collection("winko_settings").doc("inventory").onSnapshot(doc => { if(doc.exists) { winkoInventory = doc.data().data || winkoInventory; safeProcess(); } });
     }
 
-    function initSystemData() {
-        try {
-            applyCompanyProfileToHeaders(); applyCompanyProfileToAdmin();
-            setVal('quoteIdInput', (companyProfile.quotePrefix || "QP-26-") + (companyProfile.quoteSeq || 1001)); setVal('sstPct', companyProfile.taxRate); setVal('fullTermsNotes', companyProfile.terms); 
-        } catch(e) { console.error("System init failed:", e); }
+    function initSystem() {
+        applyProfile(); setVal('sstPct', companyProfile.taxRate); setVal('quoteIdInput', companyProfile.quotePrefix + companyProfile.quoteSeq);
+        setVal('fullTermsNotes', companyProfile.terms); setVal('shortExclusions', companyProfile.exclusions);
+        if(cloudDB) { initCloudListeners(); document.getElementById('cloudStatusDot').classList.add('online'); }
     }
-    
-    initSystemData();
+    initSystem();
 
     function processSecureLogin() {
-        let u = getVal('userInput').trim(); let p = getVal('passInput').trim();
-        if(!u || !p) return showToast("Enter username and password", "error");
-        let user = winkoUsers.find(x => x.username === u && x.password === p);
-        if(user) {
-            loggedInUser = user; setDisp('securityOverlay', false); setDisp('topNav', true); setDisp('mainContent', true);
-            if(user.role === 'admin') document.getElementById('btnTabAdmin').style.display = 'inline-block'; else document.getElementById('btnTabAdmin').style.display = 'none';
-            switchTab('quote'); appTanks = [defaultTank()]; renderAllDynamicUI(); autoCalculateBOM(0); safeProcess(); showToast(`Welcome back, ${u}!`);
-        } else { showToast("Invalid credentials", "error"); }
+        document.getElementById('securityOverlay').style.display = 'none'; document.getElementById('topNav').style.display = 'flex';
+        switchTab('quote'); appTanks = [defaultTank()]; renderAllDynamicUI(); safeProcess(); showToast("Welcome to V200 Pro");
     }
+    function logout() { location.reload(); }
     
-    function openMyProfile() { setVal('myNewPassword', ''); document.getElementById('profileOverlay').style.display = 'flex'; }
-    function saveMyPassword() { let p = getVal('myNewPassword').trim(); if(!p) return showToast("Password cannot be empty", "error"); let userIndex = winkoUsers.findIndex(x => x.username === loggedInUser.username); if(userIndex > -1) { winkoUsers[userIndex].password = p; loggedInUser.password = p; if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); showToast("Password updated successfully!"); document.getElementById('profileOverlay').style.display = 'none'; } }
-    function logout() { loggedInUser = null; setDisp('topNav', false); setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false); setDisp('securityOverlay', true); setVal('userInput', ''); setVal('passInput', ''); }
-
-    function switchTab(tabId) {
-        setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false);
-        ['btnTabQuote', 'btnTabAdmin', 'btnTabPreview', 'btnTabProjects', 'btnTabInv'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).classList.remove('active'); });
-        if(tabId === 'quote') { setDisp('mainContent', true); document.getElementById('btnTabQuote').classList.add('active'); }
-        else if(tabId === 'preview') { safeProcess(); syncPrintHeader(window.currentUnit||'ft'); document.getElementById('customerPreviewContainer').style.display='flex'; document.getElementById('btnTabPreview').classList.add('active'); }
-        else if(tabId === 'admin') { setDisp('adminContent', true); document.getElementById('btnTabAdmin').classList.add('active'); buildAdminTable(); renderCustomerAdmin(); renderUserTable(); }
-        else if(tabId === 'projects') { setDisp('projectsContent', true); document.getElementById('btnTabProjects').classList.add('active'); drawProjectBankTable(); }
-        else if(tabId === 'inventory') { setDisp('inventoryContent', true); document.getElementById('btnTabInv').classList.add('active'); renderInventoryUI(); }
+    function switchTab(t) {
+        ['mainContent', 'adminContent', 'customerPreviewContainer', 'projectsContent', 'inventoryContent'].forEach(id => document.getElementById(id).style.display='none');
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        if(t==='quote') { document.getElementById('mainContent').style.display='block'; document.getElementById('btnTabQuote').classList.add('active'); }
+        if(t==='preview') { safeProcess(); syncPrintHeader(); document.getElementById('customerPreviewContainer').style.display='block'; document.getElementById('btnTabPreview').classList.add('active'); }
+        if(t==='admin') { document.getElementById('adminContent').style.display='block'; document.getElementById('btnTabAdmin').classList.add('active'); applyProfile(); }
+        if(t==='inventory') { document.getElementById('inventoryContent').style.display='block'; document.getElementById('btnTabInv').classList.add('active'); renderInventoryUI(); }
     }
 
-    function renderUserTable() { let h = ''; winkoUsers.forEach((u, i) => { h += `<tr><td>${u.username}</td><td>${u.password}</td><td>${u.role}</td><td class="text-center"><button class="del-btn" onclick="removeUser(${i})">X</button></td></tr>`; }); setHtml('userTableBody', h); }
-    function addUser() { let u = getVal('newUsername').trim(); let p = getVal('newPassword').trim(); let r = getVal('newRole'); if(!u || !p) return showToast("Username and password required.", "error"); winkoUsers.push({username: u, password: p, role: r}); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); setVal('newUsername', ''); setVal('newPassword', ''); renderUserTable(); showToast("User added!"); }
-    function removeUser(i) { if(confirm("Remove user?")) { winkoUsers.splice(i, 1); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); renderUserTable(); } }
-
-    function checkCustomerAutoFill() { let c = getVal('custCompany'); if(winkoCustomers[c]) { setVal('custAttn', winkoCustomers[c].attn); setVal('custAddr', winkoCustomers[c].addr); safeProcess(); } }
-
-    function handleBulkInventoryUpload(event) {
-        let file = event.target.files[0]; if(!file) return; let reader = new FileReader();
-        reader.onload = function(e) { let lines = e.target.result.split('\n'); let count = 0;
-            for(let i=1; i<lines.length; i++) {
-                let parts = lines[i].split(','); if(parts.length >= 2) {
-                    let n = parts[0].replace(/['"]/g,'').trim(); let cost = parseFloat(parts[1])||0;
-                    if(n && !winkoInventory[n]) { winkoInventory[n] = {stock: 0, alert: 5, cost: cost}; count++; }
-                }
-            } saveInventoryDB(); showToast(`Bulk imported ${count} items.`); event.target.value = '';
-        }; reader.readAsText(file);
-    }
-
-    function autoPopulateInventory() {
-        const masterItems = {
-            "Partition Cleat HDG": { stock: 150, alert: 30, cost: 15.00 }, "8mm (B) Cleat HDG": { stock: 500, alert: 100, cost: 16.50 }, "Type C Cleat HDG": { stock: 300, alert: 50, cost: 30.00 },
-            "67.5\" (L1 Stay - 50x50x5mm)": { stock: 200, alert: 40, cost: 27.25 }, "92.5\" (L2 Stay - 50x50x5mm)": { stock: 150, alert: 30, cost: 38.50 }, "135.5\" (L3 Stay - 50x50x5mm)": { stock: 100, alert: 20, cost: 49.60 }, "15' 8.5\" (L4 Stay)": { stock: 50, alert: 10, cost: 125.00 },
-            "50x50x1.9mm SHS Truss (4' HDG)": { stock: 100, alert: 20, cost: 28.20 }, "50x50x1.9mm SHS Truss (8' HDG)": { stock: 100, alert: 20, cost: 59.00 }, "50x50x1.9mm SHS Truss (12' HDG)": { stock: 100, alert: 20, cost: 74.40 },
-            "Ø1\" Pipe (HDG AAA)": { stock: 80, alert: 15, cost: 18.00 }, "Ø1.5\" Pipe (HDG AAA)": { stock: 80, alert: 15, cost: 26.60 },
-            "M10 x 35mm HDG (Bolt, Nut & Washer)": { stock: 800, alert: 100, cost: 1.20 }, "M12 x 45mm HDG (Bolt, Nut & Washer)": { stock: 800, alert: 100, cost: 1.50 }, "M14 x 30mm HDG (Box/Unit cost)": { stock: 150, alert: 20, cost: 8.65 }, "M16 x 40mm HDG HT B/N": { stock: 300, alert: 50, cost: 1.10 },
-            "M12 x 100mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 3.00 }, "M16 x 120mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 5.00 },
-            "PVC Foam Tape (10m x 3mm)": { stock: 300, alert: 50, cost: 8.00 }, "Aseal Butyl Sealant (80m)": { stock: 200, alert: 30, cost: 1.70 },
-            "PVC Bolt Head Cover (M12)": { stock: 1000, alert: 200, cost: 0.20 }, "M12 EPDM Rubber Washer": { stock: 1000, alert: 200, cost: 0.40 },
-            "Ext. Ladder (HDG)": { stock: 40, alert: 5, cost: 55.00 }, "Int. Ladder (HDG)": { stock: 40, alert: 5, cost: 75.00 },
-            "Water Level Indicator (Mechanical)": { stock: 50, alert: 10, cost: 220.00 }, "Air Vent (PVC)": { stock: 80, alert: 15, cost: 85.00 },
-            "Installation & Labor": { stock: 999, alert: 10, cost: 3500.00 }, "Transport": { stock: 999, alert: 10, cost: 850.00 }
-        };
-
-        const sizes = ["(4'x4')", "(1m x 1m)"]; const coats = ["HDG", "Painted", "SS 304", "SS 316"];
-        const panelTypes = [
-            { type: "Base Panel", thicknesses: ["4.5", "5.0", "6.0"], baseCost: 263.50 }, { type: "Roof Panel", thicknesses: ["1.5", "2.0", "3.0"], baseCost: 162.75 }, { type: "Wall Panel (L1)", thicknesses: ["4.5", "5.0", "6.0"], baseCost: 263.50 },
-            { type: "Wall Panel (L2)", thicknesses: ["3.0", "4.0", "4.5", "5.0"], baseCost: 162.75 }, { type: "Wall Panel (L3)", thicknesses: ["1.5", "2.0", "3.0", "4.5"], baseCost: 162.75 }, { type: "Wall Panel (L4)", thicknesses: ["1.5", "2.0", "3.0"], baseCost: 162.75 }
-        ];
-
-        coats.forEach(coat => {
-            let mult = (coat === 'Painted') ? 0.85 : (coat === 'SS 304' ? 3.0 : (coat === 'SS 316' ? 4.5 : 1.0));
-            sizes.forEach(size => {
-                panelTypes.forEach(pt => { pt.thicknesses.forEach(th => { masterItems[`${th}mm ${pt.type} ${size} (${coat})`] = { stock: 100, alert: 20, cost: parseFloat((pt.baseCost * mult).toFixed(2)) }; }); });
-                masterItems[`Manhole Panel ${size} (${coat})`] = { stock: 20, alert: 5, cost: parseFloat((450 * mult).toFixed(2)) }; masterItems[`Partition Panel ${size} (${coat})`] = { stock: 20, alert: 5, cost: parseFloat((253.50 * mult).toFixed(2)) };
-            });
-        });
-
-        let itemsAdded = 0; for (let item in masterItems) { if (!winkoInventory[item]) { winkoInventory[item] = masterItems[item]; itemsAdded++; } }
-        if (itemsAdded > 0) { saveInventoryDB(); showToast(`Success! Generated & Linked ${itemsAdded} smart inventory items.`); } else { showToast("All dynamic panel combinations are already synced.", "info"); }
-    }
-
-    function renderInventoryUI() {
-        let filterText = getVal('invSearchBox').toLowerCase(); let h = '';
-        Object.keys(winkoInventory).sort().forEach(k => {
-            if(filterText && !k.toLowerCase().includes(filterText)) return; let d = winkoInventory[k]; let safeK = encodeURIComponent(k); let isLow = d.stock <= d.alert;
-            h += `<tr style="${isLow ? 'background-color: #fef2f2;' : ''}"><td><strong style="${isLow ? 'color:#dc2626;' : ''}">${k}</strong></td><td class="text-center" style="display:flex; justify-content:center; align-items:center; gap:5px;"><button class="action-btn" style="padding:4px 10px; width:auto; background:#64748b;" onclick="updateStock('${safeK}', -1)">-</button><input type="number" class="admin-input" style="width:70px; margin:0;" value="${d.stock}" onchange="setStock('${safeK}', this.value)"><button class="action-btn" style="padding:4px 10px; width:auto; background:#3b82f6;" onclick="updateStock('${safeK}', 1)">+</button></td><td class="text-center"><input type="number" class="admin-input" style="width:70px;" value="${d.alert}" onchange="setInvAlert('${safeK}', this.value)"></td><td class="text-center"><input type="number" step="0.01" class="admin-input" style="width:100px; color:#10b981;" value="${d.cost || 0}" onchange="setInvCost('${safeK}', this.value)"></td><td class="text-center"><button class="del-btn" onclick="removeInvItem('${safeK}')">X</button></td></tr>`;
-        });
-        if(h === '') h = '<tr><td colspan="5" style="text-align:center; padding: 20px; color:#64748b;">No items in inventory.</td></tr>';
-        setHtml('inventoryBody', h); renderInventoryChart();
-    }
-
-    function setInvCost(safeK, val) { winkoInventory[decodeURIComponent(safeK)].cost = parseFloat(val) || 0; saveInventoryDB(); safeProcess(); }
-    function setStock(safeK, val) { winkoInventory[decodeURIComponent(safeK)].stock = parseInt(val) || 0; saveInventoryDB(); }
-    function updateStock(safeK, amt) { winkoInventory[decodeURIComponent(safeK)].stock += amt; saveInventoryDB(); }
-    function setInvAlert(safeK, val) { winkoInventory[decodeURIComponent(safeK)].alert = parseInt(val) || 0; saveInventoryDB(); }
-    function addInvItem() { let n = getVal('newInvName').trim(); let s = getNum('newInvStock') || 0; let a = getNum('newInvAlert') || 5; if(!n) return showToast("Item Name required.", "error"); winkoInventory[n] = { stock: s, alert: a, cost: 0 }; setVal('newInvName', ''); saveInventoryDB(); showToast(`Added ${n}`); }
-    function removeInvItem(safeK) { let k = decodeURIComponent(safeK); if(confirm(`Remove ${k}?`)) { delete winkoInventory[k]; saveInventoryDB(); } }
-    function saveInventoryDB() { if(cloudDB) cloudDB.collection("winko_settings").doc("inventory").set({data: winkoInventory}); renderInventoryUI(); safeProcess(); }
-
-    function renderInventoryChart() {
-        let ctx = document.getElementById('invChartCanvas'); if(!ctx) return;
-        try {
-            if(typeof Chart === 'undefined') return;
-            let labels = Object.keys(winkoInventory).sort(); let data = labels.map(k => winkoInventory[k].stock); let colors = labels.map(k => winkoInventory[k].stock <= winkoInventory[k].alert ? '#ef4444' : '#10b981'); 
-            if(invChart) { invChart.data.labels = labels; invChart.data.datasets[0].data = data; invChart.data.datasets[0].backgroundColor = colors; invChart.update(); } 
-            else { invChart = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Current Stock', data: data, backgroundColor: colors, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#e2e8f0' } }, x: { grid: { display: false } } } } }); }
-        } catch(e) { console.warn("Chart error", e); }
-    }
-
-    function saveToMemory() {
-        let qid = getVal('quoteIdInput'); if(!qid) return showToast("Enter Quote ID first", "error");
-        let d = { tanks: appTanks, custom: appCustomItems, projectName: getVal('projectName'), customer: getVal('custCompany'), total: window.currentGrandTotal, date: new Date().toISOString().split('T')[0] };
-        configIDs.forEach(id => d[id] = getVal(id)); if(cloudDB) cloudDB.collection("winko_projects").doc(qid).set(d); showToast("Project Saved to Cloud!");
-    }
-
-    function exportCSV() {
-        let csv = "Item,Qty,Unit Cost,Total\n";
-        appTanks.forEach((t, i) => { csv += `TANK ${i+1} - ${t.L}x${t.W}x${t.H},,, \n`;
-            t.bom.forEach(sec => sec.items.forEach(it => { let qty = (sec.category==="Services") ? 1 : (Number(it.qty)||0); if(qty > 0) { let cost = it.manualPrice ? (parseFloat(it.def)||0) : ((winkoInventory[it.name] && winkoInventory[it.name].cost > 0) ? winkoInventory[it.name].cost : (it.def||0)); csv += `"${it.name}",${qty},${cost},${qty*cost}\n`; } }));
-        });
-        if(appCustomItems.length > 0) { csv += `\nCUSTOM ITEMS & SERVICES,,,\n`; appCustomItems.forEach(c => { csv += `"${c.name}",${c.qty},${c.cost},${c.qty*c.cost}\n`; }); }
-        let blob = new Blob([csv], { type: 'text/csv' }); let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = `Winko_${getVal('quoteIdInput')}.csv`; a.click();
-    }
-
-    function drawProjectBankTable() {
-        let filter = getVal('projSearchBox').toLowerCase(); let h = '';
-        Object.keys(window.cloudMemoryBank).forEach(k => {
-            let p = window.cloudMemoryBank[k]; if(filter && !k.toLowerCase().includes(filter) && !(p.customer||'').toLowerCase().includes(filter)) return;
-            h += `<tr><td><strong>${k}</strong></td><td>${p.projectName||'-'}</td><td>${p.customer||'-'}</td><td class="text-right">RM ${p.total||'0.00'}</td><td>${p.date||'-'}</td><td class="text-center"><button class="action-btn" style="padding:6px 12px; width:auto; font-size:11px;" onclick="loadFromMemory('${k}')">Load</button></td></tr>`;
-        }); setHtml('projectBankBody', h || '<tr><td colspan="6" class="text-center">No projects found.</td></tr>');
-    }
-    function renderProjectBank() { drawProjectBankTable(); }
+    function defaultTank() { return { L: 12, W: 4, H: 4, partitions: [], bom: JSON.parse(JSON.stringify(systemBaseStructure)), coat: 'HDG', std: 'SANS' }; }
+    function addNewTank() { appTanks.push(defaultTank()); renderAllDynamicUI(); safeProcess(); }
+    function addNewCustomItem() { appCustomItems.push({ name: "Custom Add-on", qty: 1, cost: 0 }); renderAllDynamicUI(); safeProcess(); }
     
-    function loadFromMemory(k) { let d = window.cloudMemoryBank[k]; if(!d) return; configIDs.forEach(id => { if(d[id]!==undefined) setVal(id, d[id]); }); appTanks = d.tanks || []; appCustomItems = d.custom || []; switchTab('quote'); safeProcess(); showToast("Project Loaded!"); }
-
-    function backupSystem() {
-        let backupData = { company: companyProfile, master_bom: {data: systemBaseStructure}, users: {data: winkoUsers}, crm: {data: winkoCustomers}, inventory: {data: winkoInventory}, projects: window.cloudMemoryBank || {} };
-        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData)); let a = document.createElement('a'); a.href = dataStr; a.download = "winko_cloud_backup_" + new Date().toISOString().split('T')[0] + ".json"; document.body.appendChild(a); a.click(); a.remove(); showToast("Cloud Snapshot Downloaded!");
-    }
-
-    function restoreSystem(event) {
-        let file = event.target.files[0]; if (!file || !cloudDB) return;
-        if (!confirm("⚠️ WARNING: Restoring will overwrite the LIVE CLOUD DATABASE. Are you sure?")) { event.target.value = ''; return; }
-        let reader = new FileReader();
-        reader.onload = function(e) { try { let d = JSON.parse(e.target.result); if(d.company) cloudDB.collection("winko_settings").doc("company").set(d.company); if(d.master_bom) cloudDB.collection("winko_settings").doc("master_bom").set(d.master_bom); if(d.users) cloudDB.collection("winko_settings").doc("users").set(d.users); if(d.crm) cloudDB.collection("winko_settings").doc("crm").set(d.crm); if(d.inventory) cloudDB.collection("winko_settings").doc("inventory").set(d.inventory); if(d.projects) Object.keys(d.projects).forEach(k => cloudDB.collection("winko_projects").doc(k).set(d.projects[k])); alert("✅ Cloud Database successfully restored! Reloading."); window.location.reload(true); } catch(err) { showToast("Error reading backup.", "error"); } }; reader.readAsText(file);
-    }
-
-    function confirmOrderAndDeduct() {
-        if(!confirm("⚠️ Are you sure? This will deduct exact quantities from your Master Inventory!")) return; let deducted = 0; let warns = [];
-        appTanks.forEach(t => t.bom.forEach(sec => { if(sec.category === "Services") return; sec.items.forEach(it => { let q = Number(it.qty) || 0; if(q > 0 && winkoInventory[it.name]) { winkoInventory[it.name].stock -= q; deducted++; if(winkoInventory[it.name].stock < 0) warns.push(`${it.name} is negative!`); } }); }));
-        if(deducted > 0) { saveInventoryDB(); let msg = `✅ Deducted ${deducted} items.`; if(warns.length > 0) msg += `\n\nWarnings:\n- ` + warns.join('\n- '); alert(msg); } else { alert("❌ No exact matching inventory items to deduct."); }
-    }
-
-    let appTanks = []; let appCustomItems = [];
-    const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
-
-    function defaultTank() { 
-        return { 
-            id: Date.now(), std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", 
-            L: 12, W: 4, H: 12, partitions: [], ladder1Col: 0, ladder2Col: 0, 
-            thickBase: "4.5", thickRoof: "1.5", thickL1: "4.5", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5",
-            partL1Angle: "67.5\" (L1 Stay - 50x50x5mm)", partL2Angle: "92.5\" (L2 Stay - 50x50x5mm)", partL3Angle: "135.5\" (L3 Stay - 50x50x5mm)",
-            override: "", bom: JSON.parse(JSON.stringify(systemBaseStructure)), nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 
-        }; 
-    }
-
-    function handleUnitChange() { safeProcess(); }
-    
-    function autoCalculateBOM(tIdx) {
-        let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
-        if(!t.thickBase) t.thickBase = "4.5"; if(!t.thickRoof) t.thickRoof = "1.5"; if(!t.thickL1) t.thickL1 = "4.5"; if(!t.thickL2) t.thickL2 = "3.0"; if(!t.thickL3) t.thickL3 = "3.0"; if(!t.thickL4) t.thickL4 = "1.5";
-        
-        let sizeTag = u === 'ft' ? "(4'x4')" : "(1m x 1m)";
-        let coatShort = "HDG"; if (t.coat === 'Painted Steel') coatShort = "Painted"; else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
-        
-        let panelsL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); let panelsW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
-        let roofQty = Math.max(0, (panelsL * panelsW) - 1); let manholeQty = 1; let baseQty = panelsL * panelsW;
-        let wallL1 = (panelsL + panelsW) * 2; let wallL2 = panelsH >= 2 ? (panelsL + panelsW) * 2 : 0; let wallL3 = panelsH >= 3 ? (panelsL + panelsW) * 2 : 0; let wallL4 = panelsH >= 4 ? (panelsL + panelsW) * 2 : 0;
-        
-        if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
-        let num_partitions = t.partitions.filter(p => p > 0).length;
-        let partitionPanels = num_partitions * (panelsW * panelsH);
-        let totalPanels = manholeQty + roofQty + baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels;
-
-        let angleCat = t.bom.find(s => s.category === "Angle Stay");
-        if(angleCat && !angleCat.items.find(i => i._isPartStay === 1)) {
-            angleCat.items.push({name: "Partition L1 Stay", def: 27.25, wt: 4.5, qty: 0, _isPartStay: 1});
-            angleCat.items.push({name: "Partition L2 Stay", def: 38.50, wt: 7.2, qty: 0, _isPartStay: 2});
-            angleCat.items.push({name: "Partition L3 Stay", def: 49.60, wt: 14.5, qty: 0, _isPartStay: 3});
-        }
-
-        t.bom.forEach((sec, sIdx) => {
-            sec.items.forEach((it, iIdx) => {
-                let n = it.name.toLowerCase();
-                
-                if(sec.category !== "Services") {
-                    if (sec.category === "Panels") {
-                        if (n.includes("base panel") && !n.includes("partition")) it.name = `${t.thickBase}mm Base Panel ${sizeTag} (${coatShort})`;
-                        else if (n.includes("roof panel") && !n.includes("partition")) it.name = `${t.thickRoof}mm Roof Panel ${sizeTag} (${coatShort})`;
-                        else if (n.includes("wall panel (l1)")) it.name = `${t.thickL1}mm Wall Panel (L1) ${sizeTag} (${coatShort})`;
-                        else if (n.includes("wall panel (l2)")) it.name = `${t.thickL2}mm Wall Panel (L2) ${sizeTag} (${coatShort})`;
-                        else if (n.includes("wall panel (l3)")) it.name = `${t.thickL3}mm Wall Panel (L3) ${sizeTag} (${coatShort})`;
-                        else if (n.includes("wall panel (l4)")) it.name = `${t.thickL4}mm Wall Panel (L4) ${sizeTag} (${coatShort})`;
-                        else if (n.includes("manhole panel")) it.name = `Manhole Panel ${sizeTag} (${coatShort})`;
-                        else if (n.includes("partition panel")) { it.name = `Partition Panel ${sizeTag} (${coatShort})`; it.qty = partitionPanels; }
-                        n = it.name.toLowerCase(); let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
-                    }
-
-                    if (n.includes("manhole panel")) it.qty = manholeQty;
-                    else if (n.includes("roof panel") && !n.includes("partition")) it.qty = roofQty;
-                    else if (n.includes("base panel") && !n.includes("partition")) it.qty = baseQty;
-                    else if (n.includes("wall panel (l1)")) it.qty = wallL1;
-                    else if (n.includes("wall panel (l2)")) it.qty = wallL2;
-                    else if (n.includes("wall panel (l3)")) it.qty = wallL3;
-                    else if (n.includes("wall panel (l4)")) it.qty = wallL4;
-                    
-                    else if (it._isPartStay === 1) { it.name = t.partL1Angle || "67.5\" (L1 Stay - 50x50x5mm)"; it.qty = num_partitions > 0 ? (panelsW * 2 * num_partitions) : 0; }
-                    else if (it._isPartStay === 2) { it.name = t.partL2Angle || "92.5\" (L2 Stay - 50x50x5mm)"; it.qty = (num_partitions > 0 && panelsH >= 2) ? (panelsW * 2 * num_partitions) : 0; }
-                    else if (it._isPartStay === 3) { it.name = t.partL3Angle || "135.5\" (L3 Stay - 50x50x5mm)"; it.qty = (num_partitions > 0 && panelsH >= 3) ? (panelsW * 2 * num_partitions) : 0; }
-                    
-                    else if (n.includes("8mm (b) cleat") || n.includes("wall cleat")) it.qty = (wallL1 + wallL2 + wallL3 + wallL4) * 2;
-                    else if (n.includes("type c cleat") || n.includes("roof cleat")) it.qty = (roofQty + manholeQty) * 2;
-                    else if (n.includes("partition cleat")) it.qty = partitionPanels * 4;
-                    else if (n.includes("(l1 stay") || n.includes("l1 angle stay")) it.qty = wallL1;
-                    else if (n.includes("(l2 stay") || n.includes("l2 angle stay")) it.qty = wallL2;
-                    else if (n.includes("(l3 stay") || n.includes("l3 angle stay")) it.qty = wallL3;
-                    else if (n.includes("l4 stay")) it.qty = wallL4;
-
-                    else if (n.includes("ext. ladder") || n.includes("ext ladder")) it.qty = 1;
-                    else if (n.includes("int. ladder") || n.includes("int ladder")) it.qty = 1;
-                    else if (n.includes("water level indicator")) it.qty = 1;
-                    else if (n.includes("air vent")) it.qty = Math.max(1, Math.floor((panelsL * panelsW) / 4));
-                    else if (n.includes("pvc foam tape") || n.includes("sealant")) it.qty = Math.ceil((totalPanels * 4) / 10);
-                    
-                    else if (n.includes("m10") && (n.includes("bolt") || n.includes("b/n"))) { it.qty = Math.ceil((roofQty + manholeQty) * 24); }
-                    else if (n.includes("m12") && (n.includes("bolt") || n.includes("b/n"))) { it.qty = Math.ceil((baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels) * 28); }
-                    else if (n.includes("expansion bolt")) { it.qty = Math.ceil((panelsL + 1) * (panelsW + 1)); }
-                }
-                
-                let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`); if(qInput && sec.category !== "Services") qInput.value = it.qty || 0;
-            });
-        });
-    }
-
-    function updateTankField(i, f, v, isNum) { 
-        appTanks[i][f] = isNum ? (parseFloat(v)||0) : v; 
-        if (f === 'coat') {
-            let mult = (v === 'Painted Steel') ? companyProfile.matMult.painted : (v === 'Stainless Steel (SS 304)' ? companyProfile.matMult.ss304 : (v === 'Stainless Steel (SS 316)' ? companyProfile.matMult.ss316 : 1.0));
-            appTanks[i].bom.forEach(sec => sec.items.forEach((it, idx) => { if(sec.category !== 'Services') { let baseSec = systemBaseStructure.find(s => s.category == sec.category); let baseDef = (baseSec && baseSec.items && baseSec.items[idx]) ? baseSec.items[idx].def : 0; it.def = baseDef * mult; } }));
-        }
-        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std'].includes(f)) { autoCalculateBOM(i); } safeProcess(); 
-    }
-
-    function addNewTank() { appTanks.push(defaultTank()); renderAllDynamicUI(); autoCalculateBOM(appTanks.length - 1); safeProcess(); }
-    function removeTank(i) { if(confirm("Remove tank?")) { appTanks.splice(i, 1); renderAllDynamicUI(); processTankData(); } }
-    
-    function addPartition(tIdx) { if(!appTanks[tIdx].partitions) appTanks[tIdx].partitions = []; if(appTanks[tIdx].partitions.length < 3) { appTanks[tIdx].partitions.push(0); renderAllDynamicUI(); autoCalculateBOM(tIdx); safeProcess(); } }
-    function updatePartition(tIdx, pIdx, val) { appTanks[tIdx].partitions[pIdx] = parseInt(val) || 0; renderDrawings(); }
-    function removePartition(tIdx, pIdx) { appTanks[tIdx].partitions.splice(pIdx, 1); renderAllDynamicUI(); autoCalculateBOM(tIdx); safeProcess(); }
-
-    function updateBomField(t, s, i, f, v, isNum) { appTanks[t].bom[s].items[i][f] = isNum ? (parseFloat(v)||0) : v; if(f === 'def') appTanks[t].bom[s].items[i].manualPrice = true; if(f === 'name') appTanks[t].bom[s].items[i].manualPrice = false; safeProcess(); }
-    function updateNozzle(t, nId, f, v, isNum) { let n = appTanks[t].nozzles.find(x=>x.id==nId); if(n) { n[f] = isNum ? (parseFloat(v)||0) : v; safeProcess(); } }
-    function addNozzle(t) { if(!appTanks[t].nozzles) appTanks[t].nozzles = []; appTanks[t].nozzles.push({id: Date.now(), type: "Inlet", size: "2\"", qty: 1, pos: "Side panel"}); renderAllDynamicUI(); }
-    function addNewCustomItem() { appCustomItems.push({ id: Date.now(), name: "Custom Service / Add-on", qty: 1, unit: "Lot", cost: 0 }); renderAllDynamicUI(); safeProcess(); }
-    function updateCustomItem(i, f, v, isNum) { appCustomItems[i][f] = isNum ? parseFloat(v)||0 : v; safeProcess(); }
-    function removeCustomItem(i) { appCustomItems.splice(i, 1); renderAllDynamicUI(); safeProcess(); }
-
     function renderAllDynamicUI() {
         let tH = "", bH = "";
         appTanks.forEach((t, i) => {
-            if(!t.nozzles) t.nozzles = []; let nozHtml = "";
-            t.nozzles.forEach(n => { nozHtml += `<div class="nozzle-row"><div class="form-group" style="flex:1.5;"><select onchange="updateNozzle(${i}, ${n.id}, 'type', this.value)"><option ${n.type=='Inlet'?'selected':''}>Inlet</option><option ${n.type=='Outlet'?'selected':''}>Outlet</option><option ${n.type=='Overflow'?'selected':''}>Overflow</option><option ${n.type=='Drain'?'selected':''}>Drain</option><option ${n.type=='Scour'?'selected':''}>Scour</option><option ${n.type=='Warning'?'selected':''}>Warning</option></select></div><div class="form-group" style="flex:1;"><input type="text" value="${n.size}" oninput="updateNozzle(${i}, ${n.id}, 'size', this.value)"></div><div class="form-group" style="flex:0.8;"><input type="number" value="${n.qty}" oninput="updateNozzle(${i}, ${n.id}, 'qty', this.value, true)"></div><div class="form-group" style="flex:2;"><input type="text" value="${n.pos}" oninput="updateNozzle(${i}, ${n.id}, 'pos', this.value)"></div></div>`; });
-
-            let partHtml = "";
-            if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
-            
-            t.partitions.forEach((p, pIdx) => {
-                partHtml += `<div style="display:flex; gap:10px; align-items:flex-end; margin-bottom:10px;">
-                    <div class="form-group" style="flex:1;"><label style="color:#be185d;">Partition ${pIdx+1} Column</label><input type="number" value="${p}" oninput="updatePartition(${i}, ${pIdx}, this.value)"></div>
-                    <button class="del-btn" style="height:35px; padding:0 15px;" onclick="removePartition(${i}, ${pIdx})">X Remove</button>
-                </div>`;
-            });
-            
-            let addPartBtn = t.partitions.length < 3 ? `<button class="action-btn" style="width:auto; padding:6px 15px; font-size:11px; background:#ec4899;" onclick="addPartition(${i})">+ Add Partition Wall</button>` : `<span style="font-size:11px; color:#ef4444; font-weight:bold;">Max 3 Partitions Reached</span>`;
-
-            let partAnglesHtml = t.partitions.length > 0 ? `
-            <div class="dim-grid" style="margin-top:15px; border-top:1px dashed #fbcfe8; padding-top:15px;">
-                <div class="form-group"><label style="color:#db2777;">Partition L1 Stay (Type)</label><input type="text" value="${t.partL1Angle || '67.5\" (L1 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL1Angle', this.value)"></div>
-                <div class="form-group"><label style="color:#db2777;">Partition L2 Stay (Type)</label><input type="text" value="${t.partL2Angle || '92.5\" (L2 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL2Angle', this.value)"></div>
-                <div class="form-group"><label style="color:#db2777;">Partition L3 Stay (Type)</label><input type="text" value="${t.partL3Angle || '135.5\" (L3 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL3Angle', this.value)"></div>
-            </div>` : ``;
-
-            tH += `<div class="tank-block" style="border-top:2px dashed #cbd5e1; margin-top:24px; padding-top:20px;">
-                <div class="tank-section-title"><span>Tank ${i+1} Specs</span><button class="del-btn no-print" onclick="removeTank(${i})">X REMOVE</button></div>
-                <div class="config-grid"><div class="form-group"><label>Standard</label><select onchange="updateTankField(${i}, 'std', this.value)"><option ${t.std.includes('SANS')?'selected':''}>SANS 10329:2020 Approved by SIRIM & SPAN</option><option ${t.std.includes('SS 22')?'selected':''}>SS 22: 1979</option></select></div><div class="form-group"><label>Material</label><select onchange="updateTankField(${i}, 'coat', this.value)"><option ${t.coat==='Hot Dipped Galvanised'?'selected':''}>Hot Dipped Galvanised</option><option ${t.coat==='Painted Steel'?'selected':''}>Painted Steel</option><option ${t.coat==='Stainless Steel (SS 304)'?'selected':''}>Stainless Steel (SS 304)</option><option ${t.coat==='Stainless Steel (SS 316)'?'selected':''}>Stainless Steel (SS 316)</option></select></div></div>
-                <div class="tank-section-title" style="margin-top:10px; background:#f0fdf4; border-left-color:#22c55e;">🛡️ Panel Thickness Config (mm)</div>
-                <div class="dim-grid" style="background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom: 15px;">
-                    <div class="form-group"><label>Base Panel</label><select onchange="updateTankField(${i}, 'thickBase', this.value)"><option ${t.thickBase=='4.5'?'selected':''}>4.5</option><option ${t.thickBase=='5.0'?'selected':''}>5.0</option><option ${t.thickBase=='6.0'?'selected':''}>6.0</option></select></div>
-                    <div class="form-group"><label>Roof Panel</label><select onchange="updateTankField(${i}, 'thickRoof', this.value)"><option ${t.thickRoof=='1.5'?'selected':''}>1.5</option><option ${t.thickRoof=='2.0'?'selected':''}>2.0</option><option ${t.thickRoof=='3.0'?'selected':''}>3.0</option></select></div>
-                    <div class="form-group"><label>Wall L1 (Bottom)</label><select onchange="updateTankField(${i}, 'thickL1', this.value)"><option ${t.thickL1=='4.5'?'selected':''}>4.5</option><option ${t.thickL1=='5.0'?'selected':''}>5.0</option><option ${t.thickL1=='6.0'?'selected':''}>6.0</option></select></div>
-                    <div class="form-group"><label>Wall L2</label><select onchange="updateTankField(${i}, 'thickL2', this.value)"><option ${t.thickL2=='3.0'?'selected':''}>3.0</option><option ${t.thickL2=='4.0'?'selected':''}>4.0</option><option ${t.thickL2=='4.5'?'selected':''}>4.5</option><option ${t.thickL2=='5.0'?'selected':''}>5.0</option></select></div>
-                    <div class="form-group"><label>Wall L3</label><select onchange="updateTankField(${i}, 'thickL3', this.value)"><option ${t.thickL3=='1.5'?'selected':''}>1.5</option><option ${t.thickL3=='2.0'?'selected':''}>2.0</option><option ${t.thickL3=='3.0'?'selected':''}>3.0</option><option ${t.thickL3=='4.5'?'selected':''}>4.5</option></select></div>
-                    <div class="form-group"><label>Wall L4 (Top)</label><select onchange="updateTankField(${i}, 'thickL4', this.value)"><option ${t.thickL4=='1.5'?'selected':''}>1.5</option><option ${t.thickL4=='2.0'?'selected':''}>2.0</option><option ${t.thickL4=='3.0'?'selected':''}>3.0</option></select></div>
-                </div>
-                <div class="dim-grid">
-                    <div class="form-group"><label>Length</label><input type="number" value="${t.L}" oninput="updateTankField(${i}, 'L', this.value, true)"></div>
-                    <div class="form-group"><label>Width</label><input type="number" value="${t.W}" oninput="updateTankField(${i}, 'W', this.value, true)"></div>
-                    <div class="form-group"><label>Height</label><input type="number" value="${t.H}" oninput="updateTankField(${i}, 'H', this.value, true)"></div>
-                    <div class="form-group"><label>Ladder 1 Pos (Col)</label><input type="number" value="${t.ladder1Col||0}" oninput="updateTankField(${i}, 'ladder1Col', this.value, true)"></div>
-                    <div class="form-group"><label>Ladder 2 Pos (Col)</label><input type="number" value="${t.ladder2Col||0}" oninput="updateTankField(${i}, 'ladder2Col', this.value, true)"></div>
-                </div>
-                
-                <div class="tank-section-title" style="margin-top:15px; background:#fce7f3; border-left-color:#ec4899;">🧱 Partitions (Max 3)</div>
-                <div style="background:#fdf2f8; padding:15px; border-radius:6px; border:1px solid #fbcfe8; margin-bottom:15px;">
-                    ${partHtml} ${addPartBtn} ${partAnglesHtml}
-                </div>
-
-                <div class="tank-section-title" style="margin-top:10px; background:#fff7ed; border-left-color:#ea580c;">🚰 Nozzles</div>${nozHtml}<button class="add-btn" style="width:auto; padding:4px 8px; font-size:12px;" onclick="addNozzle(${i})">+ Add Nozzle</button>
+            tH += `<div class="tank-section-title" style="margin-top:15px;"><span>Tank ${i+1} Specs</span></div>
+            <div class="dim-grid" style="margin-bottom:10px;">
+                <div class="form-group"><label>Length</label><input type="number" value="${t.L}" oninput="appTanks[${i}].L=this.value; safeProcess();"></div>
+                <div class="form-group"><label>Width</label><input type="number" value="${t.W}" oninput="appTanks[${i}].W=this.value; safeProcess();"></div>
+                <div class="form-group"><label>Height</label><input type="number" value="${t.H}" oninput="appTanks[${i}].H=this.value; safeProcess();"></div>
             </div>`;
             
             let rH = "";
             t.bom.forEach((sec, sIdx) => {
-                rH += `<tr><td colspan="5" style="background:#f1f5f9; font-weight:700;">${sec.category}</td></tr>`;
+                rH += `<tr style="background:var(--bg);"><td colspan="4"><strong>${sec.category}</strong></td></tr>`;
                 sec.items.forEach((it, iIdx) => {
-                    let isZero = (sec.category !== "Services" && (!it.qty || it.qty == 0)); let rowStyle = isZero ? "display:none;" : ""; 
-                    let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
-                    rH += `<tr style="${rowStyle}" class="bom-row-${i}"><td><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)"><span id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></span></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
+                    rH += `<tr><td><input type="text" class="desc-input" value="${it.name}" oninput="appTanks[${i}].bom[${sIdx}].items[${iIdx}].name=this.value; appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice=false; safeProcess();"><span id="tag_${i}_${sIdx}_${iIdx}" class="price-tag"></span></td>
+                    <td class="col-input"><input type="number" value="${it.qty||0}" oninput="appTanks[${i}].bom[${sIdx}].items[${iIdx}].qty=this.value; safeProcess();"></td>
+                    <td class="col-input"><input type="number" value="${(it.def||0).toFixed(2)}" oninput="appTanks[${i}].bom[${sIdx}].items[${iIdx}].def=parseFloat(this.value)||0; appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice=true; safeProcess();"></td>
+                    <td class="text-right" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
                 });
             });
-            bH += `<div class="module-card collapsed" style="margin-top:16px;"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><span>⚙️ BOM - TANK ${i+1}</span><button class="action-btn export-btn no-print" style="padding:4px 8px; font-size:10px; width:auto; margin-right:15px;" onclick="event.stopPropagation(); document.querySelectorAll('.bom-row-${i}').forEach(el=>el.style.display='table-row')">👁️ Show Hidden Items</button></div></div><div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
+            // COLLAPSED BY DEFAULT FOR CLEAN UI
+            bH += `<div class="module-card collapsed"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>⚙️ BOM - TANK ${i+1}</span></div><div class="card-body"><table><thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-center">Cost</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
         });
         setHtml('dynamicTanksContainer', tH); setHtml('dynamicBomContainer', bH);
         
-        let cH = ""; appCustomItems.forEach((c, i) => { cH += `<div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;"><div style="flex:3;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Item Name</label><input type="text" class="admin-input" style="width:100%;" value="${c.name}" oninput="updateCustomItem(${i}, 'name', this.value)"></div><div style="flex:1;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Qty</label><input type="number" class="admin-input" style="width:100%;" value="${c.qty}" oninput="updateCustomItem(${i}, 'qty', this.value, true)"></div><div style="flex:1;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Unit</label><input type="text" class="admin-input" style="width:100%;" value="${c.unit}" oninput="updateCustomItem(${i}, 'unit', this.value)"></div><div style="flex:1.5;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Cost/Unit (RM)</label><input type="number" class="admin-input" style="width:100%;" value="${c.cost}" oninput="updateCustomItem(${i}, 'cost', this.value, true)"></div><div style="flex:0.5; text-align:center;"><label style="display:block; font-size:10px; color:transparent;">x</label><button class="del-btn" onclick="removeCustomItem(${i})">X</button></div></div>`; });
-        setHtml('dynamicCustomContainer', cH);
-    }
-
-    function createSVG(cols, rows, title, isWall, partitionsArr, ladder1Col, ladder2Col) {
-        let pSize = 50; let w = Math.max(1, cols) * pSize; let h = Math.max(1, rows) * pSize; let pad = 15; 
-        let svg = `<div style="text-align:center; background:#fff; padding:15px; border:1.5px solid #000; border-radius:6px; display:flex; flex-direction:column; align-items:center; margin-bottom:15px; max-width: 45%; flex: 1 1 40%; min-width: 250px;"><h4 style="margin:0 0 15px 0; font-size:11pt; font-weight:bold; color:#000; text-transform:uppercase;">${title}</h4><svg viewBox="0 0 ${w + pad*2} ${h + pad*2}" style="width: 100%; height: auto; max-height: 400px;" xmlns="http://www.w3.org/2000/svg"><g transform="translate(${pad}, ${pad})">`;
-        for(let r=0; r<rows; r++) { for(let c=0; c<cols; c++) { let px = c*pSize; let py = r*pSize; svg += `<rect x="${px}" y="${py}" width="${pSize}" height="${pSize}" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>`; if(isWall) { svg += `<line x1="${px}" y1="${py}" x2="${px+pSize}" y2="${py+pSize}" stroke="#94a3b8" stroke-width="0.8"/><line x1="${px+pSize}" y1="${py}" x2="${px}" y2="${py+pSize}" stroke="#94a3b8" stroke-width="0.8"/>`; } } }
-        
-        if(title === 'Front View') {
-            let drawLadder = (colNum) => { if(colNum > 0 && colNum <= cols) { let lx = (colNum - 1) * pSize + (pSize/2); svg += `<line x1="${lx-8}" y1="0" x2="${lx-8}" y2="${h}" stroke="#ea580c" stroke-width="2"/><line x1="${lx+8}" y1="0" x2="${lx+8}" y2="${h}" stroke="#ea580c" stroke-width="2"/>`; for(let r=10; r<h; r+=10) { svg += `<line x1="${lx-8}" y1="${r}" x2="${lx+8}" y2="${r}" stroke="#ea580c" stroke-width="1.5"/>`; } } };
-            if(ladder1Col > 0 || ladder2Col > 0) { drawLadder(ladder1Col); drawLadder(ladder2Col); } else if (cols >= 5) { drawLadder(3); drawLadder(5); }
-        }
-
-        if (partitionsArr && partitionsArr.length > 0 && (title === 'Front View' || title === 'Roof Plan' || title === 'Base Plan')) {
-            partitionsArr.forEach(pCol => { if (pCol > 0 && pCol < cols) { let px = pCol * pSize; svg += `<line x1="${px}" y1="0" x2="${px}" y2="${h}" stroke="#dc2626" stroke-width="4" stroke-dasharray="8,6"/>`; } });
-        }
-        svg += `</g></svg></div>`; return svg;
-    }
-
-    function renderDrawings() {
-        let h = ``;
-        appTanks.forEach((t, i) => {
-            let pL = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.L/4) : Math.floor(t.L)); let pW = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.W/4) : Math.floor(t.W)); let pH = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.H/4) : Math.floor(t.H));
-            let pColsArr = t.partitions || []; if (t.partitionCol > 0 && pColsArr.length === 0) pColsArr.push(t.partitionCol);
-            let l1 = parseInt(t.ladder1Col) || 0; let l2 = parseInt(t.ladder2Col) || 0;
-            h += `<div class="tank-section-title" style="margin-top:20px; background:#e0e7ff; border-left-color:#4f46e5; color: #000;">TANK ${i+1} BLUEPRINTS</div><div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; page-break-inside: avoid;">${createSVG(pL, pH, 'Front View', true, pColsArr, l1, l2)}${createSVG(pW, pH, 'Side View', true, [], 0, 0)}${createSVG(pL, pW, 'Roof Plan', false, pColsArr, 0, 0)}${createSVG(pL, pW, 'Base Plan', false, pColsArr, 0, 0)}</div>`;
-        });
-        setHtml('dynamicDrawingsContainer', h); setHtml('so_drawings_container', h);
+        let cH = ""; appCustomItems.forEach((c, i) => {
+            cH += `<div style="display:flex; gap:10px; margin-bottom:10px;"><input type="text" value="${c.name}" oninput="appCustomItems[${i}].name=this.value" style="flex:2; padding:6px; border:1px solid var(--border); border-radius:4px;"><input type="number" value="${c.qty}" oninput="appCustomItems[${i}].qty=this.value; safeProcess();" style="flex:1; padding:6px; border:1px solid var(--border); border-radius:4px;"><input type="number" value="${c.cost}" oninput="appCustomItems[${i}].cost=this.value; safeProcess();" style="flex:1; padding:6px; border:1px solid var(--border); border-radius:4px;"></div>`;
+        }); setHtml('dynamicCustomContainer', cH);
     }
 
     function processTankData() {
-        try {
-            let u = getVal('unitChoice') || 'ft'; window.currentUnit = u; let totalBase = 0, totalC = 0;
-            appTanks.forEach((t, i) => {
-                t.effLiters = ((u === 'ft') ? (t.L * t.W * t.H * 28.3168) : (t.L * t.W * t.H * 1000)) * 0.9; totalC += t.effLiters; t.baseCost = 0;
-                t.bom.forEach((sec, sIdx) => { sec.items.forEach((it, iIdx) => {
-                    let invItem = winkoInventory[it.name]; let unitPrice = 0;
-                    if (it.manualPrice) { unitPrice = parseFloat(it.def) || 0; } else { unitPrice = (invItem && invItem.cost > 0) ? invItem.cost : (parseFloat(it.def) || 0); }
-                    let calcQty = (sec.category === "Services") ? 1 : (Number(it.qty) || 0); let lTot = calcQty * unitPrice; t.baseCost += lTot;
-                    let tagEl = document.getElementById(`price_tag_${i}_${sIdx}_${iIdx}`);
-                    if(tagEl) { if (it.manualPrice) { tagEl.innerText = "[Manual Override]"; tagEl.className = "price-tag"; tagEl.style.color = "#ea580c"; } else if (invItem && invItem.cost > 0) { tagEl.innerText = "[Synced to Inventory]"; tagEl.className = "price-tag synced"; tagEl.style.color = ""; } else { tagEl.innerText = "[Fallback Cost]"; tagEl.className = "price-tag"; tagEl.style.color = ""; } }
-                    let totEl = document.getElementById(`tot_${i}_${sIdx}_${iIdx}`); if(totEl) totEl.innerText = lTot.toLocaleString('en-MY',{minimumFractionDigits:2});
-                }); }); totalBase += t.baseCost;
-            });
+        let totalBase = 0, totalCap = 0;
+        appTanks.forEach((t, i) => {
+            t.baseCost = 0; totalCap += (t.L * t.W * t.H * 28.3168);
+            t.bom.forEach((sec, sIdx) => { sec.items.forEach((it, iIdx) => {
+                let invCost = winkoInventory[it.name] ? winkoInventory[it.name].cost : 0;
+                let unitCost = it.manualPrice ? (it.def||0) : (invCost > 0 ? invCost : (it.def||0));
+                let lineTot = (parseFloat(it.qty)||0) * unitCost; t.baseCost += lineTot;
+                
+                let tag = document.getElementById(`tag_${i}_${sIdx}_${iIdx}`);
+                if(tag) { tag.innerText = it.manualPrice ? "[Manual Override]" : (invCost > 0 ? "[Synced to Inventory]" : "[Fallback Cost]"); tag.className = invCost > 0 && !it.manualPrice ? "price-tag synced" : "price-tag"; }
+                let tot = document.getElementById(`tot_${i}_${sIdx}_${iIdx}`); if(tot) tot.innerText = lineTot.toFixed(2);
+            })}); totalBase += t.baseCost;
+        });
 
-            let customTotal = 0; appCustomItems.forEach(c => { customTotal += ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); });
-            let mkAmt = totalBase * (getNum('markupPct')/100); let sub = totalBase + mkAmt + customTotal; let dscAmt = sub * (getNum('discountPct')/100); let net = sub - dscAmt; let sstAmt = net * (getNum('sstPct')/100); let grand = net + sstAmt;
-            window.currentGrandTotal = grand.toLocaleString('en-MY',{minimumFractionDigits:2});
+        let custTotal = 0; appCustomItems.forEach(c => custTotal += (c.qty * c.cost));
+        let mkup = totalBase * (getNum('markupPct')/100); let sub = totalBase + mkup + custTotal;
+        let dsc = sub * (getNum('discountPct')/100); let net = sub - dsc; let sst = net * (getNum('sstPct')/100);
+        let grand = net + sst; window.currentGrandTotal = grand;
 
-            const setM=(ids,v)=>ids.forEach(id=>setTxt(id,v));
-            setM(['sumBaseCost_screen','sumBaseCost_print'],totalBase.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumCustomCost_screen', 'sumCustomCost_print'], customTotal.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumMarkup_screen','sumMarkup_print'],mkAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumSubtotal_screen','sumSubtotal_print'],sub.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumDiscount_screen','sumDiscount_print'],dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumSST_screen','sumSST_print'],sstAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['grandTotal_screen','grandTotal_print'],window.currentGrandTotal); setM(['sumCapacity_screen','sumCapacity_print'], totalC.toLocaleString('en-MY',{maximumFractionDigits:0})+" L");
-            renderDrawings();
-        } catch(e) { console.error("Calc error:", e); }
+        setTxt('sumBaseCost_screen', totalBase.toFixed(2)); setTxt('sumCustomCost_screen', custTotal.toFixed(2));
+        setTxt('sumMarkup_screen', mkup.toFixed(2)); setTxt('sumSubtotal_screen', sub.toFixed(2));
+        setTxt('sumDiscount_screen', dsc.toFixed(2)); setTxt('sumSST_screen', sst.toFixed(2));
+        setTxt('grandTotal_screen', grand.toLocaleString('en-MY',{minimumFractionDigits:2}));
+        
+        // Sync Internal Print
+        setTxt('sumBaseCost_print', totalBase.toFixed(2)); setTxt('sumMarkup_print', mkup.toFixed(2));
+        setTxt('sumDiscount_print', dsc.toFixed(2)); setTxt('sumSST_print', sst.toFixed(2)); setTxt('grandTotal_print', grand.toLocaleString('en-MY',{minimumFractionDigits:2}));
     }
     function safeProcess() { processTankData(); }
 
-    function syncPrintHeader(u) {
-        setTxt('metaQuoteId', getVal('quoteIdInput')); setTxt('cpRef', getVal('quoteIdInput')); setTxt('metaDate', new Date().toLocaleDateString()); setTxt('cpDate', new Date().toLocaleDateString()); setTxt('metaProject', getVal('projectName')); setTxt('cpProject', getVal('projectName')); setTxt('cpCustName', getVal('custCompany')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr')); setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>')); setTxt('cpLeadTime', getVal('tcLead')); setTxt('cpDeliveryTerm', getVal('tcDelivery')); setTxt('cpSignName', getVal('signName')); setTxt('cpSignPhone', getVal('signPhone')); setTxt('cpFullTermsText', getVal('fullTermsNotes'));
+    function syncPrintHeader() {
+        setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address);
+        setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name);
         
-        let tH = ''; let subtotalAccumulator = 0;
+        setTxt('cpCustName', getVal('custCompany')); setTxt('cpDate', new Date().toLocaleDateString()); setTxt('cpRef', getVal('quoteIdInput')); setTxt('so_projno', getVal('quoteIdInput'));
+        setTxt('cpProject', getVal('projectName')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr'));
+        setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>')); setTxt('cpDeliveryTerm', getVal('tcDelivery'));
+        setHtml('cpShortExclusionsText', getVal('shortExclusions').replace(/\n/g, '<br>')); setTxt('cpFullTermsText', getVal('fullTermsNotes'));
+        
+        let tH = ''; let subAccum = 0;
         appTanks.forEach((t, i) => {
-            let dimStr = u==='ft' ? `${t.L}' x ${t.W}' x ${t.H}' (H)` : `${t.L}m x ${t.W}m x ${t.H}m (H)`; let mkup = getNum('markupPct') / 100; let tankSellPrice = t.baseCost * (1 + mkup); subtotalAccumulator += tankSellPrice;
-            let extL = 0, intL = 0, vents = 0;
-            t.bom.forEach(sec => sec.items.forEach(it => { let n = it.name.toLowerCase(); let q = Number(it.qty) || 0; if(n.includes('ext') && (n.includes('ladder') || n.includes('lader'))) extL += q; else if(n.includes('int') && (n.includes('ladder') || n.includes('lader'))) intL += q; else if(n.includes('air vent')) vents += q; }));
-            let accStr = []; if(intL > 0) accStr.push(`${intL}x Internal Ladder`); if(extL > 0) accStr.push(`${extL}x External Ladder`); if(vents > 0) accStr.push(`${vents}x Air Vent`);
-            let accHtml = accStr.length > 0 ? `<br><span style="color:#0f172a; font-weight:600;">Included: ${accStr.join(', ')}</span>` : '';
-            tH += `<tr><td class="text-center" style="font-weight:bold;">${i+1}</td><td><strong style="color:#000; font-size:10pt;">Pressed Steel Sectional Water Tank</strong><br><span style="color:#333;">Standard: ${t.std}<br>Dimension: <strong style="font-size:10pt; color:#000;">${dimStr}</strong><br>Material: ${t.coat}${accHtml}</span></td><td class="text-center" style="font-weight:bold;">1 Set</td><td class="text-right" style="font-weight:bold;">RM ${tankSellPrice.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`;
+            let p = t.baseCost * (1 + (getNum('markupPct')/100)); subAccum += p;
+            tH += `<tr><td class="text-center" style="font-weight:bold;">${i+1}</td><td><strong style="font-size:10pt;">Pressed Steel Sectional Tank</strong><br>Dimension: <strong>${t.L}' x ${t.W}' x ${t.H}'</strong></td><td class="text-center">1 Set</td><td class="text-right">RM ${p.toFixed(2)}</td></tr>`;
         });
+        appCustomItems.forEach(c => { let p = c.qty * c.cost; subAccum += p; tH += `<tr><td class="text-center">-</td><td><strong>${c.name}</strong></td><td class="text-center">${c.qty}</td><td class="text-right">RM ${p.toFixed(2)}</td></tr>`; });
         
-        appCustomItems.forEach((c, i) => { let lineCost = ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); subtotalAccumulator += lineCost; tH += `<tr><td class="text-center" style="font-weight:bold;">-</td><td><strong style="color:#000; font-size:10pt;">${c.name}</strong></td><td class="text-center" style="font-weight:bold;">${c.qty} ${c.unit}</td><td class="text-right" style="font-weight:bold;">RM ${lineCost.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; });
-        // Calculate Discount and Net
-        let dscPct = getNum('discountPct'); let dscAmt = subtotalAccumulator * (dscPct/100); let net = subtotalAccumulator - dscAmt;
-        
-        // Calculate SST secretly and add to the Grand Total
-        let sstPct = getNum('sstPct'); let sstAmt = net * (sstPct/100); let grandTotalIncTax = net + sstAmt; 
-        
-        if (dscAmt > 0) { tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">Gross Subtotal</td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">RM ${subtotalAccumulator.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr><tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">Discount (${dscPct}%)</td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">- RM ${dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; }
-        
-        // Output the final number including the hidden tax
-        let finalCustomerTotal = grandTotalIncTax.toLocaleString('en-MY',{minimumFractionDigits:2}); 
-        tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">Total Amount</td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">RM ${finalCustomerTotal}</td></tr>`;
-        
-        let nozH = ''; appTanks.forEach((t,i) => { if(t.nozzles) t.nozzles.forEach(n => { nozH += `<tr><td style="border:1px solid #000; text-align:center;">${n.type}</td><td style="border:1px solid #000; text-align:center;">${n.size}</td><td style="border:1px solid #000; text-align:center;">${n.qty}</td><td style="border:1px solid #000; padding-left:5px;">Tank ${i+1}: ${n.pos}</td></tr>`; }) });
-        setHtml('so_nozzle_body', nozH);
+        // --- V200 HIDDEN SST LOGIC ---
+        let dsc = subAccum * (getNum('discountPct')/100); let net = subAccum - dsc;
+        let sstAmt = net * (getNum('sstPct')/100); let grandIncTax = net + sstAmt;
 
-        let soHtml = '';
-        appTanks.forEach((t, i) => {
-            soHtml += `<div style="background:#000; color:white; padding:6px 10px; font-weight:bold; font-size:10pt; margin-top:15px; text-transform:uppercase;">TANK ${i+1} - ${t.L}x${t.W}x${t.H}</div>`;
-            t.bom.forEach(sec => {
-                let secItems = '';
-                sec.items.forEach(it => { let qty = sec.category === 'Services' ? 1 : (parseFloat(it.qty)||0); if (qty > 0) { let unitDisp = sec.category === 'Services' ? '' : 'Pcs'; let qtyDisp = sec.category === 'Services' ? '' : qty; secItems += `<div style="display:flex; padding:5px 10px; border-bottom:1px solid #cbd5e1;"><div style="width:6%; text-align:center; color:#000;">-</div><div style="width:74%; font-weight:bold; color:#000;">${it.name}</div><div style="width:10%; text-align:center; color:#000;">${unitDisp}</div><div style="width:10%; text-align:center; font-weight:bold; color:#000;">${qtyDisp}</div></div>`; } });
-                if (secItems !== '') { soHtml += `<div style="padding:4px 10px; font-weight:bold; font-size:9pt; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-top:5px; text-transform:uppercase;">${sec.category}</div>` + secItems; }
-            });
-        }); setHtml('so_table_body', soHtml);
+        if(dsc > 0) tH += `<tr><td colspan="2" style="border:none;"></td><td class="text-right" style="border-top:1.5px solid #000; padding-top:8px;"><strong>Subtotal</strong></td><td class="text-right" style="border-top:1.5px solid #000; padding-top:8px;"><strong>RM ${subAccum.toFixed(2)}</strong></td></tr><tr><td colspan="2" style="border:none;"></td><td class="text-right"><strong>Discount</strong></td><td class="text-right"><strong>- RM ${dsc.toFixed(2)}</strong></td></tr>`;
+        tH += `<tr><td colspan="2" style="border:none;"></td><td class="text-right" style="border-top:2px solid #000; font-size:11pt; padding-top:10px;"><strong>TOTAL AMOUNT</strong></td><td class="text-right" style="border-top:2px solid #000; font-size:11pt; padding-top:10px;"><strong>RM ${grandIncTax.toLocaleString('en-MY',{minimumFractionDigits:2})}</strong></td></tr>`;
+        
+        setHtml('cpDynamicTanksBody', tH);
     }
     
     function triggerPrint(type) {
-        if (type !== 'customer_from_preview') { processTankData(); syncPrintHeader(window.currentUnit||'ft'); }
-        if (type === 'customer') { switchTab('preview'); setTimeout(() => { document.body.className = 'print-customer'; window.print(); }, 200); } else if (type === 'customer_from_preview') { document.body.className = 'print-customer'; setTimeout(() => window.print(), 100); } else if (type === 'internal') { document.body.className = 'print-internal'; setTimeout(() => window.print(), 100); } else if (type === 'checklist') { setTxt('so_customer', getVal('custCompany')); setTxt('so_project', getVal('projectName')); setTxt('so_custpo', getVal('custPoNo')); document.body.className = 'print-checklist'; setTimeout(() => window.print(), 100); }
-    } window.addEventListener('afterprint', () => { document.body.className = ''; });
+        if(type !== 'customer_from_preview') { safeProcess(); syncPrintHeader(); }
+        if(type === 'customer') { switchTab('preview'); setTimeout(() => { document.body.className = 'print-customer'; window.print(); }, 200); }
+        else if(type === 'customer_from_preview') { document.body.className = 'print-customer'; setTimeout(() => window.print(), 100); }
+        else if(type === 'internal') { document.body.className = 'print-internal'; setTimeout(() => window.print(), 100); }
+        else if(type === 'checklist') { document.body.className = 'print-checklist'; setTimeout(() => window.print(), 100); }
+    } window.addEventListener('afterprint', () => document.body.className = '');
 
-    function buildAdminTable() { let h = ''; systemBaseStructure.forEach((sec, cIdx) => { h += `<tr style="background:#f1f5f9;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:4px 8px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`; sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0"></td></tr>`; }); }); setHtml('adminBody', h); }
-    function addAdminCat() { systemBaseStructure.push({category: "New Category", markup: 0, items: []}); buildAdminTable(); }
-    function addAdminItem(c) { systemBaseStructure[c].items.push({name:"New Item", wt:0, def:0}); buildAdminTable(); }
-    function removeAdminItem(c, i) { systemBaseStructure[c].items.splice(i, 1); buildAdminTable(); }
-    function saveAdminDefaults() { if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set({data: systemBaseStructure}); showToast("Master BOM Saved"); }
-    
-    function renderCustomerAdmin() { let f = getVal('custSearchBox').toLowerCase(); let h = ''; Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c)}')">X</button></td></tr>`; }); setHtml('customerAdminBody', h); }
-    function updateCustomerDatalist() { let h = ''; Object.keys(winkoCustomers).forEach(c => h += `<option value="${c}"></option>`); setHtml('customerDatalist', h); }
-    function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); } }
-    
-    function applyCompanyProfileToAdmin() { setVal('profileName', companyProfile.name); setVal('profileReg', companyProfile.reg); setVal('profileAddress', companyProfile.address); setVal('profileContact', companyProfile.contact); setVal('profileWebsite', companyProfile.website); setVal('profileTax', companyProfile.taxRate); setVal('profileTerms', companyProfile.terms); setVal('mat_painted', companyProfile.matMult.painted); setVal('mat_ss304', companyProfile.matMult.ss304); setVal('mat_ss316', companyProfile.matMult.ss316); setVal('profilePrefix', companyProfile.quotePrefix); setVal('profileSeq', companyProfile.quoteSeq); }
-    function saveCompanyProfile() { companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!'); }
-    function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
+    function applyProfile() {
+        setVal('profileName', companyProfile.name); setVal('profileReg', companyProfile.reg); setVal('profileAddress', companyProfile.address);
+        setVal('profileContact', companyProfile.contact); setVal('profileWebsite', companyProfile.website); setVal('profileTax', companyProfile.taxRate);
+        setVal('profilePrefix', companyProfile.quotePrefix); setVal('profileSeq', companyProfile.quoteSeq); 
+        setVal('profileTerms', companyProfile.terms); setVal('profileExclusions', companyProfile.exclusions);
+    }
+    function saveCompanyProfile() {
+        companyProfile = { name: getVal('profileName'), reg: getVal('profileReg'), address: getVal('profileAddress'), contact: getVal('profileContact'), website: getVal('profileWebsite'), taxRate: getNum('profileTax'), quotePrefix: getVal('profilePrefix'), quoteSeq: getVal('profileSeq'), terms: getVal('profileTerms'), exclusions: getVal('profileExclusions') };
+        if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast("Master Profile Saved");
+    }
 
-    console.log("✅ Winko ERP Script v161 successfully loaded with Multi-Partition capabilities!");
 </script>
 </body>
 </html>
