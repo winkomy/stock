@@ -900,7 +900,16 @@
     function exportCSV() {
         let csv = "Item,Qty,Unit Cost,Total\n";
         appTanks.forEach((t, i) => { csv += `TANK ${i+1} - ${t.L}x${t.W}x${t.H},,, \n`;
-            t.bom.forEach(sec => sec.items.forEach(it => { let qty = (sec.category==="Services") ? 1 : (Number(it.qty)||0); if(qty > 0) { let cost = it.manualPrice ? (parseFloat(it.def)||0) : ((winkoInventory[it.name] && winkoInventory[it.name].cost > 0) ? winkoInventory[it.name].cost : (it.def||0)); csv += `"${it.name}",${qty},${cost},${qty*cost}\n`; } }));
+            t.bom.forEach(sec => sec.items.forEach(it => { 
+                let searchName = it.name.trim().toLowerCase();
+                let invItemKey = Object.keys(winkoInventory).find(k => k.trim().toLowerCase() === searchName);
+                let invData = invItemKey ? winkoInventory[invItemKey] : null;
+                let unitPrice = 0;
+                if (it.manualPrice) { unitPrice = parseFloat(it.def) || 0; }
+                else { unitPrice = (invData && invData.cost > 0) ? invData.cost : (parseFloat(it.def) || 0); }
+                let qty = (sec.category==="Services") ? 1 : (Number(it.qty)||0); 
+                if(qty > 0) { csv += `"${it.name}",${qty},${unitPrice},${qty*unitPrice}\n`; } 
+            }));
         });
         if(appCustomItems.length > 0) { csv += `\nCUSTOM ITEMS & SERVICES,,,\n`; appCustomItems.forEach(c => { csv += `"${c.name}",${c.qty},${c.cost},${c.qty*c.cost}\n`; }); }
         let blob = new Blob([csv], { type: 'text/csv' }); let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = `Winko_${getVal('quoteIdInput')}.csv`; a.click();
@@ -915,7 +924,13 @@
     }
     function renderProjectBank() { drawProjectBankTable(); }
     
-    function loadFromMemory(k) { let d = window.cloudMemoryBank[k]; if(!d) return; configIDs.forEach(id => { if(d[id]!==undefined) setVal(id, d[id]); }); appTanks = d.tanks || []; appCustomItems = d.custom || []; switchTab('quote'); safeProcess(); showToast("Project Loaded!"); }
+    function loadFromMemory(k) { 
+        let d = window.cloudMemoryBank[k]; if(!d) return; 
+        configIDs.forEach(id => { if(d[id]!==undefined) setVal(id, d[id]); }); 
+        appTanks = d.tanks || []; appCustomItems = d.custom || []; 
+        appTanks.forEach((_, i) => autoCalculateBOM(i)); // Force sync against current master inventory
+        switchTab('quote'); safeProcess(); showToast("Project Loaded & Synced!"); 
+    }
 
     function backupSystem() {
         let backupData = { company: companyProfile, master_bom: {data: systemBaseStructure}, users: {data: winkoUsers}, crm: {data: winkoCustomers}, inventory: {data: winkoInventory}, projects: window.cloudMemoryBank || {} };
@@ -963,10 +978,8 @@
         let num_partitions = t.partitions.filter(p => p > 0).length;
         let partitionPanels = num_partitions * (panelsW * panelsH);
         
-        // --- FIXED PARTITION MATH ---
         let manholeQty = num_partitions + 1; 
         let roofQty = Math.max(0, (panelsL * panelsW) - manholeQty);
-        // ----------------------------
         
         let baseQty = panelsL * panelsW;
         let wallL1 = (panelsL + panelsW) * 2; let wallL2 = panelsH >= 2 ? (panelsL + panelsW) * 2 : 0; let wallL3 = panelsH >= 3 ? (panelsL + panelsW) * 2 : 0; let wallL4 = panelsH >= 4 ? (panelsL + panelsW) * 2 : 0;
@@ -1036,7 +1049,13 @@
         appTanks[i][f] = isNum ? (parseFloat(v)||0) : v; 
         if (f === 'coat') {
             let mult = (v === 'Painted Steel') ? companyProfile.matMult.painted : (v === 'Stainless Steel (SS 304)' ? companyProfile.matMult.ss304 : (v === 'Stainless Steel (SS 316)' ? companyProfile.matMult.ss316 : 1.0));
-            appTanks[i].bom.forEach(sec => sec.items.forEach((it, idx) => { if(sec.category !== 'Services') { let baseSec = systemBaseStructure.find(s => s.category == sec.category); let baseDef = (baseSec && baseSec.items && baseSec.items[idx]) ? baseSec.items[idx].def : 0; it.def = baseDef * mult; } }));
+            appTanks[i].bom.forEach(sec => sec.items.forEach((it, idx) => { 
+                if(sec.category !== 'Services' && !it.manualPrice) { 
+                    let baseSec = systemBaseStructure.find(s => s.category == sec.category); 
+                    let baseDef = (baseSec && baseSec.items && baseSec.items[idx]) ? baseSec.items[idx].def : 0; 
+                    it.def = baseDef * mult; 
+                } 
+            }));
         }
         if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std'].includes(f)) { autoCalculateBOM(i); } safeProcess(); 
     }
@@ -1114,7 +1133,8 @@
                 sec.items.forEach((it, iIdx) => {
                     let isZero = (sec.category !== "Services" && (!it.qty || it.qty == 0)); let rowStyle = isZero ? "display:none;" : ""; 
                     let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
-                    rH += `<tr style="${rowStyle}" class="bom-row-${i}"><td><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)"><span id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></span></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
+                    let resetBtn = it.manualPrice ? `<button class="del-btn no-print" style="background:#e0f2fe; color:#0369a1; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice = false; safeProcess();">Sync to Inv</button>` : '';
+                    rH += `<tr style="${rowStyle}" class="bom-row-${i}"><td><div style="display:flex; align-items:center;"><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)">${resetBtn}</div><div id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></div></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
                 });
             });
             bH += `<div class="module-card collapsed" style="margin-top:20px; border: 1px solid #e2e8f0;"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><span>⚙️ BOM - TANK ${i+1}</span><button class="action-btn export-btn no-print" style="padding:6px 12px; font-size:11px; width:auto; margin-right:20px;" onclick="event.stopPropagation(); document.querySelectorAll('.bom-row-${i}').forEach(el=>el.style.display='table-row')">👁️ Show Hidden Items</button></div></div><div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
@@ -1158,11 +1178,33 @@
             appTanks.forEach((t, i) => {
                 t.effLiters = ((u === 'ft') ? (t.L * t.W * t.H * 28.3168) : (t.L * t.W * t.H * 1000)) * 0.9; totalC += t.effLiters; t.baseCost = 0;
                 t.bom.forEach((sec, sIdx) => { sec.items.forEach((it, iIdx) => {
-                    let invItem = winkoInventory[it.name]; let unitPrice = 0;
-                    if (it.manualPrice) { unitPrice = parseFloat(it.def) || 0; } else { unitPrice = (invItem && invItem.cost > 0) ? invItem.cost : (parseFloat(it.def) || 0); }
+                    
+                    // --- INVENTORY LOOKUP FIX (NORMALIZATION) ---
+                    let searchName = it.name.trim().toLowerCase();
+                    let invItemKey = Object.keys(winkoInventory).find(k => k.trim().toLowerCase() === searchName);
+                    let invData = invItemKey ? winkoInventory[invItemKey] : null;
+                    
+                    let unitPrice = 0;
+                    if (it.manualPrice) { 
+                        unitPrice = parseFloat(it.def) || 0; 
+                    } else { 
+                        unitPrice = (invData && invData.cost > 0) ? invData.cost : (parseFloat(it.def) || 0); 
+                    }
+                    
                     let calcQty = (sec.category === "Services") ? 1 : (Number(it.qty) || 0); let lTot = calcQty * unitPrice; t.baseCost += lTot;
                     let tagEl = document.getElementById(`price_tag_${i}_${sIdx}_${iIdx}`);
-                    if(tagEl) { if (it.manualPrice) { tagEl.innerText = "[Manual Override]"; tagEl.className = "price-tag"; tagEl.style.color = "#ea580c"; } else if (invItem && invItem.cost > 0) { tagEl.innerText = "[Synced to Inventory]"; tagEl.className = "price-tag synced"; tagEl.style.color = ""; } else { tagEl.innerText = "[Fallback Cost]"; tagEl.className = "price-tag"; tagEl.style.color = ""; } }
+                    
+                    // --- STATUS BADGE RENDER ---
+                    if(tagEl) { 
+                        if (it.manualPrice) { 
+                            tagEl.innerHTML = `<span style="color:#ea580c;">● Manual Override</span>`; tagEl.className = "price-tag"; 
+                        } else if (invData && invData.cost > 0) { 
+                            tagEl.innerHTML = `<span style="color:#059669;">● Linked to Inventory</span>`; tagEl.className = "price-tag synced"; 
+                        } else { 
+                            tagEl.innerHTML = `<span style="color:#64748b;">● Using Master Fallback</span>`; tagEl.className = "price-tag"; 
+                        } 
+                    }
+                    
                     let totEl = document.getElementById(`tot_${i}_${sIdx}_${iIdx}`); if(totEl) totEl.innerText = lTot.toLocaleString('en-MY',{minimumFractionDigits:2});
                 }); }); totalBase += t.baseCost;
             });
@@ -1216,7 +1258,7 @@
         if (type === 'customer') { switchTab('preview'); setTimeout(() => { document.body.className = 'print-customer'; window.print(); }, 200); } else if (type === 'customer_from_preview') { document.body.className = 'print-customer'; setTimeout(() => window.print(), 100); } else if (type === 'internal') { document.body.className = 'print-internal'; setTimeout(() => window.print(), 100); } else if (type === 'checklist') { setTxt('so_customer', getVal('custCompany')); setTxt('so_project', getVal('projectName')); setTxt('so_custpo', getVal('custPoNo')); document.body.className = 'print-checklist'; setTimeout(() => window.print(), 100); }
     } window.addEventListener('afterprint', () => { document.body.className = ''; });
 
-    function buildAdminTable() { let h = ''; systemBaseStructure.forEach((sec, cIdx) => { h += `<tr style="background:#f8fafc;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:6px 12px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`; sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" style="text-align:left;" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0"></td></tr>`; }); }); setHtml('adminBody', h); }
+    function buildAdminTable() { let h = ''; systemBaseStructure.forEach((sec, cIdx) => { h += `<tr style="background:#f8fafc;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:6px 12px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`; sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" style="text-align:left;" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0; saveAdminDefaults();"></td></tr>`; }); }); setHtml('adminBody', h); }
     function addAdminCat() { systemBaseStructure.push({category: "New Category", markup: 0, items: []}); buildAdminTable(); }
     function addAdminItem(c) { systemBaseStructure[c].items.push({name:"New Item", wt:0, def:0}); buildAdminTable(); }
     function removeAdminItem(c, i) { systemBaseStructure[c].items.splice(i, 1); buildAdminTable(); }
