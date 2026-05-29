@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V162</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V163</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -220,7 +220,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V162 - Professional Print Edition</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V163 - Custom Thickness Edition</p>
     </div>
 </div>
 
@@ -635,7 +635,7 @@
         return false;
     };
 
-    const cv = "V162"; 
+    const cv = "V163"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1082,15 +1082,17 @@
             tH += `<div class="tank-block" style="border-top:2px dashed #cbd5e1; margin-top:32px; padding-top:24px;">
                 <div class="tank-section-title"><span>Tank ${i+1} Specs</span><button class="del-btn no-print" onclick="removeTank(${i})">X REMOVE</button></div>
                 <div class="config-grid"><div class="form-group"><label>Standard</label><select onchange="updateTankField(${i}, 'std', this.value)"><option ${t.std.includes('SANS')?'selected':''}>SANS 10329:2020 Approved by SIRIM & SPAN</option><option ${t.std.includes('SS 22')?'selected':''}>SS 22: 1979</option></select></div><div class="form-group"><label>Material</label><select onchange="updateTankField(${i}, 'coat', this.value)"><option ${t.coat==='Hot Dipped Galvanised'?'selected':''}>Hot Dipped Galvanised</option><option ${t.coat==='Painted Steel'?'selected':''}>Painted Steel</option><option ${t.coat==='Stainless Steel (SS 304)'?'selected':''}>Stainless Steel (SS 304)</option><option ${t.coat==='Stainless Steel (SS 316)'?'selected':''}>Stainless Steel (SS 316)</option></select></div></div>
+                
                 <div class="tank-section-title" style="margin-top:16px; background:#f0fdf4; border-left-color:#22c55e;">🛡️ Panel Thickness Config (mm)</div>
                 <div class="dim-grid" style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom: 20px;">
-                    <div class="form-group"><label>Base Panel</label><select onchange="updateTankField(${i}, 'thickBase', this.value)"><option ${t.thickBase=='4.5'?'selected':''}>4.5</option><option ${t.thickBase=='5.0'?'selected':''}>5.0</option><option ${t.thickBase=='6.0'?'selected':''}>6.0</option></select></div>
-                    <div class="form-group"><label>Roof Panel</label><select onchange="updateTankField(${i}, 'thickRoof', this.value)"><option ${t.thickRoof=='1.5'?'selected':''}>1.5</option><option ${t.thickRoof=='2.0'?'selected':''}>2.0</option><option ${t.thickRoof=='3.0'?'selected':''}>3.0</option></select></div>
-                    <div class="form-group"><label>Wall L1 (Bottom)</label><select onchange="updateTankField(${i}, 'thickL1', this.value)"><option ${t.thickL1=='4.5'?'selected':''}>4.5</option><option ${t.thickL1=='5.0'?'selected':''}>5.0</option><option ${t.thickL1=='6.0'?'selected':''}>6.0</option></select></div>
-                    <div class="form-group"><label>Wall L2</label><select onchange="updateTankField(${i}, 'thickL2', this.value)"><option ${t.thickL2=='3.0'?'selected':''}>3.0</option><option ${t.thickL2=='4.0'?'selected':''}>4.0</option><option ${t.thickL2=='4.5'?'selected':''}>4.5</option><option ${t.thickL2=='5.0'?'selected':''}>5.0</option></select></div>
-                    <div class="form-group"><label>Wall L3</label><select onchange="updateTankField(${i}, 'thickL3', this.value)"><option ${t.thickL3=='1.5'?'selected':''}>1.5</option><option ${t.thickL3=='2.0'?'selected':''}>2.0</option><option ${t.thickL3=='3.0'?'selected':''}>3.0</option><option ${t.thickL3=='4.5'?'selected':''}>4.5</option></select></div>
-                    <div class="form-group"><label>Wall L4 (Top)</label><select onchange="updateTankField(${i}, 'thickL4', this.value)"><option ${t.thickL4=='1.5'?'selected':''}>1.5</option><option ${t.thickL4=='2.0'?'selected':''}>2.0</option><option ${t.thickL4=='3.0'?'selected':''}>3.0</option></select></div>
+                    <div class="form-group"><label>Base Panel</label><input type="text" value="${t.thickBase||'4.5'}" oninput="updateTankField(${i}, 'thickBase', this.value)"></div>
+                    <div class="form-group"><label>Roof Panel</label><input type="text" value="${t.thickRoof||'1.5'}" oninput="updateTankField(${i}, 'thickRoof', this.value)"></div>
+                    <div class="form-group"><label>Wall L1 (Bottom)</label><input type="text" value="${t.thickL1||'4.5'}" oninput="updateTankField(${i}, 'thickL1', this.value)"></div>
+                    <div class="form-group"><label>Wall L2</label><input type="text" value="${t.thickL2||'3.0'}" oninput="updateTankField(${i}, 'thickL2', this.value)"></div>
+                    <div class="form-group"><label>Wall L3</label><input type="text" value="${t.thickL3||'3.0'}" oninput="updateTankField(${i}, 'thickL3', this.value)"></div>
+                    <div class="form-group"><label>Wall L4 (Top)</label><input type="text" value="${t.thickL4||'1.5'}" oninput="updateTankField(${i}, 'thickL4', this.value)"></div>
                 </div>
+
                 <div class="dim-grid">
                     <div class="form-group"><label>Length</label><input type="number" value="${t.L}" oninput="updateTankField(${i}, 'L', this.value, true)"></div>
                     <div class="form-group"><label>Width</label><input type="number" value="${t.W}" oninput="updateTankField(${i}, 'W', this.value, true)"></div>
@@ -1268,7 +1270,7 @@
     function saveCompanyProfile() { companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!'); }
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v162 successfully loaded with Professional Print Layouts!");
+    console.log("✅ Winko ERP Script v163 successfully loaded with Custom Thickness Edition!");
 </script>
 </body>
 </html>
