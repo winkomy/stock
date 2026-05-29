@@ -159,12 +159,6 @@
             body.print-checklist #checklistPrintView { display: block !important; font-size: 9.5pt; padding: 0; color: #000; }
             .chk-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; text-align: center; line-height: 12px; margin-right: 4px; font-weight:bold;}
         }
-        
-        .cp-classic-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 9.5pt; color: #000; }
-        .cp-classic-table th { background: transparent; color: #000; padding: 10px 5px; text-align: left; font-weight: bold; border-top: 2px solid #000; border-bottom: 2px solid #000; text-transform:uppercase; }
-        .cp-classic-table td { border-bottom: 1px dashed #cbd5e1; padding: 10px 5px; vertical-align: top;}
-        .cp-classic-table td.text-center { text-align: center; }
-        .cp-classic-table td.text-right { text-align: right; }
     </style>
 </head>
 <body>
@@ -774,9 +768,16 @@
             applyCompanyProfileToHeaders();
             applyCompanyProfileToAdmin();
             setVal('quoteIdInput', (companyProfile.quotePrefix || "QP-26-") + (companyProfile.quoteSeq || 1001)); setVal('sstPct', companyProfile.taxRate); setVal('fullTermsNotes', companyProfile.terms); setVal('shortExclusions', "- Float valve chamber or top sumps\n- Flanges, nozzles, pipes, vortex, valves, electrode sensor, pumps and filter.\n- Scaffolding\n- Unloading and hoisting of materials.\n- HIRARC, permit application, medical test and site safety supervisor.");
-            initCloudListeners();
-            if (cloudDB) { document.getElementById('cloudStatusDot').classList.add('online'); document.getElementById('cloudStatusDot').title = "Live Cloud Sync Connected"; }
-        } catch(e) { console.error(e); }
+            
+            // Safe initialization wrapper
+            if (cloudDB) { 
+                initCloudListeners();
+                document.getElementById('cloudStatusDot').classList.add('online'); 
+                document.getElementById('cloudStatusDot').title = "Live Cloud Sync Connected"; 
+            } else {
+                console.log("Running in offline mode (No Firebase connection)");
+            }
+        } catch(e) { console.error("System init failed, but UI loaded:", e); }
     }
     
     initSystemData();
@@ -1517,3 +1518,57 @@
             });
         });
         setHtml('so_table_body', soHtml);
+    }
+    
+    function triggerPrint(type) {
+        if (type !== 'customer_from_preview') {
+            processTankData(); 
+            syncPrintHeader(window.currentUnit||'ft');
+        }
+        
+        if (type === 'customer') {
+            switchTab('preview'); 
+            setTimeout(() => { document.body.className = 'print-customer'; window.print(); }, 200);
+        } else if (type === 'customer_from_preview') {
+            document.body.className = 'print-customer'; setTimeout(() => window.print(), 100);
+        } else if (type === 'internal') {
+            document.body.className = 'print-internal'; setTimeout(() => window.print(), 100);
+        } else if (type === 'checklist') {
+            setTxt('so_customer', getVal('custCompany')); setTxt('so_project', getVal('projectName')); setTxt('so_custpo', getVal('custPoNo')); 
+            document.body.className = 'print-checklist'; setTimeout(() => window.print(), 100);
+        }
+    }
+    window.addEventListener('afterprint', () => { document.body.className = ''; });
+
+    function buildAdminTable() {
+        let h = '';
+        systemBaseStructure.forEach((sec, cIdx) => {
+            h += `<tr style="background:#f1f5f9;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:4px 8px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`;
+            sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0"></td></tr>`; });
+        });
+        setHtml('adminBody', h);
+    }
+    function addAdminCat() { systemBaseStructure.push({category: "New Category", markup: 0, items: []}); buildAdminTable(); }
+    function addAdminItem(c) { systemBaseStructure[c].items.push({name:"New Item", wt:0, def:0}); buildAdminTable(); }
+    function removeAdminItem(c, i) { systemBaseStructure[c].items.splice(i, 1); buildAdminTable(); }
+    function saveAdminDefaults() { if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set({data: systemBaseStructure}); showToast("Master BOM Saved"); }
+    
+    function renderCustomerAdmin() {
+        let f = getVal('custSearchBox').toLowerCase(); let h = '';
+        Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c)}')">X</button></td></tr>`; });
+        setHtml('customerAdminBody', h);
+    }
+    function updateCustomerDatalist() { let h = ''; Object.keys(winkoCustomers).forEach(c => h += `<option value="${c}"></option>`); setHtml('customerDatalist', h); }
+    function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); } }
+    
+    function applyCompanyProfileToAdmin() { setVal('profileName', companyProfile.name); setVal('profileReg', companyProfile.reg); setVal('profileAddress', companyProfile.address); setVal('profileContact', companyProfile.contact); setVal('profileWebsite', companyProfile.website); setVal('profileTax', companyProfile.taxRate); setVal('profileTerms', companyProfile.terms); setVal('mat_painted', companyProfile.matMult.painted); setVal('mat_ss304', companyProfile.matMult.ss304); setVal('mat_ss316', companyProfile.matMult.ss316); setVal('profilePrefix', companyProfile.quotePrefix); setVal('profileSeq', companyProfile.quoteSeq); }
+    function saveCompanyProfile() {
+        companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001;
+        if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!');
+    }
+    function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
+
+    console.log("✅ Winko ERP Script successfully parsed and loaded into memory!");
+</script>
+</body>
+</html>
