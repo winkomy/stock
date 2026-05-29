@@ -433,8 +433,7 @@
                             <div class="form-group"><label>Sign-off Name</label><input type="text" id="signName" value="LEE JL" oninput="safeProcess()"></div>
                             <div class="form-group"><label>Sign-off Phone</label><input type="text" id="signPhone" value="019-2215558" oninput="safeProcess()"></div>
                         </div>
-                        <div class="form-group"><label>Short Exclusions</label><textarea id="shortExclusions" rows="5" oninput="safeProcess()">- Float valve chamber or top sumps&#10;- Flanges, nozzles, pipes, vortex, valves, electrode sensor, pumps and filter.&#10;- Scaffolding&#10;- Unloading and hoisting of materials.&#10;- HIRARC, permit application, medical test and site safety supervisor.</textarea></div>
-                        <div class="form-group">
+                       
     <label style="display:flex; justify-content:space-between; align-items:center;">
         Full T&C 
         <button type="button" style="background:#3b82f6; color:white; border:none; padding:3px 8px; border-radius:4px; font-size:10px; cursor:pointer; font-weight:bold;" onclick="document.getElementById('fullTermsNotes').value = companyProfile.terms; safeProcess(); showToast('Master T&C Loaded!');">🔄 Sync from Master Control</button>
@@ -546,10 +545,7 @@
         </table>
 
         <div class="page-break">
-            <div class="editable-section avoid-break" style="font-size:9pt; margin-bottom:20px;">
-                <div style="font-weight:bold; font-size: 10pt; text-decoration:underline; margin-bottom:10px;">Exclusion</div>
-                <div id="cpShortExclusionsText" style="padding-left:10px;"></div>
-            </div>
+           
             
             <div class="editable-section avoid-break" style="font-size:9pt; margin-bottom:20px;">
                 <div style="font-weight:bold; font-size: 10pt; text-decoration:underline; margin-bottom:10px;">TERMS & CONDITIONS</div>
@@ -771,8 +767,7 @@
     function initSystemData() {
         try {
             applyCompanyProfileToHeaders(); applyCompanyProfileToAdmin();
-            setVal('quoteIdInput', (companyProfile.quotePrefix || "QP-26-") + (companyProfile.quoteSeq || 1001)); setVal('sstPct', companyProfile.taxRate); setVal('fullTermsNotes', companyProfile.terms); setVal('shortExclusions', "- Float valve chamber or top sumps\n- Flanges, nozzles, pipes, vortex, valves, electrode sensor, pumps and filter.\n- Scaffolding\n- Unloading and hoisting of materials.\n- HIRARC, permit application, medical test and site safety supervisor.");
-            if (cloudDB) { initCloudListeners(); document.getElementById('cloudStatusDot').classList.add('online'); document.getElementById('cloudStatusDot').title = "Live Cloud Sync Connected"; }
+            setVal('quoteIdInput', (companyProfile.quotePrefix || "QP-26-") + (companyProfile.quoteSeq || 1001)); setVal('sstPct', companyProfile.taxRate); setVal('fullTermsNotes', companyProfile.terms); 
         } catch(e) { console.error("System init failed:", e); }
     }
     
@@ -927,7 +922,7 @@
     }
 
     let appTanks = []; let appCustomItems = [];
-    const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'shortExclusions', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
+    const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
 
     function defaultTank() { 
         return { 
@@ -1164,7 +1159,7 @@
     function safeProcess() { processTankData(); }
 
     function syncPrintHeader(u) {
-        setTxt('metaQuoteId', getVal('quoteIdInput')); setTxt('cpRef', getVal('quoteIdInput')); setTxt('metaDate', new Date().toLocaleDateString()); setTxt('cpDate', new Date().toLocaleDateString()); setTxt('metaProject', getVal('projectName')); setTxt('cpProject', getVal('projectName')); setTxt('cpCustName', getVal('custCompany')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr')); setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>')); setTxt('cpLeadTime', getVal('tcLead')); setTxt('cpDeliveryTerm', getVal('tcDelivery')); setTxt('cpSignName', getVal('signName')); setTxt('cpSignPhone', getVal('signPhone')); setHtml('cpShortExclusionsText', getVal('shortExclusions').replace(/\n/g, '<br>')); setTxt('cpFullTermsText', getVal('fullTermsNotes'));
+        setTxt('metaQuoteId', getVal('quoteIdInput')); setTxt('cpRef', getVal('quoteIdInput')); setTxt('metaDate', new Date().toLocaleDateString()); setTxt('cpDate', new Date().toLocaleDateString()); setTxt('metaProject', getVal('projectName')); setTxt('cpProject', getVal('projectName')); setTxt('cpCustName', getVal('custCompany')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr')); setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>')); setTxt('cpLeadTime', getVal('tcLead')); setTxt('cpDeliveryTerm', getVal('tcDelivery')); setTxt('cpSignName', getVal('signName')); setTxt('cpSignPhone', getVal('signPhone')); setTxt('cpFullTermsText', getVal('fullTermsNotes'));
         
         let tH = ''; let subtotalAccumulator = 0;
         appTanks.forEach((t, i) => {
