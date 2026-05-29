@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V164</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V165</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -220,7 +220,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V164 - Unified Master T&C Edition</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V165 - Live UI Sync Fix</p>
     </div>
 </div>
 
@@ -629,7 +629,7 @@
         return false;
     };
 
-    const cv = "V164"; 
+    const cv = "V165"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1110,7 +1110,7 @@
                     let isZero = (sec.category !== "Services" && (!it.qty || it.qty == 0)); let rowStyle = isZero ? "display:none;" : ""; 
                     let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
                     let resetBtn = it.manualPrice ? `<button class="del-btn no-print" style="background:#e0f2fe; color:#0369a1; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice = false; safeProcess();">Sync to Inv</button>` : '';
-                    rH += `<tr style="${rowStyle}" class="bom-row-${i}"><td><div style="display:flex; align-items:center;"><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)">${resetBtn}</div><div id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></div></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
+                    rH += `<tr style="${rowStyle}" class="bom-row-${i}"><td><div style="display:flex; align-items:center;"><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)">${resetBtn}</div><div id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></div></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" id="cost_in_${i}_${sIdx}_${iIdx}" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
                 });
             });
             bH += `<div class="module-card collapsed" style="margin-top:20px; border: 1px solid #e2e8f0;"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><span>⚙️ BOM - TANK ${i+1}</span><button class="action-btn export-btn no-print" style="padding:6px 12px; font-size:11px; width:auto; margin-right:20px;" onclick="event.stopPropagation(); document.querySelectorAll('.bom-row-${i}').forEach(el=>el.style.display='table-row')">👁️ Show Hidden Items</button></div></div><div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
@@ -1184,6 +1184,12 @@
                     }
                     
                     let totEl = document.getElementById(`tot_${i}_${sIdx}_${iIdx}`); if(totEl) totEl.innerText = lTot.toLocaleString('en-MY',{minimumFractionDigits:2});
+
+                    let costInput = document.getElementById(`cost_in_${i}_${sIdx}_${iIdx}`);
+                    if(costInput && document.activeElement !== costInput) {
+                        costInput.value = unitPrice.toFixed(2);
+                    }
+
                 }); }); totalBase += t.baseCost;
             });
 
@@ -1264,7 +1270,7 @@
     function saveCompanyProfile() { companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!'); }
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v164 successfully loaded with Unified Master T&C Edition!");
+    console.log("✅ Winko ERP Script v165 successfully loaded with Live UI Sync Fix!");
 </script>
 </body>
 </html>
