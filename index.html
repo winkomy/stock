@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V163</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V164</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -220,7 +220,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V163 - Custom Thickness Edition</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V164 - Unified Master T&C Edition</p>
     </div>
 </div>
 
@@ -465,7 +465,6 @@
                             <div class="form-group"><label>Sign-off Name</label><input type="text" id="signName" value="LEE JL" oninput="safeProcess()"></div>
                             <div class="form-group"><label>Sign-off Phone</label><input type="text" id="signPhone" value="019-2215558" oninput="safeProcess()"></div>
                         </div>
-                        <div class="form-group"><label>Short Exclusions</label><textarea id="shortExclusions" rows="5" oninput="safeProcess()">- Float valve chamber or top sumps&#10;- Flanges, nozzles, pipes, vortex, valves, electrode sensor, pumps and filter.&#10;- Scaffolding&#10;- Unloading and hoisting of materials.&#10;- HIRARC, permit application, medical test and site safety supervisor.</textarea></div>
                         <div class="form-group" style="margin-top: 16px;">
                             <label style="display: flex; justify-content: space-between;">
                                 <span>Full T&C</span>
@@ -570,11 +569,6 @@
 
         <div class="page-break">
             <div class="editable-section avoid-break" style="font-size:9pt; margin-bottom:20px;">
-                <div style="font-weight:bold; font-size: 10pt; text-decoration:underline; margin-bottom:10px;">Exclusion</div>
-                <div id="cpShortExclusionsText" style="padding-left:10px;"></div>
-            </div>
-            
-            <div class="editable-section avoid-break" style="font-size:9pt; margin-bottom:20px;">
                 <div style="font-weight:bold; font-size: 10pt; text-decoration:underline; margin-bottom:10px;">TERMS & CONDITIONS</div>
                 <table style="border:none; width:100%; border-collapse:collapse; background: transparent;">
                     <tr style="border:none;"><td style="width:150px; font-weight:bold; border:none; padding:5px 0;">Quotation Validity:</td><td id="cpValidity" style="border:none; padding:5px 0;"></td></tr>
@@ -635,7 +629,7 @@
         return false;
     };
 
-    const cv = "V163"; 
+    const cv = "V164"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -649,7 +643,7 @@
         if(!tc) { tc = document.createElement('div'); tc.id = 'toast-container'; document.body.appendChild(tc); }
         let toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        let icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️');
+        let icon = type === 'success' ? '✅' : (type === 'error' ? 'ℹ️' : 'ℹ️');
         toast.innerHTML = `<div>${icon} &nbsp; ${message}</div> <button style="background:none; border:none; color:white; cursor:pointer; font-weight:bold; font-size:18px; padding:0 5px;" onclick="this.parentElement.remove()">×</button>`;
         tc.appendChild(toast);
         setTimeout(() => { toast.style.animation = 'fadeOut 0.4s ease forwards'; setTimeout(() => toast.remove(), 400); }, 3500);
@@ -760,7 +754,7 @@
     function initSystemData() {
         try {
             applyCompanyProfileToHeaders(); applyCompanyProfileToAdmin();
-            setVal('quoteIdInput', (companyProfile.quotePrefix || "QP-26-") + (companyProfile.quoteSeq || 1001)); setVal('sstPct', companyProfile.taxRate); setVal('fullTermsNotes', companyProfile.terms); setVal('shortExclusions', "- Float valve chamber or top sumps\n- Flanges, nozzles, pipes, vortex, valves, electrode sensor, pumps and filter.\n- Scaffolding\n- Unloading and hoisting of materials.\n- HIRARC, permit application, medical test and site safety supervisor.");
+            setVal('quoteIdInput', (companyProfile.quotePrefix || "QP-26-") + (companyProfile.quoteSeq || 1001)); setVal('sstPct', companyProfile.taxRate); setVal('fullTermsNotes', companyProfile.terms);
             if (cloudDB) { initCloudListeners(); document.getElementById('cloudStatusDot').classList.add('online'); document.getElementById('cloudStatusDot').title = "Live Cloud Sync Connected"; }
         } catch(e) { console.error("System init failed:", e); }
     }
@@ -931,7 +925,7 @@
     }
 
     let appTanks = []; let appCustomItems = [];
-    const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'shortExclusions', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
+    const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
 
     function defaultTank() { 
         return { 
@@ -1206,7 +1200,7 @@
     function safeProcess() { processTankData(); }
 
     function syncPrintHeader(u) {
-        setTxt('metaQuoteId', getVal('quoteIdInput')); setTxt('cpRef', getVal('quoteIdInput')); setTxt('metaDate', new Date().toLocaleDateString()); setTxt('cpDate', new Date().toLocaleDateString()); setTxt('metaProject', getVal('projectName')); setTxt('cpProject', getVal('projectName')); setTxt('cpCustName', getVal('custCompany')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr')); setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>')); setTxt('cpLeadTime', getVal('tcLead')); setTxt('cpDeliveryTerm', getVal('tcDelivery')); setTxt('cpSignName', getVal('signName')); setTxt('cpSignPhone', getVal('signPhone')); setHtml('cpShortExclusionsText', getVal('shortExclusions').replace(/\n/g, '<br>')); setTxt('cpFullTermsText', getVal('fullTermsNotes'));
+        setTxt('metaQuoteId', getVal('quoteIdInput')); setTxt('cpRef', getVal('quoteIdInput')); setTxt('metaDate', new Date().toLocaleDateString()); setTxt('cpDate', new Date().toLocaleDateString()); setTxt('metaProject', getVal('projectName')); setTxt('cpProject', getVal('projectName')); setTxt('cpCustName', getVal('custCompany')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr')); setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>')); setTxt('cpLeadTime', getVal('tcLead')); setTxt('cpDeliveryTerm', getVal('tcDelivery')); setTxt('cpSignName', getVal('signName')); setTxt('cpSignPhone', getVal('signPhone')); setTxt('cpFullTermsText', getVal('fullTermsNotes'));
         
         let tH = ''; let subtotalAccumulator = 0;
         appTanks.forEach((t, i) => {
@@ -1270,7 +1264,7 @@
     function saveCompanyProfile() { companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!'); }
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v163 successfully loaded with Custom Thickness Edition!");
+    console.log("✅ Winko ERP Script v164 successfully loaded with Unified Master T&C Edition!");
 </script>
 </body>
 </html>
