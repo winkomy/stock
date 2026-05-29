@@ -1172,10 +1172,17 @@
         });
         
         appCustomItems.forEach((c, i) => { let lineCost = ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); subtotalAccumulator += lineCost; tH += `<tr><td class="text-center" style="font-weight:bold;">-</td><td><strong style="color:#000; font-size:10pt;">${c.name}</strong></td><td class="text-center" style="font-weight:bold;">${c.qty} ${c.unit}</td><td class="text-right" style="font-weight:bold;">RM ${lineCost.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; });
+        // Calculate Discount and Net
         let dscPct = getNum('discountPct'); let dscAmt = subtotalAccumulator * (dscPct/100); let net = subtotalAccumulator - dscAmt;
+        
+        // Calculate SST secretly and add to the Grand Total
+        let sstPct = getNum('sstPct'); let sstAmt = net * (sstPct/100); let grandTotalIncTax = net + sstAmt; 
+        
         if (dscAmt > 0) { tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">Gross Subtotal</td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">RM ${subtotalAccumulator.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr><tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">Discount (${dscPct}%)</td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">- RM ${dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; }
-        let finalCustomerTotal = net.toLocaleString('en-MY',{minimumFractionDigits:2}); tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">Total Amount</td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">RM ${finalCustomerTotal}</td></tr>`;
-        setHtml('cpDynamicTanksBody', tH);
+        
+        // Output the final number including the hidden tax
+        let finalCustomerTotal = grandTotalIncTax.toLocaleString('en-MY',{minimumFractionDigits:2}); 
+        tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">Total Amount</td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">RM ${finalCustomerTotal}</td></tr>`;
         
         let nozH = ''; appTanks.forEach((t,i) => { if(t.nozzles) t.nozzles.forEach(n => { nozH += `<tr><td style="border:1px solid #000; text-align:center;">${n.type}</td><td style="border:1px solid #000; text-align:center;">${n.size}</td><td style="border:1px solid #000; text-align:center;">${n.qty}</td><td style="border:1px solid #000; padding-left:5px;">Tank ${i+1}: ${n.pos}</td></tr>`; }) });
         setHtml('so_nozzle_body', nozH);
