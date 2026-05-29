@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V160</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V161</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -193,7 +193,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 12px; top: 35px; cursor: pointer; font-size: 16px;" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 10px; color: #94a3b8; margin-top: 20px;">V160 - Intelligent BOM Edition</p>
+        <p style="font-size: 10px; color: #94a3b8; margin-top: 20px;">V161 - Multi-Partition Edition</p>
     </div>
 </div>
 
@@ -411,7 +411,7 @@
                 <div class="module-card drawings-page internal-hide-except-print">
                     <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📏</span> 3. Auto-Drawings (Panel Layout)</div>
                     <div class="card-body">
-                        <p style="font-size:11px; color:#64748b; margin-top:0;">* Pure Schematics: Paddles & Partition logic applied automatically. No dots or text labels.</p>
+                        <p style="font-size:11px; color:#64748b; margin-top:0;">* Pure Schematics: Partitions (red dashed) & Ladders (orange) applied automatically.</p>
                         <div id="dynamicDrawingsContainer"></div>
                     </div>
                 </div>
@@ -640,7 +640,7 @@
         return false;
     };
 
-    const cv = "V160"; 
+    const cv = "V161"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -663,7 +663,7 @@
     function togglePass(id) { let el = document.getElementById(id); if(el) { el.type = el.type === "password" ? "text" : "password"; } }
 
     const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyC4ypeNoU9D_gFxjaDSZA11PJrqh4sOdbM", // REMEMBER TO REPLACE THIS
+        apiKey: "AIzaSyC4ypeNoU9D_gFxjaDSZA11PJrqh4sOdbM",
         authDomain: "winko-erp.firebaseapp.com",
         databaseURL: "https://winko-erp-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "winko-erp",
@@ -673,7 +673,6 @@
     };
 
     let cloudDB = null;
-    
     try {
         if(typeof firebase !== 'undefined' && FIREBASE_CONFIG.apiKey !== "") {
             firebase.initializeApp(FIREBASE_CONFIG);
@@ -683,10 +682,7 @@
         console.warn("Firebase blocked or failed. Running strictly in offline mode.", err);
     }
     
-    let winkoUsers = [
-        { username: "admin", password: "adminmaster99", role: "admin" },
-        { username: "staff", password: "password123", role: "user" }
-    ]; 
+    let winkoUsers = [ { username: "admin", password: "adminmaster99", role: "admin" } ]; 
     let loggedInUser = null;
 
     let winkoCustomers = {}; 
@@ -727,7 +723,10 @@
             {name: "67.5\" (L1 Stay - 50x50x5mm)", def: 27.25, wt: 4.5},
             {name: "92.5\" (L2 Stay - 50x50x5mm)", def: 38.50, wt: 7.2},
             {name: "135.5\" (L3 Stay - 50x50x5mm)", def: 49.60, wt: 14.5},
-            {name: "15' 8.5\" (L4 Stay)", def: 125, wt: 19.8}
+            {name: "15' 8.5\" (L4 Stay)", def: 125, wt: 19.8},
+            {name: "Partition L1 Stay", def: 27.25, wt: 4.5, _isPartStay: 1},
+            {name: "Partition L2 Stay", def: 38.50, wt: 7.2, _isPartStay: 2},
+            {name: "Partition L3 Stay", def: 49.60, wt: 14.5, _isPartStay: 3}
         ] },
         { category: "Accessories", markup: 0, items: [
             {name: "Ext. Ladder (HDG)", def: 55, wt: 3.5}, 
@@ -765,87 +764,28 @@
 
     function initSystemData() {
         try {
-            applyCompanyProfileToHeaders();
-            applyCompanyProfileToAdmin();
+            applyCompanyProfileToHeaders(); applyCompanyProfileToAdmin();
             setVal('quoteIdInput', (companyProfile.quotePrefix || "QP-26-") + (companyProfile.quoteSeq || 1001)); setVal('sstPct', companyProfile.taxRate); setVal('fullTermsNotes', companyProfile.terms); setVal('shortExclusions', "- Float valve chamber or top sumps\n- Flanges, nozzles, pipes, vortex, valves, electrode sensor, pumps and filter.\n- Scaffolding\n- Unloading and hoisting of materials.\n- HIRARC, permit application, medical test and site safety supervisor.");
-            
-            // Safe initialization wrapper
-            if (cloudDB) { 
-                initCloudListeners();
-                document.getElementById('cloudStatusDot').classList.add('online'); 
-                document.getElementById('cloudStatusDot').title = "Live Cloud Sync Connected"; 
-            } else {
-                console.log("Running in offline mode (No Firebase connection)");
-            }
-        } catch(e) { console.error("System init failed, but UI loaded:", e); }
+            if (cloudDB) { initCloudListeners(); document.getElementById('cloudStatusDot').classList.add('online'); document.getElementById('cloudStatusDot').title = "Live Cloud Sync Connected"; }
+        } catch(e) { console.error("System init failed:", e); }
     }
     
     initSystemData();
 
-    // --- SECURE LOGIN & RBAC ---
     function processSecureLogin() {
-        let u = getVal('userInput').trim();
-        let p = getVal('passInput').trim();
+        let u = getVal('userInput').trim(); let p = getVal('passInput').trim();
         if(!u || !p) return showToast("Enter username and password", "error");
-        
         let user = winkoUsers.find(x => x.username === u && x.password === p);
         if(user) {
-            loggedInUser = user;
-            setDisp('securityOverlay', false); 
-            setDisp('topNav', true); 
-            setDisp('mainContent', true);
-            
-            // Role Based Access Control
-            if(user.role === 'admin') {
-                document.getElementById('btnTabAdmin').style.display = 'inline-block';
-            } else {
-                document.getElementById('btnTabAdmin').style.display = 'none';
-            }
-            
-            switchTab('quote');
-            
-            appTanks = [defaultTank()]; 
-            renderAllDynamicUI(); 
-            autoCalculateBOM(0);
-            safeProcess();
-            
-            showToast(`Welcome back, ${u}!`);
-        } else {
-            showToast("Invalid credentials", "error");
-        }
+            loggedInUser = user; setDisp('securityOverlay', false); setDisp('topNav', true); setDisp('mainContent', true);
+            if(user.role === 'admin') document.getElementById('btnTabAdmin').style.display = 'inline-block'; else document.getElementById('btnTabAdmin').style.display = 'none';
+            switchTab('quote'); appTanks = [defaultTank()]; renderAllDynamicUI(); autoCalculateBOM(0); safeProcess(); showToast(`Welcome back, ${u}!`);
+        } else { showToast("Invalid credentials", "error"); }
     }
     
-    function openMyProfile() {
-        setVal('myNewPassword', '');
-        document.getElementById('profileOverlay').style.display = 'flex';
-    }
-    
-    function saveMyPassword() {
-        let p = getVal('myNewPassword').trim();
-        if(!p) return showToast("Password cannot be empty", "error");
-        
-        let userIndex = winkoUsers.findIndex(x => x.username === loggedInUser.username);
-        if(userIndex > -1) {
-            winkoUsers[userIndex].password = p;
-            loggedInUser.password = p;
-            if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers});
-            showToast("Password updated successfully!");
-            document.getElementById('profileOverlay').style.display = 'none';
-        }
-    }
-    
-    function logout() {
-        loggedInUser = null;
-        setDisp('topNav', false);
-        setDisp('mainContent', false);
-        setDisp('adminContent', false);
-        setDisp('customerPreviewContainer', false);
-        setDisp('projectsContent', false);
-        setDisp('inventoryContent', false);
-        setDisp('securityOverlay', true);
-        setVal('userInput', '');
-        setVal('passInput', '');
-    }
+    function openMyProfile() { setVal('myNewPassword', ''); document.getElementById('profileOverlay').style.display = 'flex'; }
+    function saveMyPassword() { let p = getVal('myNewPassword').trim(); if(!p) return showToast("Password cannot be empty", "error"); let userIndex = winkoUsers.findIndex(x => x.username === loggedInUser.username); if(userIndex > -1) { winkoUsers[userIndex].password = p; loggedInUser.password = p; if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); showToast("Password updated successfully!"); document.getElementById('profileOverlay').style.display = 'none'; } }
+    function logout() { loggedInUser = null; setDisp('topNav', false); setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false); setDisp('securityOverlay', true); setVal('userInput', ''); setVal('passInput', ''); }
 
     function switchTab(tabId) {
         setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false);
@@ -857,90 +797,62 @@
         else if(tabId === 'inventory') { setDisp('inventoryContent', true); document.getElementById('btnTabInv').classList.add('active'); renderInventoryUI(); }
     }
 
-    function renderUserTable() {
-        let h = '';
-        winkoUsers.forEach((u, i) => {
-            h += `<tr><td>${u.username}</td><td>${u.password}</td><td>${u.role}</td><td class="text-center"><button class="del-btn" onclick="removeUser(${i})">X</button></td></tr>`;
-        });
-        setHtml('userTableBody', h);
-    }
-    function addUser() {
-        let u = getVal('newUsername').trim(); let p = getVal('newPassword').trim(); let r = getVal('newRole');
-        if(!u || !p) return showToast("Username and password required.", "error");
-        winkoUsers.push({username: u, password: p, role: r});
-        if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers});
-        setVal('newUsername', ''); setVal('newPassword', ''); renderUserTable(); showToast("User added!");
-    }
-    function removeUser(i) {
-        if(confirm("Remove user?")) {
-            winkoUsers.splice(i, 1);
-            if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers});
-            renderUserTable();
-        }
-    }
+    function renderUserTable() { let h = ''; winkoUsers.forEach((u, i) => { h += `<tr><td>${u.username}</td><td>${u.password}</td><td>${u.role}</td><td class="text-center"><button class="del-btn" onclick="removeUser(${i})">X</button></td></tr>`; }); setHtml('userTableBody', h); }
+    function addUser() { let u = getVal('newUsername').trim(); let p = getVal('newPassword').trim(); let r = getVal('newRole'); if(!u || !p) return showToast("Username and password required.", "error"); winkoUsers.push({username: u, password: p, role: r}); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); setVal('newUsername', ''); setVal('newPassword', ''); renderUserTable(); showToast("User added!"); }
+    function removeUser(i) { if(confirm("Remove user?")) { winkoUsers.splice(i, 1); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); renderUserTable(); } }
 
-    function checkCustomerAutoFill() {
-        let c = getVal('custCompany');
-        if(winkoCustomers[c]) {
-            setVal('custAttn', winkoCustomers[c].attn);
-            setVal('custAddr', winkoCustomers[c].addr);
-            safeProcess();
-        }
-    }
+    function checkCustomerAutoFill() { let c = getVal('custCompany'); if(winkoCustomers[c]) { setVal('custAttn', winkoCustomers[c].attn); setVal('custAddr', winkoCustomers[c].addr); safeProcess(); } }
 
     function handleBulkInventoryUpload(event) {
-        let file = event.target.files[0]; if(!file) return;
-        let reader = new FileReader();
-        reader.onload = function(e) {
-            let lines = e.target.result.split('\n'); let count = 0;
+        let file = event.target.files[0]; if(!file) return; let reader = new FileReader();
+        reader.onload = function(e) { let lines = e.target.result.split('\n'); let count = 0;
             for(let i=1; i<lines.length; i++) {
-                let parts = lines[i].split(',');
-                if(parts.length >= 2) {
-                    let n = parts[0].replace(/['"]/g,'').trim();
-                    let cost = parseFloat(parts[1])||0;
+                let parts = lines[i].split(','); if(parts.length >= 2) {
+                    let n = parts[0].replace(/['"]/g,'').trim(); let cost = parseFloat(parts[1])||0;
                     if(n && !winkoInventory[n]) { winkoInventory[n] = {stock: 0, alert: 5, cost: cost}; count++; }
                 }
-            }
-            saveInventoryDB(); showToast(`Bulk imported ${count} items.`); event.target.value = '';
-        };
-        reader.readAsText(file);
+            } saveInventoryDB(); showToast(`Bulk imported ${count} items.`); event.target.value = '';
+        }; reader.readAsText(file);
     }
 
     function autoPopulateInventory() {
         const masterItems = {
-            "Manhole Panel (4'x4') (HDG)": { stock: 50, alert: 10, cost: 450.00 }, "1.5mm Roof Panel (4'x4') (HDG)": { stock: 150, alert: 30, cost: 162.75 }, "4.5mm Base Panel (4'x4') (HDG)": { stock: 100, alert: 20, cost: 263.50 }, "4.5mm Wall Panel (L1) (4'x4') (HDG)": { stock: 100, alert: 20, cost: 263.50 }, "3.0mm Wall Panel (L2) (4'x4') (HDG)": { stock: 100, alert: 20, cost: 162.75 }, "3.0mm Wall Panel (L3) (4'x4') (HDG)": { stock: 100, alert: 20, cost: 162.75 }, "1.5mm Wall Panel (L4) (4'x4') (HDG)": { stock: 50, alert: 10, cost: 162.75 }, "Partition Panel (4'x4') (HDG)": { stock: 30, alert: 5, cost: 253.50 }, "Base Panel (1m x 1m) (HDG)": { stock: 100, alert: 20, cost: 210.00 }, "Wall Panel (1m x 1m) (HDG)": { stock: 100, alert: 20, cost: 210.00 }, "Roof Panel (1m x 1m) (HDG)": { stock: 100, alert: 20, cost: 130.00 }, "Half Panel (1m x 0.5m) (HDG)": { stock: 80, alert: 15, cost: 110.00 }, "Quarter Panel (0.5m x 0.5m) (HDG)": { stock: 60, alert: 10, cost: 65.00 }, "1.22m x 1.22m Base Panel (HDG)": { stock: 50, alert: 10, cost: 265.00 }, "1.22m x 1.22m Wall Panel (HDG)": { stock: 50, alert: 10, cost: 265.00 }, "1.22m x 1.22m Roof Panel (HDG)": { stock: 50, alert: 10, cost: 165.00 },
-            "Base Panel (4'x4') (SS 304)": { stock: 50, alert: 10, cost: 790.50 }, "Wall Panel (4'x4') (SS 304)": { stock: 50, alert: 10, cost: 790.50 }, "Roof Panel (4'x4') (SS 304)": { stock: 50, alert: 10, cost: 488.25 }, "Base Panel (4'x4') (SS 316)": { stock: 20, alert: 5, cost: 1185.75 }, "Wall Panel (4'x4') (SS 316)": { stock: 20, alert: 5, cost: 1185.75 }, "Roof Panel (4'x4') (SS 316)": { stock: 20, alert: 5, cost: 730.00 }, "Base Panel (1m x 1m) (SS 304)": { stock: 20, alert: 5, cost: 630.00 }, "Wall Panel (1m x 1m) (SS 304)": { stock: 20, alert: 5, cost: 630.00 }, "Roof Panel (1m x 1m) (SS 304)": { stock: 20, alert: 5, cost: 390.00 }, "Base Panel (1m x 1m) (SS 316)": { stock: 15, alert: 3, cost: 950.00 }, "Wall Panel (1m x 1m) (SS 316)": { stock: 15, alert: 3, cost: 950.00 }, "Roof Panel (1m x 1m) (SS 316)": { stock: 15, alert: 3, cost: 580.00 }, "Half Panel (1m x 0.5m) (SS 304)": { stock: 15, alert: 3, cost: 340.00 }, "Quarter Panel (0.5m x 0.5m) (SS 304)": { stock: 15, alert: 3, cost: 190.00 }, "Manhole Panel (4'x4') (SS 304)": { stock: 10, alert: 2, cost: 980.00 }, "Manhole Panel (1m x 1m) (SS 304)": { stock: 10, alert: 2, cost: 850.00 }, "Partition Panel (4'x4') (SS 304)": { stock: 10, alert: 2, cost: 750.00 }, "Partition Panel (1m x 1m) (SS 304)": { stock: 10, alert: 2, cost: 610.00 },
-            "GRP Base Panel (1m x 1m)": { stock: 150, alert: 30, cost: 320.00 }, "GRP Wall Panel (1m x 1m)": { stock: 150, alert: 30, cost: 320.00 }, "GRP Roof Panel (1m x 1m)": { stock: 100, alert: 20, cost: 180.00 }, "GRP Half Panel (1m x 0.5m)": { stock: 80, alert: 15, cost: 170.00 }, "GRP Manhole Panel (1m x 1m)": { stock: 30, alert: 5, cost: 400.00 }, "GRP Base Panel (1.22m x 1.22m)": { stock: 50, alert: 10, cost: 450.00 }, "GRP Wall Panel (1.22m x 1.22m)": { stock: 50, alert: 10, cost: 450.00 }, "GRP Roof Panel (1.22m x 1.22m)": { stock: 50, alert: 10, cost: 280.00 }, "GRP Base Panel (2m x 1m)": { stock: 20, alert: 5, cost: 620.00 }, "GRP Wall Panel (2m x 1m)": { stock: 20, alert: 5, cost: 620.00 }, "GRP Drain Panel (1m x 1m)": { stock: 15, alert: 3, cost: 350.00 }, "GRP Partition Panel (1m x 1m)": { stock: 20, alert: 5, cost: 330.00 }, "GRP Partition Panel (1.22m x 1.22m)": { stock: 15, alert: 3, cost: 460.00 }, "GRP Convex Panel (1m x 1m)": { stock: 30, alert: 5, cost: 360.00 }, "GRP Concave Panel (1m x 1m)": { stock: 30, alert: 5, cost: 360.00 },
-            "Partition Cleat HDG": { stock: 150, alert: 30, cost: 15.00 }, "8mm (B) Cleat HDG": { stock: 500, alert: 100, cost: 16.50 }, "Type C Cleat HDG": { stock: 300, alert: 50, cost: 30.00 }, "Side Cleat (C1)": { stock: 300, alert: 50, cost: 12.00 }, "Small A Cleat MS (Not bent)": { stock: 200, alert: 40, cost: 8.00 }, "SS 304 8mm Cleat": { stock: 100, alert: 20, cost: 45.00 }, "SS 316 8mm Cleat": { stock: 50, alert: 10, cost: 75.00 }, "GRP 8mm Cleat": { stock: 50, alert: 10, cost: 40.00 }, "Base Cleat HDG (Standard)": { stock: 200, alert: 40, cost: 14.50 }, "Corner Cleat HDG": { stock: 150, alert: 30, cost: 18.00 }, "Corner Cleat SS304": { stock: 50, alert: 10, cost: 55.00 }, "67.5\" (L1 Stay - 50x50x5mm)": { stock: 200, alert: 40, cost: 27.25 }, "92.5\" (L2 Stay - 50x50x5mm)": { stock: 150, alert: 30, cost: 38.50 }, "135.5\" (L3 Stay - 50x50x5mm)": { stock: 100, alert: 20, cost: 49.60 }, "15' 8.5\" (L4 Stay)": { stock: 50, alert: 10, cost: 125.00 }, "L1 Angle Stay (67.5\") MS": { stock: 100, alert: 20, cost: 22.00 }, "L2 Angle Stay (92.5\") MS": { stock: 100, alert: 20, cost: 32.00 }, "L3 Angle Stay (135.5\") MS": { stock: 80, alert: 15, cost: 42.00 }, "SS 304 L1 Stay": { stock: 30, alert: 5, cost: 110.00 }, "SS 304 L2 Stay": { stock: 20, alert: 5, cost: 160.00 }, "SS 304 L3 Stay": { stock: 15, alert: 3, cost: 240.00 }, "Tie Rod GRP (1m)": { stock: 100, alert: 20, cost: 45.00 }, "Tie Rod GRP (1.22m)": { stock: 80, alert: 15, cost: 55.00 }, "Internal Stay Bracket HDG": { stock: 200, alert: 40, cost: 12.00 }, "Internal Stay Bracket SS304": { stock: 100, alert: 20, cost: 35.00 },
-            "50x50x1.9mm SHS Truss (4' HDG)": { stock: 100, alert: 20, cost: 28.20 }, "50x50x1.9mm SHS Truss (8' HDG)": { stock: 100, alert: 20, cost: 59.00 }, "50x50x1.9mm SHS Truss (12' HDG)": { stock: 100, alert: 20, cost: 74.40 }, "50x50x1.9mm SHS Truss 16' HDG": { stock: 50, alert: 10, cost: 95.00 }, "1 1/4\" Pipe Roof Support 8'": { stock: 50, alert: 10, cost: 45.00 }, "1 1/4\" Pipe Roof Support 12'": { stock: 50, alert: 10, cost: 65.00 }, "Ø1\" Pipe (HDG AAA)": { stock: 80, alert: 15, cost: 18.00 }, "Ø1.5\" Pipe (HDG AAA)": { stock: 80, alert: 15, cost: 26.60 }, "Ø2\" Pipe (HDG AAA)": { stock: 60, alert: 10, cost: 35.00 }, "SS 304 1 1/4\"Ø x 3mm Pipe": { stock: 10, alert: 2, cost: 483.00 }, "SS 304 1.5\"Ø x 3mm Pipe": { stock: 10, alert: 2, cost: 550.00 }, "SS 316 1.5\"Ø x 3mm Pipe": { stock: 5, alert: 1, cost: 850.00 }, "Skid Base I-Beam (100x50x5mm) - Per Meter": { stock: 200, alert: 40, cost: 45.00 }, "Skid Base I-Beam (150x75x5.5mm) - Per Meter": { stock: 150, alert: 30, cost: 85.00 }, "Skid Base I-Beam (200x100x6mm) - Per Meter": { stock: 100, alert: 20, cost: 135.00 }, "C-Channel Support (75x38x5mm) - Per Meter": { stock: 300, alert: 50, cost: 35.00 }, "C-Channel Support (100x50x5mm) - Per Meter": { stock: 200, alert: 40, cost: 55.00 }, "50 x 50 x 1.6mm Trunking (6m)": { stock: 20, alert: 5, cost: 35.00 }, "PVC Pipe Class E (1\") - 6m": { stock: 50, alert: 10, cost: 25.00 }, "PVC Pipe Class E (2\") - 6m": { stock: 40, alert: 8, cost: 45.00 },
-            "M10 x 35mm HDG (Bolt, Nut & Washer)": { stock: 800, alert: 100, cost: 1.20 }, "M10 x 40mm HDG (Bolt, Nut & Washer)": { stock: 500, alert: 100, cost: 1.30 }, "M12 x 45mm HDG (Bolt, Nut & Washer)": { stock: 800, alert: 100, cost: 1.50 }, "M12 x 50mm HDG (Bolt, Nut & Washer)": { stock: 500, alert: 100, cost: 1.65 }, "M12 x 60mm HDG (Bolt, Nut & Washer)": { stock: 400, alert: 80, cost: 1.85 }, "M14 x 30mm HDG (Box/Unit cost)": { stock: 150, alert: 20, cost: 8.65 }, "M14 x 32mm B/N MS (50kg Bag)": { stock: 10, alert: 3, cost: 150.00 }, "M16 x 40mm HDG HT B/N": { stock: 300, alert: 50, cost: 1.10 }, "M16 x 50mm HDG HT B/N": { stock: 250, alert: 40, cost: 1.40 }, "3/8\"Ø x 1 1/2\" HDG (50kg Bag)": { stock: 15, alert: 2, cost: 140.00 }, "5/8\"Ø Washers MS (50kg Bag)": { stock: 12, alert: 2, cost: 130.00 }, "M12 x 100mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 3.00 }, "M16 x 120mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 5.00 }, "M20 x 150mm Expansion Bolt (HDG)": { stock: 100, alert: 20, cost: 8.50 }, "Chemical Anchor M12 (HDG)": { stock: 50, alert: 10, cost: 12.00 },
-            "M10 x 35mm SS304 (Bolt, Nut & Washer)": { stock: 500, alert: 100, cost: 3.50 }, "M10 x 40mm SS304 (Bolt, Nut & Washer)": { stock: 400, alert: 80, cost: 3.80 }, "M12 x 45mm SS304 (Bolt, Nut & Washer)": { stock: 500, alert: 100, cost: 4.20 }, "M12 x 50mm SS304 (Bolt, Nut & Washer)": { stock: 400, alert: 80, cost: 4.60 }, "M14 x 40mm SS304 (Bolt, Nut & Washer)": { stock: 300, alert: 50, cost: 6.80 }, "M16 x 50mm SS304 (Bolt, Nut & Washer)": { stock: 200, alert: 50, cost: 9.50 }, "M10 x 35mm SS316 (Bolt, Nut & Washer)": { stock: 200, alert: 50, cost: 5.50 }, "M12 x 45mm SS316 (Bolt, Nut & Washer)": { stock: 200, alert: 50, cost: 6.50 }, "M16 x 50mm SS316 (Bolt, Nut & Washer)": { stock: 100, alert: 20, cost: 12.50 }, "M12 x 100mm Expansion Bolt (SS304)": { stock: 100, alert: 20, cost: 15.00 }, "M16 x 120mm Expansion Bolt (SS304)": { stock: 80, alert: 15, cost: 22.00 }, "M10 SS304 Hex Nut Only": { stock: 1000, alert: 200, cost: 0.80 }, "M12 SS304 Hex Nut Only": { stock: 1000, alert: 200, cost: 1.10 }, "M10 SS304 Flat Washer Only": { stock: 2000, alert: 400, cost: 0.30 }, "M12 SS304 Flat Washer Only": { stock: 2000, alert: 400, cost: 0.45 },
-            "PVC Foam Tape (10m x 3mm)": { stock: 300, alert: 50, cost: 8.00 }, "PVC Foam Tape (Norton 15m)": { stock: 100, alert: 20, cost: 61.50 }, "Aseal Butyl Sealant (80m)": { stock: 200, alert: 30, cost: 1.70 }, "RB Sealastrip (13m box)": { stock: 50, alert: 10, cost: 54.00 }, "Silicone Sealant (Clear - Tube)": { stock: 100, alert: 20, cost: 12.00 }, "Silicone Sealant (Black - Tube)": { stock: 100, alert: 20, cost: 12.00 }, "Polyurethane Sealant (PU - Grey)": { stock: 80, alert: 15, cost: 18.00 }, "Rubber Gasket 3mm (Per Roll)": { stock: 50, alert: 10, cost: 150.00 }, "Rubber Gasket 5mm (Per Roll)": { stock: 50, alert: 10, cost: 210.00 }, "Neoprene Gasket 3mm (Per Roll)": { stock: 30, alert: 5, cost: 250.00 }, "PVC Bolt Head Cover (M10)": { stock: 1000, alert: 200, cost: 0.15 }, "PVC Bolt Head Cover (M12)": { stock: 1000, alert: 200, cost: 0.20 }, "PVC Bolt Head Cover (M16)": { stock: 1000, alert: 200, cost: 0.30 }, "M10 EPDM Rubber Washer": { stock: 1000, alert: 200, cost: 0.30 }, "M12 EPDM Rubber Washer": { stock: 1000, alert: 200, cost: 0.40 },
-            "Ext. Ladder (HDG)": { stock: 40, alert: 5, cost: 55.00 }, "Int. Ladder (HDG)": { stock: 40, alert: 5, cost: 75.00 }, "Ext. Ladder (Aluminium)": { stock: 20, alert: 5, cost: 150.00 }, "Ext. Ladder (SS304)": { stock: 15, alert: 3, cost: 350.00 }, "Int. Ladder (SS304)": { stock: 15, alert: 3, cost: 350.00 }, "Ext. Ladder (SS316)": { stock: 10, alert: 2, cost: 550.00 }, "Int. Ladder (FRP/GRP)": { stock: 15, alert: 3, cost: 280.00 }, "Ext. Ladder (FRP/GRP)": { stock: 15, alert: 3, cost: 260.00 }, "Int. Ladder (SS316)": { stock: 10, alert: 2, cost: 480.00 }, "Water Level Indicator (Mechanical)": { stock: 50, alert: 10, cost: 220.00 }, "Water Level Indicator (Tube Type)": { stock: 30, alert: 5, cost: 180.00 }, "Water Level Indicator (Digital Sensor)": { stock: 10, alert: 2, cost: 1250.00 }, "Indicator PVC ball float": { stock: 50, alert: 10, cost: 4.80 }, "Indicator SS304 ball float": { stock: 20, alert: 5, cost: 45.00 }, "Indicator pulley": { stock: 50, alert: 10, cost: 4.50 }, "Air Vent (PVC)": { stock: 80, alert: 15, cost: 85.00 }, "4' diameter air-vent MS": { stock: 80, alert: 15, cost: 20.00 }, "Air Vent (SS304 Cowl)": { stock: 30, alert: 5, cost: 150.00 }, "24\" x 24\" manhole cover HDG": { stock: 50, alert: 10, cost: 90.00 }, "Manhole Hinge & Lock (Set)": { stock: 80, alert: 15, cost: 45.00 },
-            "2\" Flange (HDG)": { stock: 50, alert: 10, cost: 45.00 }, "3\" Flange (HDG)": { stock: 50, alert: 10, cost: 65.00 }, "4\" Flange (HDG)": { stock: 50, alert: 10, cost: 85.00 }, "6\" Flange (HDG)": { stock: 30, alert: 5, cost: 140.00 }, "8\" Flange (HDG)": { stock: 20, alert: 5, cost: 220.00 }, "10\" Flange (HDG)": { stock: 10, alert: 2, cost: 310.00 }, "12\" Flange (HDG)": { stock: 10, alert: 2, cost: 450.00 }, "2\" Flange (SS304)": { stock: 30, alert: 5, cost: 120.00 }, "3\" Flange (SS304)": { stock: 25, alert: 5, cost: 180.00 }, "4\" Flange (SS304)": { stock: 20, alert: 5, cost: 240.00 }, "6\" Flange (SS304)": { stock: 10, alert: 2, cost: 380.00 }, "8\" Flange (SS304)": { stock: 5, alert: 1, cost: 580.00 }, "2\" Flange (SS316)": { stock: 15, alert: 3, cost: 160.00 }, "4\" Flange (SS316)": { stock: 10, alert: 2, cost: 320.00 }, "6\" Flange (SS316)": { stock: 5, alert: 1, cost: 520.00 }, "2\" Flange (PVC)": { stock: 50, alert: 10, cost: 25.00 }, "3\" Flange (PVC)": { stock: 50, alert: 10, cost: 35.00 }, "4\" Flange (PVC)": { stock: 50, alert: 10, cost: 45.00 }, "6\" Flange (PVC)": { stock: 30, alert: 5, cost: 75.00 }, "Flange Gasket 4\" (Rubber)": { stock: 100, alert: 20, cost: 12.00 }, "Flange Gasket 6\" (Rubber)": { stock: 80, alert: 15, cost: 18.00 }, "Flange Bolt Set M16x60mm (8 pcs)": { stock: 50, alert: 10, cost: 24.00 },
-            "2\" Float Valve (Brass)": { stock: 40, alert: 5, cost: 180.00 }, "3\" Float Valve (Brass)": { stock: 30, alert: 5, cost: 350.00 }, "4\" Float Valve (Brass)": { stock: 20, alert: 5, cost: 550.00 }, "6\" Float Valve (CI)": { stock: 5, alert: 1, cost: 1200.00 }, "2\" Gate Valve (Brass/Bronze)": { stock: 50, alert: 10, cost: 120.00 }, "3\" Gate Valve (Cast Iron)": { stock: 30, alert: 5, cost: 320.00 }, "4\" Gate Valve (Cast Iron)": { stock: 20, alert: 5, cost: 450.00 }, "6\" Gate Valve (Cast Iron)": { stock: 10, alert: 2, cost: 750.00 }, "2\" Butterfly Valve (CI)": { stock: 30, alert: 5, cost: 190.00 }, "4\" Butterfly Valve (CI)": { stock: 20, alert: 5, cost: 380.00 }, "6\" Butterfly Valve (CI)": { stock: 10, alert: 2, cost: 520.00 }, "2\" Non-Return Valve (Brass)": { stock: 30, alert: 5, cost: 160.00 }, "4\" Check Valve (CI)": { stock: 15, alert: 3, cost: 420.00 }, "2\" Vortex Inhibitor (HDG)": { stock: 20, alert: 5, cost: 150.00 }, "3\" Vortex Inhibitor (HDG)": { stock: 20, alert: 5, cost: 190.00 }, "4\" Vortex Inhibitor (HDG)": { stock: 20, alert: 5, cost: 250.00 }, "6\" Vortex Inhibitor (HDG)": { stock: 10, alert: 2, cost: 350.00 }, "8\" Vortex Inhibitor (HDG)": { stock: 5, alert: 1, cost: 480.00 }, "4\" Vortex Inhibitor (SS304)": { stock: 5, alert: 1, cost: 650.00 }, "Strainer 4\" (Y-Type CI)": { stock: 10, alert: 2, cost: 380.00 },
-            "3.0mm Tank Plate MS (Painted)": { stock: 100, alert: 20, cost: 138.00 }, "4.3mm Type AB / C(L) MS": { stock: 50, alert: 10, cost: 220.00 }, "4.5mm Type A / D MS": { stock: 150, alert: 30, cost: 250.00 }, "5.0mm Type A / B MS": { stock: 50, alert: 10, cost: 280.00 }, "6.0mm Type B / C MS": { stock: 30, alert: 5, cost: 330.00 }, "4.0mm Type B / C MS (Metric)": { stock: 20, alert: 5, cost: 210.00 }, "4.0mm Type C HDG (Metric)": { stock: 20, alert: 5, cost: 230.00 }, "3.0mm thk x 1340 x 2680mm MS": { stock: 10, alert: 2, cost: 120.00 }, "4.5mm thk x 1340 x 2680mm MS": { stock: 10, alert: 2, cost: 180.00 }, "5.0mm thk x 1219 x 2438mm MS": { stock: 10, alert: 2, cost: 200.00 }, "6.0mm thk x 1500 x 2680mm MS": { stock: 10, alert: 2, cost: 280.00 }, "4' x 4' x 1.5mm thk Tank Cover MS": { stock: 100, alert: 20, cost: 120.00 }, "51\" x 106\" x 1.5mm thk HDG": { stock: 50, alert: 10, cost: 140.00 }, "HTD Bar Y12mm x 14 3/4\"": { stock: 200, alert: 40, cost: 18.00 }, "Bituminous Paint (5L)": { stock: 40, alert: 8, cost: 65.00 }, "Epoxy Primer Grey (5L)": { stock: 30, alert: 5, cost: 120.00 }, "Polyurethane Topcoat Blue (5L)": { stock: 30, alert: 5, cost: 180.00 }, "Zinc Rich Primer (Cold Galv - 1L)": { stock: 50, alert: 10, cost: 85.00 }, "Thinner (5L Tin)": { stock: 60, alert: 10, cost: 45.00 }, "Paint Roller/Brush Set": { stock: 100, alert: 20, cost: 15.00 },
-            "Scaffolding Rental (Per Set/Day)": { stock: 100, alert: 20, cost: 25.00 }, "Hoisting Crane (Per Day)": { stock: 10, alert: 2, cost: 800.00 }, "Mobile Crane 20T (Per Day)": { stock: 5, alert: 1, cost: 1200.00 }, "Safety Harness (PPE)": { stock: 30, alert: 5, cost: 120.00 }, "Safety Helmet (PPE)": { stock: 50, alert: 10, cost: 25.00 }, "Safety Boots (Pair)": { stock: 20, alert: 5, cost: 85.00 }, "Impact Wrench (Battery)": { stock: 5, alert: 1, cost: 650.00 }, "Drill Bits 14mm (HSS)": { stock: 50, alert: 10, cost: 18.00 }, "Drill Bits 16mm (HSS)": { stock: 40, alert: 8, cost: 24.00 }, "Hole Saw 2\" (Bi-Metal)": { stock: 20, alert: 5, cost: 45.00 }, "Hole Saw 4\" (Bi-Metal)": { stock: 15, alert: 3, cost: 85.00 }, "Angle Grinder 4\"": { stock: 10, alert: 2, cost: 180.00 }, "Grinding Disc 4\" (Box of 25)": { stock: 30, alert: 5, cost: 75.00 }, "Installation & Labor": { stock: 999, alert: 10, cost: 3500.00 }, "Transport": { stock: 999, alert: 10, cost: 850.00 }
+            "Partition Cleat HDG": { stock: 150, alert: 30, cost: 15.00 }, "8mm (B) Cleat HDG": { stock: 500, alert: 100, cost: 16.50 }, "Type C Cleat HDG": { stock: 300, alert: 50, cost: 30.00 },
+            "67.5\" (L1 Stay - 50x50x5mm)": { stock: 200, alert: 40, cost: 27.25 }, "92.5\" (L2 Stay - 50x50x5mm)": { stock: 150, alert: 30, cost: 38.50 }, "135.5\" (L3 Stay - 50x50x5mm)": { stock: 100, alert: 20, cost: 49.60 }, "15' 8.5\" (L4 Stay)": { stock: 50, alert: 10, cost: 125.00 },
+            "50x50x1.9mm SHS Truss (4' HDG)": { stock: 100, alert: 20, cost: 28.20 }, "50x50x1.9mm SHS Truss (8' HDG)": { stock: 100, alert: 20, cost: 59.00 }, "50x50x1.9mm SHS Truss (12' HDG)": { stock: 100, alert: 20, cost: 74.40 },
+            "Ø1\" Pipe (HDG AAA)": { stock: 80, alert: 15, cost: 18.00 }, "Ø1.5\" Pipe (HDG AAA)": { stock: 80, alert: 15, cost: 26.60 },
+            "M10 x 35mm HDG (Bolt, Nut & Washer)": { stock: 800, alert: 100, cost: 1.20 }, "M12 x 45mm HDG (Bolt, Nut & Washer)": { stock: 800, alert: 100, cost: 1.50 }, "M14 x 30mm HDG (Box/Unit cost)": { stock: 150, alert: 20, cost: 8.65 }, "M16 x 40mm HDG HT B/N": { stock: 300, alert: 50, cost: 1.10 },
+            "M12 x 100mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 3.00 }, "M16 x 120mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 5.00 },
+            "PVC Foam Tape (10m x 3mm)": { stock: 300, alert: 50, cost: 8.00 }, "Aseal Butyl Sealant (80m)": { stock: 200, alert: 30, cost: 1.70 },
+            "PVC Bolt Head Cover (M12)": { stock: 1000, alert: 200, cost: 0.20 }, "M12 EPDM Rubber Washer": { stock: 1000, alert: 200, cost: 0.40 },
+            "Ext. Ladder (HDG)": { stock: 40, alert: 5, cost: 55.00 }, "Int. Ladder (HDG)": { stock: 40, alert: 5, cost: 75.00 },
+            "Water Level Indicator (Mechanical)": { stock: 50, alert: 10, cost: 220.00 }, "Air Vent (PVC)": { stock: 80, alert: 15, cost: 85.00 },
+            "Installation & Labor": { stock: 999, alert: 10, cost: 3500.00 }, "Transport": { stock: 999, alert: 10, cost: 850.00 }
         };
 
-        let itemsAdded = 0;
-        for (let item in masterItems) { if (!winkoInventory[item]) { winkoInventory[item] = masterItems[item]; itemsAdded++; } }
-        if (itemsAdded > 0) { saveInventoryDB(); showToast(`Success! Linked ${itemsAdded} hardcoded items into inventory.`); } 
-        else { showToast("All exact items are already in the inventory.", "info"); }
+        const sizes = ["(4'x4')", "(1m x 1m)"]; const coats = ["HDG", "Painted", "SS 304", "SS 316"];
+        const panelTypes = [
+            { type: "Base Panel", thicknesses: ["4.5", "5.0", "6.0"], baseCost: 263.50 }, { type: "Roof Panel", thicknesses: ["1.5", "2.0", "3.0"], baseCost: 162.75 }, { type: "Wall Panel (L1)", thicknesses: ["4.5", "5.0", "6.0"], baseCost: 263.50 },
+            { type: "Wall Panel (L2)", thicknesses: ["3.0", "4.0", "4.5", "5.0"], baseCost: 162.75 }, { type: "Wall Panel (L3)", thicknesses: ["1.5", "2.0", "3.0", "4.5"], baseCost: 162.75 }, { type: "Wall Panel (L4)", thicknesses: ["1.5", "2.0", "3.0"], baseCost: 162.75 }
+        ];
+
+        coats.forEach(coat => {
+            let mult = (coat === 'Painted') ? 0.85 : (coat === 'SS 304' ? 3.0 : (coat === 'SS 316' ? 4.5 : 1.0));
+            sizes.forEach(size => {
+                panelTypes.forEach(pt => { pt.thicknesses.forEach(th => { masterItems[`${th}mm ${pt.type} ${size} (${coat})`] = { stock: 100, alert: 20, cost: parseFloat((pt.baseCost * mult).toFixed(2)) }; }); });
+                masterItems[`Manhole Panel ${size} (${coat})`] = { stock: 20, alert: 5, cost: parseFloat((450 * mult).toFixed(2)) }; masterItems[`Partition Panel ${size} (${coat})`] = { stock: 20, alert: 5, cost: parseFloat((253.50 * mult).toFixed(2)) };
+            });
+        });
+
+        let itemsAdded = 0; for (let item in masterItems) { if (!winkoInventory[item]) { winkoInventory[item] = masterItems[item]; itemsAdded++; } }
+        if (itemsAdded > 0) { saveInventoryDB(); showToast(`Success! Generated & Linked ${itemsAdded} smart inventory items.`); } else { showToast("All dynamic panel combinations are already synced.", "info"); }
     }
 
     function renderInventoryUI() {
         let filterText = getVal('invSearchBox').toLowerCase(); let h = '';
         Object.keys(winkoInventory).sort().forEach(k => {
-            if(filterText && !k.toLowerCase().includes(filterText)) return;
-            let d = winkoInventory[k]; let safeK = encodeURIComponent(k); let isLow = d.stock <= d.alert;
-            h += `<tr style="${isLow ? 'background-color: #fef2f2;' : ''}">
-                <td><strong style="${isLow ? 'color:#dc2626;' : ''}">${k}</strong></td>
-                <td class="text-center" style="display:flex; justify-content:center; align-items:center; gap:5px;"><button class="action-btn" style="padding:4px 10px; width:auto; background:#64748b;" onclick="updateStock('${safeK}', -1)">-</button><input type="number" class="admin-input" style="width:70px; margin:0;" value="${d.stock}" onchange="setStock('${safeK}', this.value)"><button class="action-btn" style="padding:4px 10px; width:auto; background:#3b82f6;" onclick="updateStock('${safeK}', 1)">+</button></td>
-                <td class="text-center"><input type="number" class="admin-input" style="width:70px;" value="${d.alert}" onchange="setInvAlert('${safeK}', this.value)"></td>
-                <td class="text-center"><input type="number" step="0.01" class="admin-input" style="width:100px; color:#10b981;" value="${d.cost || 0}" onchange="setInvCost('${safeK}', this.value)"></td>
-                <td class="text-center"><button class="del-btn" onclick="removeInvItem('${safeK}')">X</button></td>
-            </tr>`;
+            if(filterText && !k.toLowerCase().includes(filterText)) return; let d = winkoInventory[k]; let safeK = encodeURIComponent(k); let isLow = d.stock <= d.alert;
+            h += `<tr style="${isLow ? 'background-color: #fef2f2;' : ''}"><td><strong style="${isLow ? 'color:#dc2626;' : ''}">${k}</strong></td><td class="text-center" style="display:flex; justify-content:center; align-items:center; gap:5px;"><button class="action-btn" style="padding:4px 10px; width:auto; background:#64748b;" onclick="updateStock('${safeK}', -1)">-</button><input type="number" class="admin-input" style="width:70px; margin:0;" value="${d.stock}" onchange="setStock('${safeK}', this.value)"><button class="action-btn" style="padding:4px 10px; width:auto; background:#3b82f6;" onclick="updateStock('${safeK}', 1)">+</button></td><td class="text-center"><input type="number" class="admin-input" style="width:70px;" value="${d.alert}" onchange="setInvAlert('${safeK}', this.value)"></td><td class="text-center"><input type="number" step="0.01" class="admin-input" style="width:100px; color:#10b981;" value="${d.cost || 0}" onchange="setInvCost('${safeK}', this.value)"></td><td class="text-center"><button class="del-btn" onclick="removeInvItem('${safeK}')">X</button></td></tr>`;
         });
         if(h === '') h = '<tr><td colspan="5" style="text-align:center; padding: 20px; color:#64748b;">No items in inventory.</td></tr>';
         setHtml('inventoryBody', h); renderInventoryChart();
@@ -965,100 +877,58 @@
     }
 
     function saveToMemory() {
-        let qid = getVal('quoteIdInput');
-        if(!qid) return showToast("Enter Quote ID first", "error");
+        let qid = getVal('quoteIdInput'); if(!qid) return showToast("Enter Quote ID first", "error");
         let d = { tanks: appTanks, custom: appCustomItems, projectName: getVal('projectName'), customer: getVal('custCompany'), total: window.currentGrandTotal, date: new Date().toISOString().split('T')[0] };
-        configIDs.forEach(id => d[id] = getVal(id));
-        if(cloudDB) cloudDB.collection("winko_projects").doc(qid).set(d);
-        showToast("Project Saved to Cloud!");
+        configIDs.forEach(id => d[id] = getVal(id)); if(cloudDB) cloudDB.collection("winko_projects").doc(qid).set(d); showToast("Project Saved to Cloud!");
     }
 
     function exportCSV() {
         let csv = "Item,Qty,Unit Cost,Total\n";
-        appTanks.forEach((t, i) => {
-            csv += `TANK ${i+1} - ${t.L}x${t.W}x${t.H},,, \n`;
-            t.bom.forEach(sec => sec.items.forEach(it => {
-                let qty = (sec.category==="Services") ? 1 : (Number(it.qty)||0);
-                if(qty > 0) {
-                    let cost = it.manualPrice ? (parseFloat(it.def)||0) : ((winkoInventory[it.name] && winkoInventory[it.name].cost > 0) ? winkoInventory[it.name].cost : (it.def||0));
-                    csv += `"${it.name}",${qty},${cost},${qty*cost}\n`;
-                }
-            }));
+        appTanks.forEach((t, i) => { csv += `TANK ${i+1} - ${t.L}x${t.W}x${t.H},,, \n`;
+            t.bom.forEach(sec => sec.items.forEach(it => { let qty = (sec.category==="Services") ? 1 : (Number(it.qty)||0); if(qty > 0) { let cost = it.manualPrice ? (parseFloat(it.def)||0) : ((winkoInventory[it.name] && winkoInventory[it.name].cost > 0) ? winkoInventory[it.name].cost : (it.def||0)); csv += `"${it.name}",${qty},${cost},${qty*cost}\n`; } }));
         });
-        if(appCustomItems.length > 0) {
-            csv += `\nCUSTOM ITEMS & SERVICES,,,\n`;
-            appCustomItems.forEach(c => { csv += `"${c.name}",${c.qty},${c.cost},${c.qty*c.cost}\n`; });
-        }
-        let blob = new Blob([csv], { type: 'text/csv' }); let url = window.URL.createObjectURL(blob);
-        let a = document.createElement('a'); a.href = url; a.download = `Winko_${getVal('quoteIdInput')}.csv`; a.click();
+        if(appCustomItems.length > 0) { csv += `\nCUSTOM ITEMS & SERVICES,,,\n`; appCustomItems.forEach(c => { csv += `"${c.name}",${c.qty},${c.cost},${c.qty*c.cost}\n`; }); }
+        let blob = new Blob([csv], { type: 'text/csv' }); let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = `Winko_${getVal('quoteIdInput')}.csv`; a.click();
     }
 
     function drawProjectBankTable() {
         let filter = getVal('projSearchBox').toLowerCase(); let h = '';
         Object.keys(window.cloudMemoryBank).forEach(k => {
-            let p = window.cloudMemoryBank[k];
-            if(filter && !k.toLowerCase().includes(filter) && !(p.customer||'').toLowerCase().includes(filter)) return;
+            let p = window.cloudMemoryBank[k]; if(filter && !k.toLowerCase().includes(filter) && !(p.customer||'').toLowerCase().includes(filter)) return;
             h += `<tr><td><strong>${k}</strong></td><td>${p.projectName||'-'}</td><td>${p.customer||'-'}</td><td class="text-right">RM ${p.total||'0.00'}</td><td>${p.date||'-'}</td><td class="text-center"><button class="action-btn" style="padding:6px 12px; width:auto; font-size:11px;" onclick="loadFromMemory('${k}')">Load</button></td></tr>`;
-        });
-        setHtml('projectBankBody', h || '<tr><td colspan="6" class="text-center">No projects found.</td></tr>');
+        }); setHtml('projectBankBody', h || '<tr><td colspan="6" class="text-center">No projects found.</td></tr>');
     }
     function renderProjectBank() { drawProjectBankTable(); }
     
-    function loadFromMemory(k) {
-        let d = window.cloudMemoryBank[k]; if(!d) return;
-        configIDs.forEach(id => { if(d[id]!==undefined) setVal(id, d[id]); });
-        appTanks = d.tanks || []; appCustomItems = d.custom || [];
-        switchTab('quote'); safeProcess(); showToast("Project Loaded!");
-    }
+    function loadFromMemory(k) { let d = window.cloudMemoryBank[k]; if(!d) return; configIDs.forEach(id => { if(d[id]!==undefined) setVal(id, d[id]); }); appTanks = d.tanks || []; appCustomItems = d.custom || []; switchTab('quote'); safeProcess(); showToast("Project Loaded!"); }
 
     function backupSystem() {
         let backupData = { company: companyProfile, master_bom: {data: systemBaseStructure}, users: {data: winkoUsers}, crm: {data: winkoCustomers}, inventory: {data: winkoInventory}, projects: window.cloudMemoryBank || {} };
-        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
-        let a = document.createElement('a'); a.href = dataStr; a.download = "winko_cloud_backup_" + new Date().toISOString().split('T')[0] + ".json"; document.body.appendChild(a); a.click(); a.remove();
-        showToast("Cloud Snapshot Downloaded!");
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData)); let a = document.createElement('a'); a.href = dataStr; a.download = "winko_cloud_backup_" + new Date().toISOString().split('T')[0] + ".json"; document.body.appendChild(a); a.click(); a.remove(); showToast("Cloud Snapshot Downloaded!");
     }
 
     function restoreSystem(event) {
         let file = event.target.files[0]; if (!file || !cloudDB) return;
         if (!confirm("⚠️ WARNING: Restoring will overwrite the LIVE CLOUD DATABASE. Are you sure?")) { event.target.value = ''; return; }
         let reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                let d = JSON.parse(e.target.result);
-                if(d.company) cloudDB.collection("winko_settings").doc("company").set(d.company);
-                if(d.master_bom) cloudDB.collection("winko_settings").doc("master_bom").set(d.master_bom);
-                if(d.users) cloudDB.collection("winko_settings").doc("users").set(d.users);
-                if(d.crm) cloudDB.collection("winko_settings").doc("crm").set(d.crm);
-                if(d.inventory) cloudDB.collection("winko_settings").doc("inventory").set(d.inventory);
-                if(d.projects) Object.keys(d.projects).forEach(k => cloudDB.collection("winko_projects").doc(k).set(d.projects[k]));
-                alert("✅ Cloud Database successfully restored! Reloading."); window.location.reload(true);
-            } catch(err) { showToast("Error reading backup.", "error"); }
-        }; reader.readAsText(file);
+        reader.onload = function(e) { try { let d = JSON.parse(e.target.result); if(d.company) cloudDB.collection("winko_settings").doc("company").set(d.company); if(d.master_bom) cloudDB.collection("winko_settings").doc("master_bom").set(d.master_bom); if(d.users) cloudDB.collection("winko_settings").doc("users").set(d.users); if(d.crm) cloudDB.collection("winko_settings").doc("crm").set(d.crm); if(d.inventory) cloudDB.collection("winko_settings").doc("inventory").set(d.inventory); if(d.projects) Object.keys(d.projects).forEach(k => cloudDB.collection("winko_projects").doc(k).set(d.projects[k])); alert("✅ Cloud Database successfully restored! Reloading."); window.location.reload(true); } catch(err) { showToast("Error reading backup.", "error"); } }; reader.readAsText(file);
     }
 
     function confirmOrderAndDeduct() {
-        if(!confirm("⚠️ Are you sure? This will deduct exact quantities from your Master Inventory!")) return;
-        let deducted = 0; let warns = [];
-        appTanks.forEach(t => t.bom.forEach(sec => {
-            if(sec.category === "Services") return; 
-            sec.items.forEach(it => {
-                let q = Number(it.qty) || 0;
-                if(q > 0 && winkoInventory[it.name]) { winkoInventory[it.name].stock -= q; deducted++; if(winkoInventory[it.name].stock < 0) warns.push(`${it.name} is negative!`); }
-            });
-        }));
-        if(deducted > 0) { saveInventoryDB(); let msg = `✅ Deducted ${deducted} items.`; if(warns.length > 0) msg += `\n\nWarnings:\n- ` + warns.join('\n- '); alert(msg); } 
-        else { alert("❌ No exact matching inventory items to deduct."); }
+        if(!confirm("⚠️ Are you sure? This will deduct exact quantities from your Master Inventory!")) return; let deducted = 0; let warns = [];
+        appTanks.forEach(t => t.bom.forEach(sec => { if(sec.category === "Services") return; sec.items.forEach(it => { let q = Number(it.qty) || 0; if(q > 0 && winkoInventory[it.name]) { winkoInventory[it.name].stock -= q; deducted++; if(winkoInventory[it.name].stock < 0) warns.push(`${it.name} is negative!`); } }); }));
+        if(deducted > 0) { saveInventoryDB(); let msg = `✅ Deducted ${deducted} items.`; if(warns.length > 0) msg += `\n\nWarnings:\n- ` + warns.join('\n- '); alert(msg); } else { alert("❌ No exact matching inventory items to deduct."); }
     }
 
-    let appTanks = [];
-    let appCustomItems = [];
+    let appTanks = []; let appCustomItems = [];
     const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'shortExclusions', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
 
     function defaultTank() { 
         return { 
             id: Date.now(), std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", 
-            L: 12, W: 4, H: 12, partitionCol: 0, ladder1Col: 0, ladder2Col: 0, 
+            L: 12, W: 4, H: 12, partitions: [], ladder1Col: 0, ladder2Col: 0, 
             thickBase: "4.5", thickRoof: "1.5", thickL1: "4.5", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5",
+            partL1Angle: "67.5\" (L1 Stay - 50x50x5mm)", partL2Angle: "92.5\" (L2 Stay - 50x50x5mm)", partL3Angle: "135.5\" (L3 Stay - 50x50x5mm)",
             override: "", bom: JSON.parse(JSON.stringify(systemBaseStructure)), nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 
         }; 
     }
@@ -1066,46 +936,33 @@
     function handleUnitChange() { safeProcess(); }
     
     function autoCalculateBOM(tIdx) {
-        let t = appTanks[tIdx];
-        let u = getVal('unitChoice') || 'ft';
-        let L = parseFloat(t.L) || 0;
-        let W = parseFloat(t.W) || 0;
-        let H = parseFloat(t.H) || 0;
-
-        // Ensure defaults if missing (for older saved projects)
-        if(!t.thickBase) t.thickBase = "4.5"; if(!t.thickRoof) t.thickRoof = "1.5";
-        if(!t.thickL1) t.thickL1 = "4.5"; if(!t.thickL2) t.thickL2 = "3.0";
-        if(!t.thickL3) t.thickL3 = "3.0"; if(!t.thickL4) t.thickL4 = "1.5";
+        let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
+        if(!t.thickBase) t.thickBase = "4.5"; if(!t.thickRoof) t.thickRoof = "1.5"; if(!t.thickL1) t.thickL1 = "4.5"; if(!t.thickL2) t.thickL2 = "3.0"; if(!t.thickL3) t.thickL3 = "3.0"; if(!t.thickL4) t.thickL4 = "1.5";
         
         let sizeTag = u === 'ft' ? "(4'x4')" : "(1m x 1m)";
-        let coatShort = "HDG";
-        if (t.coat === 'Painted Steel') coatShort = "Painted";
-        else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304";
-        else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
+        let coatShort = "HDG"; if (t.coat === 'Painted Steel') coatShort = "Painted"; else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
         
-        let panelsL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L));
-        let panelsW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W));
-        let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
-
-        let roofQty = Math.max(0, (panelsL * panelsW) - 1); 
-        let manholeQty = 1;
-        let baseQty = panelsL * panelsW;
+        let panelsL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); let panelsW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
+        let roofQty = Math.max(0, (panelsL * panelsW) - 1); let manholeQty = 1; let baseQty = panelsL * panelsW;
+        let wallL1 = (panelsL + panelsW) * 2; let wallL2 = panelsH >= 2 ? (panelsL + panelsW) * 2 : 0; let wallL3 = panelsH >= 3 ? (panelsL + panelsW) * 2 : 0; let wallL4 = panelsH >= 4 ? (panelsL + panelsW) * 2 : 0;
         
-        let wallL1 = (panelsL + panelsW) * 2;
-        let wallL2 = panelsH >= 2 ? (panelsL + panelsW) * 2 : 0;
-        let wallL3 = panelsH >= 3 ? (panelsL + panelsW) * 2 : 0;
-        let wallL4 = panelsH >= 4 ? (panelsL + panelsW) * 2 : 0;
-        
-        let partitionPanels = t.partitionCol > 0 ? (panelsW * panelsH) : 0;
+        if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
+        let num_partitions = t.partitions.filter(p => p > 0).length;
+        let partitionPanels = num_partitions * (panelsW * panelsH);
         let totalPanels = manholeQty + roofQty + baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels;
+
+        let angleCat = t.bom.find(s => s.category === "Angle Stay");
+        if(angleCat && !angleCat.items.find(i => i._isPartStay === 1)) {
+            angleCat.items.push({name: "Partition L1 Stay", def: 27.25, wt: 4.5, qty: 0, _isPartStay: 1});
+            angleCat.items.push({name: "Partition L2 Stay", def: 38.50, wt: 7.2, qty: 0, _isPartStay: 2});
+            angleCat.items.push({name: "Partition L3 Stay", def: 49.60, wt: 14.5, qty: 0, _isPartStay: 3});
+        }
 
         t.bom.forEach((sec, sIdx) => {
             sec.items.forEach((it, iIdx) => {
                 let n = it.name.toLowerCase();
                 
                 if(sec.category !== "Services") {
-                    
-                    // --- DYNAMIC PANEL RENAMING ---
                     if (sec.category === "Panels") {
                         if (n.includes("base panel") && !n.includes("partition")) it.name = `${t.thickBase}mm Base Panel ${sizeTag} (${coatShort})`;
                         else if (n.includes("roof panel") && !n.includes("partition")) it.name = `${t.thickRoof}mm Roof Panel ${sizeTag} (${coatShort})`;
@@ -1114,17 +971,10 @@
                         else if (n.includes("wall panel (l3)")) it.name = `${t.thickL3}mm Wall Panel (L3) ${sizeTag} (${coatShort})`;
                         else if (n.includes("wall panel (l4)")) it.name = `${t.thickL4}mm Wall Panel (L4) ${sizeTag} (${coatShort})`;
                         else if (n.includes("manhole panel")) it.name = `Manhole Panel ${sizeTag} (${coatShort})`;
-                        else if (n.includes("partition panel")) it.name = `Partition Panel ${sizeTag} (${coatShort})`;
-                        
-                        // Update tracking variable instantly
-                        n = it.name.toLowerCase(); 
-                        
-                        // Push text update back to the UI visually
-                        let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`);
-                        if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
+                        else if (n.includes("partition panel")) { it.name = `Partition Panel ${sizeTag} (${coatShort})`; it.qty = partitionPanels; }
+                        n = it.name.toLowerCase(); let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
                     }
 
-                    // --- PANELS QTY ---
                     if (n.includes("manhole panel")) it.qty = manholeQty;
                     else if (n.includes("roof panel") && !n.includes("partition")) it.qty = roofQty;
                     else if (n.includes("base panel") && !n.includes("partition")) it.qty = baseQty;
@@ -1132,9 +982,11 @@
                     else if (n.includes("wall panel (l2)")) it.qty = wallL2;
                     else if (n.includes("wall panel (l3)")) it.qty = wallL3;
                     else if (n.includes("wall panel (l4)")) it.qty = wallL4;
-                    else if (n.includes("partition panel")) it.qty = partitionPanels;
                     
-                    // --- CLEATS & STAYS QTY ---
+                    else if (it._isPartStay === 1) { it.name = t.partL1Angle || "67.5\" (L1 Stay - 50x50x5mm)"; it.qty = num_partitions > 0 ? (panelsW * 2 * num_partitions) : 0; }
+                    else if (it._isPartStay === 2) { it.name = t.partL2Angle || "92.5\" (L2 Stay - 50x50x5mm)"; it.qty = (num_partitions > 0 && panelsH >= 2) ? (panelsW * 2 * num_partitions) : 0; }
+                    else if (it._isPartStay === 3) { it.name = t.partL3Angle || "135.5\" (L3 Stay - 50x50x5mm)"; it.qty = (num_partitions > 0 && panelsH >= 3) ? (panelsW * 2 * num_partitions) : 0; }
+                    
                     else if (n.includes("8mm (b) cleat") || n.includes("wall cleat")) it.qty = (wallL1 + wallL2 + wallL3 + wallL4) * 2;
                     else if (n.includes("type c cleat") || n.includes("roof cleat")) it.qty = (roofQty + manholeQty) * 2;
                     else if (n.includes("partition cleat")) it.qty = partitionPanels * 4;
@@ -1143,70 +995,41 @@
                     else if (n.includes("(l3 stay") || n.includes("l3 angle stay")) it.qty = wallL3;
                     else if (n.includes("l4 stay")) it.qty = wallL4;
 
-                    // --- STANDARD ACCESSORIES QTY ---
                     else if (n.includes("ext. ladder") || n.includes("ext ladder")) it.qty = 1;
                     else if (n.includes("int. ladder") || n.includes("int ladder")) it.qty = 1;
                     else if (n.includes("water level indicator")) it.qty = 1;
                     else if (n.includes("air vent")) it.qty = Math.max(1, Math.floor((panelsL * panelsW) / 4));
                     else if (n.includes("pvc foam tape") || n.includes("sealant")) it.qty = Math.ceil((totalPanels * 4) / 10);
                     
-                    // --- BOLTS & NUTS QTY ---
-                    else if (n.includes("m10") && (n.includes("bolt") || n.includes("b/n"))) {
-                        it.qty = Math.ceil((roofQty + manholeQty) * 24); 
-                    }
-                    else if (n.includes("m12") && (n.includes("bolt") || n.includes("b/n"))) {
-                        it.qty = Math.ceil((baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels) * 28); 
-                    }
-                    else if (n.includes("expansion bolt")) {
-                        it.qty = Math.ceil((panelsL + 1) * (panelsW + 1)); 
-                    }
+                    else if (n.includes("m10") && (n.includes("bolt") || n.includes("b/n"))) { it.qty = Math.ceil((roofQty + manholeQty) * 24); }
+                    else if (n.includes("m12") && (n.includes("bolt") || n.includes("b/n"))) { it.qty = Math.ceil((baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels) * 28); }
+                    else if (n.includes("expansion bolt")) { it.qty = Math.ceil((panelsL + 1) * (panelsW + 1)); }
                 }
                 
-                let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`);
-                if(qInput && sec.category !== "Services") qInput.value = it.qty || 0;
+                let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`); if(qInput && sec.category !== "Services") qInput.value = it.qty || 0;
             });
         });
     }
 
     function updateTankField(i, f, v, isNum) { 
         appTanks[i][f] = isNum ? (parseFloat(v)||0) : v; 
-        
         if (f === 'coat') {
             let mult = (v === 'Painted Steel') ? companyProfile.matMult.painted : (v === 'Stainless Steel (SS 304)' ? companyProfile.matMult.ss304 : (v === 'Stainless Steel (SS 316)' ? companyProfile.matMult.ss316 : 1.0));
-            appTanks[i].bom.forEach(sec => sec.items.forEach((it, idx) => { 
-                if(sec.category !== 'Services') {
-                    let baseSec = systemBaseStructure.find(s => s.category == sec.category);
-                    let baseDef = (baseSec && baseSec.items && baseSec.items[idx]) ? baseSec.items[idx].def : 0;
-                    it.def = baseDef * mult; 
-                }
-            }));
+            appTanks[i].bom.forEach(sec => sec.items.forEach((it, idx) => { if(sec.category !== 'Services') { let baseSec = systemBaseStructure.find(s => s.category == sec.category); let baseDef = (baseSec && baseSec.items && baseSec.items[idx]) ? baseSec.items[idx].def : 0; it.def = baseDef * mult; } }));
         }
-        
-        if (['L', 'W', 'H', 'partitionCol', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std'].includes(f)) {
-            autoCalculateBOM(i);
-        }
-        safeProcess(); 
+        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std'].includes(f)) { autoCalculateBOM(i); } safeProcess(); 
     }
 
-    function addNewTank() { 
-        appTanks.push(defaultTank()); 
-        renderAllDynamicUI(); 
-        autoCalculateBOM(appTanks.length - 1);
-        safeProcess();
-    }
-    
+    function addNewTank() { appTanks.push(defaultTank()); renderAllDynamicUI(); autoCalculateBOM(appTanks.length - 1); safeProcess(); }
     function removeTank(i) { if(confirm("Remove tank?")) { appTanks.splice(i, 1); renderAllDynamicUI(); processTankData(); } }
     
-    function updateBomField(t, s, i, f, v, isNum) { 
-        appTanks[t].bom[s].items[i][f] = isNum ? (parseFloat(v)||0) : v; 
-        if(f === 'def') appTanks[t].bom[s].items[i].manualPrice = true;
-        if(f === 'name') appTanks[t].bom[s].items[i].manualPrice = false;
-        safeProcess(); 
-    }
-    
+    function addPartition(tIdx) { if(!appTanks[tIdx].partitions) appTanks[tIdx].partitions = []; if(appTanks[tIdx].partitions.length < 3) { appTanks[tIdx].partitions.push(0); renderAllDynamicUI(); autoCalculateBOM(tIdx); safeProcess(); } }
+    function updatePartition(tIdx, pIdx, val) { appTanks[tIdx].partitions[pIdx] = parseInt(val) || 0; renderDrawings(); }
+    function removePartition(tIdx, pIdx) { appTanks[tIdx].partitions.splice(pIdx, 1); renderAllDynamicUI(); autoCalculateBOM(tIdx); safeProcess(); }
+
+    function updateBomField(t, s, i, f, v, isNum) { appTanks[t].bom[s].items[i][f] = isNum ? (parseFloat(v)||0) : v; if(f === 'def') appTanks[t].bom[s].items[i].manualPrice = true; if(f === 'name') appTanks[t].bom[s].items[i].manualPrice = false; safeProcess(); }
     function updateNozzle(t, nId, f, v, isNum) { let n = appTanks[t].nozzles.find(x=>x.id==nId); if(n) { n[f] = isNum ? (parseFloat(v)||0) : v; safeProcess(); } }
     function addNozzle(t) { if(!appTanks[t].nozzles) appTanks[t].nozzles = []; appTanks[t].nozzles.push({id: Date.now(), type: "Inlet", size: "2\"", qty: 1, pos: "Side panel"}); renderAllDynamicUI(); }
-
     function addNewCustomItem() { appCustomItems.push({ id: Date.now(), name: "Custom Service / Add-on", qty: 1, unit: "Lot", cost: 0 }); renderAllDynamicUI(); safeProcess(); }
     function updateCustomItem(i, f, v, isNum) { appCustomItems[i][f] = isNum ? parseFloat(v)||0 : v; safeProcess(); }
     function removeCustomItem(i) { appCustomItems.splice(i, 1); renderAllDynamicUI(); safeProcess(); }
@@ -1215,19 +1038,30 @@
         let tH = "", bH = "";
         appTanks.forEach((t, i) => {
             if(!t.nozzles) t.nozzles = []; let nozHtml = "";
-            t.nozzles.forEach(n => {
-                nozHtml += `<div class="nozzle-row">
-                    <div class="form-group" style="flex:1.5;"><select onchange="updateNozzle(${i}, ${n.id}, 'type', this.value)"><option ${n.type=='Inlet'?'selected':''}>Inlet</option><option ${n.type=='Outlet'?'selected':''}>Outlet</option><option ${n.type=='Overflow'?'selected':''}>Overflow</option><option ${n.type=='Drain'?'selected':''}>Drain</option><option ${n.type=='Scour'?'selected':''}>Scour</option><option ${n.type=='Warning'?'selected':''}>Warning</option></select></div>
-                    <div class="form-group" style="flex:1;"><input type="text" value="${n.size}" oninput="updateNozzle(${i}, ${n.id}, 'size', this.value)"></div>
-                    <div class="form-group" style="flex:0.8;"><input type="number" value="${n.qty}" oninput="updateNozzle(${i}, ${n.id}, 'qty', this.value, true)"></div>
-                    <div class="form-group" style="flex:2;"><input type="text" value="${n.pos}" oninput="updateNozzle(${i}, ${n.id}, 'pos', this.value)"></div>
+            t.nozzles.forEach(n => { nozHtml += `<div class="nozzle-row"><div class="form-group" style="flex:1.5;"><select onchange="updateNozzle(${i}, ${n.id}, 'type', this.value)"><option ${n.type=='Inlet'?'selected':''}>Inlet</option><option ${n.type=='Outlet'?'selected':''}>Outlet</option><option ${n.type=='Overflow'?'selected':''}>Overflow</option><option ${n.type=='Drain'?'selected':''}>Drain</option><option ${n.type=='Scour'?'selected':''}>Scour</option><option ${n.type=='Warning'?'selected':''}>Warning</option></select></div><div class="form-group" style="flex:1;"><input type="text" value="${n.size}" oninput="updateNozzle(${i}, ${n.id}, 'size', this.value)"></div><div class="form-group" style="flex:0.8;"><input type="number" value="${n.qty}" oninput="updateNozzle(${i}, ${n.id}, 'qty', this.value, true)"></div><div class="form-group" style="flex:2;"><input type="text" value="${n.pos}" oninput="updateNozzle(${i}, ${n.id}, 'pos', this.value)"></div></div>`; });
+
+            let partHtml = "";
+            if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
+            
+            t.partitions.forEach((p, pIdx) => {
+                partHtml += `<div style="display:flex; gap:10px; align-items:flex-end; margin-bottom:10px;">
+                    <div class="form-group" style="flex:1;"><label style="color:#be185d;">Partition ${pIdx+1} Column</label><input type="number" value="${p}" oninput="updatePartition(${i}, ${pIdx}, this.value)"></div>
+                    <button class="del-btn" style="height:35px; padding:0 15px;" onclick="removePartition(${i}, ${pIdx})">X Remove</button>
                 </div>`;
             });
+            
+            let addPartBtn = t.partitions.length < 3 ? `<button class="action-btn" style="width:auto; padding:6px 15px; font-size:11px; background:#ec4899;" onclick="addPartition(${i})">+ Add Partition Wall</button>` : `<span style="font-size:11px; color:#ef4444; font-weight:bold;">Max 3 Partitions Reached</span>`;
+
+            let partAnglesHtml = t.partitions.length > 0 ? `
+            <div class="dim-grid" style="margin-top:15px; border-top:1px dashed #fbcfe8; padding-top:15px;">
+                <div class="form-group"><label style="color:#db2777;">Partition L1 Stay (Type)</label><input type="text" value="${t.partL1Angle || '67.5\" (L1 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL1Angle', this.value)"></div>
+                <div class="form-group"><label style="color:#db2777;">Partition L2 Stay (Type)</label><input type="text" value="${t.partL2Angle || '92.5\" (L2 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL2Angle', this.value)"></div>
+                <div class="form-group"><label style="color:#db2777;">Partition L3 Stay (Type)</label><input type="text" value="${t.partL3Angle || '135.5\" (L3 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL3Angle', this.value)"></div>
+            </div>` : ``;
 
             tH += `<div class="tank-block" style="border-top:2px dashed #cbd5e1; margin-top:24px; padding-top:20px;">
                 <div class="tank-section-title"><span>Tank ${i+1} Specs</span><button class="del-btn no-print" onclick="removeTank(${i})">X REMOVE</button></div>
                 <div class="config-grid"><div class="form-group"><label>Standard</label><select onchange="updateTankField(${i}, 'std', this.value)"><option ${t.std.includes('SANS')?'selected':''}>SANS 10329:2020 Approved by SIRIM & SPAN</option><option ${t.std.includes('SS 22')?'selected':''}>SS 22: 1979</option></select></div><div class="form-group"><label>Material</label><select onchange="updateTankField(${i}, 'coat', this.value)"><option ${t.coat==='Hot Dipped Galvanised'?'selected':''}>Hot Dipped Galvanised</option><option ${t.coat==='Painted Steel'?'selected':''}>Painted Steel</option><option ${t.coat==='Stainless Steel (SS 304)'?'selected':''}>Stainless Steel (SS 304)</option><option ${t.coat==='Stainless Steel (SS 316)'?'selected':''}>Stainless Steel (SS 316)</option></select></div></div>
-                
                 <div class="tank-section-title" style="margin-top:10px; background:#f0fdf4; border-left-color:#22c55e;">🛡️ Panel Thickness Config (mm)</div>
                 <div class="dim-grid" style="background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom: 15px;">
                     <div class="form-group"><label>Base Panel</label><select onchange="updateTankField(${i}, 'thickBase', this.value)"><option ${t.thickBase=='4.5'?'selected':''}>4.5</option><option ${t.thickBase=='5.0'?'selected':''}>5.0</option><option ${t.thickBase=='6.0'?'selected':''}>6.0</option></select></div>
@@ -1237,15 +1071,19 @@
                     <div class="form-group"><label>Wall L3</label><select onchange="updateTankField(${i}, 'thickL3', this.value)"><option ${t.thickL3=='1.5'?'selected':''}>1.5</option><option ${t.thickL3=='2.0'?'selected':''}>2.0</option><option ${t.thickL3=='3.0'?'selected':''}>3.0</option><option ${t.thickL3=='4.5'?'selected':''}>4.5</option></select></div>
                     <div class="form-group"><label>Wall L4 (Top)</label><select onchange="updateTankField(${i}, 'thickL4', this.value)"><option ${t.thickL4=='1.5'?'selected':''}>1.5</option><option ${t.thickL4=='2.0'?'selected':''}>2.0</option><option ${t.thickL4=='3.0'?'selected':''}>3.0</option></select></div>
                 </div>
-
                 <div class="dim-grid">
                     <div class="form-group"><label>Length</label><input type="number" value="${t.L}" oninput="updateTankField(${i}, 'L', this.value, true)"></div>
                     <div class="form-group"><label>Width</label><input type="number" value="${t.W}" oninput="updateTankField(${i}, 'W', this.value, true)"></div>
                     <div class="form-group"><label>Height</label><input type="number" value="${t.H}" oninput="updateTankField(${i}, 'H', this.value, true)"></div>
-                    <div class="form-group"><label>Partition Pos (Col)</label><input type="number" value="${t.partitionCol||0}" oninput="updateTankField(${i}, 'partitionCol', this.value, true)"></div>
                     <div class="form-group"><label>Ladder 1 Pos (Col)</label><input type="number" value="${t.ladder1Col||0}" oninput="updateTankField(${i}, 'ladder1Col', this.value, true)"></div>
                     <div class="form-group"><label>Ladder 2 Pos (Col)</label><input type="number" value="${t.ladder2Col||0}" oninput="updateTankField(${i}, 'ladder2Col', this.value, true)"></div>
                 </div>
+                
+                <div class="tank-section-title" style="margin-top:15px; background:#fce7f3; border-left-color:#ec4899;">🧱 Partitions (Max 3)</div>
+                <div style="background:#fdf2f8; padding:15px; border-radius:6px; border:1px solid #fbcfe8; margin-bottom:15px;">
+                    ${partHtml} ${addPartBtn} ${partAnglesHtml}
+                </div>
+
                 <div class="tank-section-title" style="margin-top:10px; background:#fff7ed; border-left-color:#ea580c;">🚰 Nozzles</div>${nozHtml}<button class="add-btn" style="width:auto; padding:4px 8px; font-size:12px;" onclick="addNozzle(${i})">+ Add Nozzle</button>
             </div>`;
             
@@ -1253,241 +1091,89 @@
             t.bom.forEach((sec, sIdx) => {
                 rH += `<tr><td colspan="5" style="background:#f1f5f9; font-weight:700;">${sec.category}</td></tr>`;
                 sec.items.forEach((it, iIdx) => {
-                    // --- NEW: Hide rows where quantity is 0 ---
-                    let isZero = (sec.category !== "Services" && (!it.qty || it.qty == 0));
-                    let rowStyle = isZero ? "display:none;" : ""; 
-                    
-                    let qtyHtml = "";
-                    if (sec.category === "Services") {
-                        qtyHtml = `<span style="display:none;"></span>`;
-                    } else {
-                        qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`;
-                    }
+                    let isZero = (sec.category !== "Services" && (!it.qty || it.qty == 0)); let rowStyle = isZero ? "display:none;" : ""; 
+                    let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
                     rH += `<tr style="${rowStyle}" class="bom-row-${i}"><td><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)"><span id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></span></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
                 });
             });
-            bH += `<div class="module-card collapsed" style="margin-top:16px;">
-                <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <span>⚙️ BOM - TANK ${i+1}</span>
-                        <button class="action-btn export-btn no-print" style="padding:4px 8px; font-size:10px; width:auto; margin-right:15px;" onclick="event.stopPropagation(); document.querySelectorAll('.bom-row-${i}').forEach(el=>el.style.display='table-row')">👁️ Show Hidden Items</button>
-                    </div>
-                </div>
-                <div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div>
-            </div>`;
+            bH += `<div class="module-card collapsed" style="margin-top:16px;"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><span>⚙️ BOM - TANK ${i+1}</span><button class="action-btn export-btn no-print" style="padding:4px 8px; font-size:10px; width:auto; margin-right:15px;" onclick="event.stopPropagation(); document.querySelectorAll('.bom-row-${i}').forEach(el=>el.style.display='table-row')">👁️ Show Hidden Items</button></div></div><div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
         });
         setHtml('dynamicTanksContainer', tH); setHtml('dynamicBomContainer', bH);
         
-        let cH = "";
-        appCustomItems.forEach((c, i) => {
-            cH += `<div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
-                    <div style="flex:3;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Item Name</label><input type="text" class="admin-input" style="width:100%;" value="${c.name}" oninput="updateCustomItem(${i}, 'name', this.value)"></div>
-                    <div style="flex:1;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Qty</label><input type="number" class="admin-input" style="width:100%;" value="${c.qty}" oninput="updateCustomItem(${i}, 'qty', this.value, true)"></div>
-                    <div style="flex:1;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Unit</label><input type="text" class="admin-input" style="width:100%;" value="${c.unit}" oninput="updateCustomItem(${i}, 'unit', this.value)"></div>
-                    <div style="flex:1.5;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Cost/Unit (RM)</label><input type="number" class="admin-input" style="width:100%;" value="${c.cost}" oninput="updateCustomItem(${i}, 'cost', this.value, true)"></div>
-                    <div style="flex:0.5; text-align:center;"><label style="display:block; font-size:10px; color:transparent;">x</label><button class="del-btn" onclick="removeCustomItem(${i})">X</button></div>
-                   </div>`;
-        });
+        let cH = ""; appCustomItems.forEach((c, i) => { cH += `<div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;"><div style="flex:3;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Item Name</label><input type="text" class="admin-input" style="width:100%;" value="${c.name}" oninput="updateCustomItem(${i}, 'name', this.value)"></div><div style="flex:1;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Qty</label><input type="number" class="admin-input" style="width:100%;" value="${c.qty}" oninput="updateCustomItem(${i}, 'qty', this.value, true)"></div><div style="flex:1;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Unit</label><input type="text" class="admin-input" style="width:100%;" value="${c.unit}" oninput="updateCustomItem(${i}, 'unit', this.value)"></div><div style="flex:1.5;"><label style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Cost/Unit (RM)</label><input type="number" class="admin-input" style="width:100%;" value="${c.cost}" oninput="updateCustomItem(${i}, 'cost', this.value, true)"></div><div style="flex:0.5; text-align:center;"><label style="display:block; font-size:10px; color:transparent;">x</label><button class="del-btn" onclick="removeCustomItem(${i})">X</button></div></div>`; });
         setHtml('dynamicCustomContainer', cH);
     }
 
-    function createSVG(cols, rows, title, isWall, partitionCol, ladder1Col, ladder2Col) {
-        let pSize = 50; 
-        let w = Math.max(1, cols) * pSize; let h = Math.max(1, rows) * pSize;
-        let pad = 15; 
-        
-        let svg = `<div style="text-align:center; background:#fff; padding:15px; border:1.5px solid #000; border-radius:6px; display:flex; flex-direction:column; align-items:center; margin-bottom:15px; max-width: 45%; flex: 1 1 40%; min-width: 250px;">
-            <h4 style="margin:0 0 15px 0; font-size:11pt; font-weight:bold; color:#000; text-transform:uppercase;">${title}</h4>
-            <svg viewBox="0 0 ${w + pad*2} ${h + pad*2}" style="width: 100%; height: auto; max-height: 400px;" xmlns="http://www.w3.org/2000/svg">
-            <g transform="translate(${pad}, ${pad})">`;
-        
-        for(let r=0; r<rows; r++) {
-            for(let c=0; c<cols; c++) {
-                let px = c*pSize; let py = r*pSize;
-                svg += `<rect x="${px}" y="${py}" width="${pSize}" height="${pSize}" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>`;
-                if(isWall) {
-                    svg += `<line x1="${px}" y1="${py}" x2="${px+pSize}" y2="${py+pSize}" stroke="#94a3b8" stroke-width="0.8"/>
-                            <line x1="${px+pSize}" y1="${py}" x2="${px}" y2="${py+pSize}" stroke="#94a3b8" stroke-width="0.8"/>`;
-                }
-            }
-        }
+    function createSVG(cols, rows, title, isWall, partitionsArr, ladder1Col, ladder2Col) {
+        let pSize = 50; let w = Math.max(1, cols) * pSize; let h = Math.max(1, rows) * pSize; let pad = 15; 
+        let svg = `<div style="text-align:center; background:#fff; padding:15px; border:1.5px solid #000; border-radius:6px; display:flex; flex-direction:column; align-items:center; margin-bottom:15px; max-width: 45%; flex: 1 1 40%; min-width: 250px;"><h4 style="margin:0 0 15px 0; font-size:11pt; font-weight:bold; color:#000; text-transform:uppercase;">${title}</h4><svg viewBox="0 0 ${w + pad*2} ${h + pad*2}" style="width: 100%; height: auto; max-height: 400px;" xmlns="http://www.w3.org/2000/svg"><g transform="translate(${pad}, ${pad})">`;
+        for(let r=0; r<rows; r++) { for(let c=0; c<cols; c++) { let px = c*pSize; let py = r*pSize; svg += `<rect x="${px}" y="${py}" width="${pSize}" height="${pSize}" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>`; if(isWall) { svg += `<line x1="${px}" y1="${py}" x2="${px+pSize}" y2="${py+pSize}" stroke="#94a3b8" stroke-width="0.8"/><line x1="${px+pSize}" y1="${py}" x2="${px}" y2="${py+pSize}" stroke="#94a3b8" stroke-width="0.8"/>`; } } }
         
         if(title === 'Front View') {
-            let drawLadder = (colNum) => {
-                if(colNum > 0 && colNum <= cols) {
-                    let lx = (colNum - 1) * pSize + (pSize/2); 
-                    svg += `<line x1="${lx-8}" y1="0" x2="${lx-8}" y2="${h}" stroke="#ea580c" stroke-width="2"/>
-                            <line x1="${lx+8}" y1="0" x2="${lx+8}" y2="${h}" stroke="#ea580c" stroke-width="2"/>`;
-                    for(let r=10; r<h; r+=10) { svg += `<line x1="${lx-8}" y1="${r}" x2="${lx+8}" y2="${r}" stroke="#ea580c" stroke-width="1.5"/>`; }
-                }
-            };
-            if(ladder1Col > 0 || ladder2Col > 0) { drawLadder(ladder1Col); drawLadder(ladder2Col); } 
-            else if (cols >= 5) { drawLadder(3); drawLadder(5); }
+            let drawLadder = (colNum) => { if(colNum > 0 && colNum <= cols) { let lx = (colNum - 1) * pSize + (pSize/2); svg += `<line x1="${lx-8}" y1="0" x2="${lx-8}" y2="${h}" stroke="#ea580c" stroke-width="2"/><line x1="${lx+8}" y1="0" x2="${lx+8}" y2="${h}" stroke="#ea580c" stroke-width="2"/>`; for(let r=10; r<h; r+=10) { svg += `<line x1="${lx-8}" y1="${r}" x2="${lx+8}" y2="${r}" stroke="#ea580c" stroke-width="1.5"/>`; } } };
+            if(ladder1Col > 0 || ladder2Col > 0) { drawLadder(ladder1Col); drawLadder(ladder2Col); } else if (cols >= 5) { drawLadder(3); drawLadder(5); }
         }
 
-        if (partitionCol > 0 && partitionCol < cols && (title === 'Front View' || title === 'Roof Plan' || title === 'Base Plan')) {
-            let px = partitionCol * pSize;
-            svg += `<line x1="${px}" y1="0" x2="${px}" y2="${h}" stroke="#dc2626" stroke-width="4" stroke-dasharray="8,6"/>`;
+        if (partitionsArr && partitionsArr.length > 0 && (title === 'Front View' || title === 'Roof Plan' || title === 'Base Plan')) {
+            partitionsArr.forEach(pCol => { if (pCol > 0 && pCol < cols) { let px = pCol * pSize; svg += `<line x1="${px}" y1="0" x2="${px}" y2="${h}" stroke="#dc2626" stroke-width="4" stroke-dasharray="8,6"/>`; } });
         }
-        
-        svg += `</g></svg></div>`; 
-        return svg;
+        svg += `</g></svg></div>`; return svg;
     }
 
     function renderDrawings() {
         let h = ``;
         appTanks.forEach((t, i) => {
-            let pL = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.L/4) : Math.floor(t.L));
-            let pW = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.W/4) : Math.floor(t.W));
-            let pH = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.H/4) : Math.floor(t.H));
-            let pCol = Math.max(0, parseInt(t.partitionCol) || 0);
-            let l1 = parseInt(t.ladder1Col) || 0;
-            let l2 = parseInt(t.ladder2Col) || 0;
-            
-            h += `<div class="tank-section-title" style="margin-top:20px; background:#e0e7ff; border-left-color:#4f46e5; color: #000;">TANK ${i+1} BLUEPRINTS</div>
-                  <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; page-break-inside: avoid;">
-                    ${createSVG(pL, pH, 'Front View', true, pCol, l1, l2)}
-                    ${createSVG(pW, pH, 'Side View', true, 0, 0, 0)}
-                    ${createSVG(pL, pW, 'Roof Plan', false, pCol, 0, 0)}
-                    ${createSVG(pL, pW, 'Base Plan', false, pCol, 0, 0)}
-                  </div>`;
+            let pL = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.L/4) : Math.floor(t.L)); let pW = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.W/4) : Math.floor(t.W)); let pH = Math.max(1, window.currentUnit === 'ft' ? Math.floor(t.H/4) : Math.floor(t.H));
+            let pColsArr = t.partitions || []; if (t.partitionCol > 0 && pColsArr.length === 0) pColsArr.push(t.partitionCol);
+            let l1 = parseInt(t.ladder1Col) || 0; let l2 = parseInt(t.ladder2Col) || 0;
+            h += `<div class="tank-section-title" style="margin-top:20px; background:#e0e7ff; border-left-color:#4f46e5; color: #000;">TANK ${i+1} BLUEPRINTS</div><div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; page-break-inside: avoid;">${createSVG(pL, pH, 'Front View', true, pColsArr, l1, l2)}${createSVG(pW, pH, 'Side View', true, [], 0, 0)}${createSVG(pL, pW, 'Roof Plan', false, pColsArr, 0, 0)}${createSVG(pL, pW, 'Base Plan', false, pColsArr, 0, 0)}</div>`;
         });
-        
-        setHtml('dynamicDrawingsContainer', h);
-        setHtml('so_drawings_container', h);
+        setHtml('dynamicDrawingsContainer', h); setHtml('so_drawings_container', h);
     }
 
     function processTankData() {
         try {
-            let u = getVal('unitChoice') || 'ft'; window.currentUnit = u;
-            let totalBase = 0, totalC = 0;
+            let u = getVal('unitChoice') || 'ft'; window.currentUnit = u; let totalBase = 0, totalC = 0;
             appTanks.forEach((t, i) => {
-                t.effLiters = ((u === 'ft') ? (t.L * t.W * t.H * 28.3168) : (t.L * t.W * t.H * 1000)) * 0.9;
-                totalC += t.effLiters; t.baseCost = 0;
-                
-                t.bom.forEach((sec, sIdx) => {
-                    sec.items.forEach((it, iIdx) => {
-                        let invItem = winkoInventory[it.name];
-                        let unitPrice = 0;
-                        
-                        if (it.manualPrice) {
-                            unitPrice = parseFloat(it.def) || 0;
-                        } else {
-                            unitPrice = (invItem && invItem.cost > 0) ? invItem.cost : (parseFloat(it.def) || 0);
-                        }
-                        
-                        let calcQty = (sec.category === "Services") ? 1 : (Number(it.qty) || 0);
-                        let lTot = calcQty * unitPrice;
-                        t.baseCost += lTot;
-                        
-                        let tagEl = document.getElementById(`price_tag_${i}_${sIdx}_${iIdx}`);
-                        if(tagEl) { 
-                            if (it.manualPrice) {
-                                tagEl.innerText = "[Manual Override]"; 
-                                tagEl.className = "price-tag";
-                                tagEl.style.color = "#ea580c"; 
-                            } else if (invItem && invItem.cost > 0) {
-                                tagEl.innerText = "[Synced to Inventory]"; 
-                                tagEl.className = "price-tag synced";
-                                tagEl.style.color = "";
-                            } else {
-                                tagEl.innerText = "[Fallback Cost]"; 
-                                tagEl.className = "price-tag";
-                                tagEl.style.color = "";
-                            }
-                        }
-                        
-                        let totEl = document.getElementById(`tot_${i}_${sIdx}_${iIdx}`);
-                        if(totEl) totEl.innerText = lTot.toLocaleString('en-MY',{minimumFractionDigits:2});
-                    });
-                });
-                totalBase += t.baseCost;
+                t.effLiters = ((u === 'ft') ? (t.L * t.W * t.H * 28.3168) : (t.L * t.W * t.H * 1000)) * 0.9; totalC += t.effLiters; t.baseCost = 0;
+                t.bom.forEach((sec, sIdx) => { sec.items.forEach((it, iIdx) => {
+                    let invItem = winkoInventory[it.name]; let unitPrice = 0;
+                    if (it.manualPrice) { unitPrice = parseFloat(it.def) || 0; } else { unitPrice = (invItem && invItem.cost > 0) ? invItem.cost : (parseFloat(it.def) || 0); }
+                    let calcQty = (sec.category === "Services") ? 1 : (Number(it.qty) || 0); let lTot = calcQty * unitPrice; t.baseCost += lTot;
+                    let tagEl = document.getElementById(`price_tag_${i}_${sIdx}_${iIdx}`);
+                    if(tagEl) { if (it.manualPrice) { tagEl.innerText = "[Manual Override]"; tagEl.className = "price-tag"; tagEl.style.color = "#ea580c"; } else if (invItem && invItem.cost > 0) { tagEl.innerText = "[Synced to Inventory]"; tagEl.className = "price-tag synced"; tagEl.style.color = ""; } else { tagEl.innerText = "[Fallback Cost]"; tagEl.className = "price-tag"; tagEl.style.color = ""; } }
+                    let totEl = document.getElementById(`tot_${i}_${sIdx}_${iIdx}`); if(totEl) totEl.innerText = lTot.toLocaleString('en-MY',{minimumFractionDigits:2});
+                }); }); totalBase += t.baseCost;
             });
 
-            let customTotal = 0;
-            appCustomItems.forEach(c => { customTotal += ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); });
-
-            let mkAmt = totalBase * (getNum('markupPct')/100); 
-            let sub = totalBase + mkAmt + customTotal;
-            let dscAmt = sub * (getNum('discountPct')/100); 
-            let net = sub - dscAmt;
-            let sstAmt = net * (getNum('sstPct')/100); 
-            let grand = net + sstAmt;
+            let customTotal = 0; appCustomItems.forEach(c => { customTotal += ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); });
+            let mkAmt = totalBase * (getNum('markupPct')/100); let sub = totalBase + mkAmt + customTotal; let dscAmt = sub * (getNum('discountPct')/100); let net = sub - dscAmt; let sstAmt = net * (getNum('sstPct')/100); let grand = net + sstAmt;
             window.currentGrandTotal = grand.toLocaleString('en-MY',{minimumFractionDigits:2});
 
             const setM=(ids,v)=>ids.forEach(id=>setTxt(id,v));
-            setM(['sumBaseCost_screen','sumBaseCost_print'],totalBase.toLocaleString('en-MY',{minimumFractionDigits:2}));
-            setM(['sumCustomCost_screen', 'sumCustomCost_print'], customTotal.toLocaleString('en-MY',{minimumFractionDigits:2}));
-            setM(['sumMarkup_screen','sumMarkup_print'],mkAmt.toLocaleString('en-MY',{minimumFractionDigits:2}));
-            setM(['sumSubtotal_screen','sumSubtotal_print'],sub.toLocaleString('en-MY',{minimumFractionDigits:2}));
-            setM(['sumDiscount_screen','sumDiscount_print'],dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2}));
-            setM(['sumSST_screen','sumSST_print'],sstAmt.toLocaleString('en-MY',{minimumFractionDigits:2}));
-            setM(['grandTotal_screen','grandTotal_print'],window.currentGrandTotal);
-            setM(['sumCapacity_screen','sumCapacity_print'], totalC.toLocaleString('en-MY',{maximumFractionDigits:0})+" L");
-            
+            setM(['sumBaseCost_screen','sumBaseCost_print'],totalBase.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumCustomCost_screen', 'sumCustomCost_print'], customTotal.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumMarkup_screen','sumMarkup_print'],mkAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumSubtotal_screen','sumSubtotal_print'],sub.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumDiscount_screen','sumDiscount_print'],dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumSST_screen','sumSST_print'],sstAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['grandTotal_screen','grandTotal_print'],window.currentGrandTotal); setM(['sumCapacity_screen','sumCapacity_print'], totalC.toLocaleString('en-MY',{maximumFractionDigits:0})+" L");
             renderDrawings();
         } catch(e) { console.error("Calc error:", e); }
     }
     function safeProcess() { processTankData(); }
 
     function syncPrintHeader(u) {
-        setTxt('metaQuoteId', getVal('quoteIdInput')); setTxt('cpRef', getVal('quoteIdInput'));
-        setTxt('metaDate', new Date().toLocaleDateString()); setTxt('cpDate', new Date().toLocaleDateString());
-        setTxt('metaProject', getVal('projectName')); setTxt('cpProject', getVal('projectName'));
-        setTxt('cpCustName', getVal('custCompany')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr'));
-        setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>'));
-        setTxt('cpLeadTime', getVal('tcLead')); setTxt('cpDeliveryTerm', getVal('tcDelivery'));
-        setTxt('cpSignName', getVal('signName')); setTxt('cpSignPhone', getVal('signPhone'));
-        setHtml('cpShortExclusionsText', getVal('shortExclusions').replace(/\n/g, '<br>'));
-        setTxt('cpFullTermsText', getVal('fullTermsNotes'));
+        setTxt('metaQuoteId', getVal('quoteIdInput')); setTxt('cpRef', getVal('quoteIdInput')); setTxt('metaDate', new Date().toLocaleDateString()); setTxt('cpDate', new Date().toLocaleDateString()); setTxt('metaProject', getVal('projectName')); setTxt('cpProject', getVal('projectName')); setTxt('cpCustName', getVal('custCompany')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr')); setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>')); setTxt('cpLeadTime', getVal('tcLead')); setTxt('cpDeliveryTerm', getVal('tcDelivery')); setTxt('cpSignName', getVal('signName')); setTxt('cpSignPhone', getVal('signPhone')); setHtml('cpShortExclusionsText', getVal('shortExclusions').replace(/\n/g, '<br>')); setTxt('cpFullTermsText', getVal('fullTermsNotes'));
         
-        let tH = '';
-        let subtotalAccumulator = 0;
-
+        let tH = ''; let subtotalAccumulator = 0;
         appTanks.forEach((t, i) => {
-            let dimStr = u==='ft' ? `${t.L}' x ${t.W}' x ${t.H}' (H)` : `${t.L}m x ${t.W}m x ${t.H}m (H)`;
-            let mkup = getNum('markupPct') / 100;
-            let tankSellPrice = t.baseCost * (1 + mkup);
-            subtotalAccumulator += tankSellPrice;
-            
-            // --- NEW: Automatically scan BOM to extract Ladder and Air Vent Quantities ---
+            let dimStr = u==='ft' ? `${t.L}' x ${t.W}' x ${t.H}' (H)` : `${t.L}m x ${t.W}m x ${t.H}m (H)`; let mkup = getNum('markupPct') / 100; let tankSellPrice = t.baseCost * (1 + mkup); subtotalAccumulator += tankSellPrice;
             let extL = 0, intL = 0, vents = 0;
-            t.bom.forEach(sec => sec.items.forEach(it => {
-                let n = it.name.toLowerCase();
-                let q = Number(it.qty) || 0;
-                if(n.includes('ext') && (n.includes('ladder') || n.includes('lader'))) extL += q;
-                else if(n.includes('int') && (n.includes('ladder') || n.includes('lader'))) intL += q;
-                else if(n.includes('air vent')) vents += q;
-            }));
-            
-            let accStr = [];
-            if(intL > 0) accStr.push(`${intL}x Internal Ladder`);
-            if(extL > 0) accStr.push(`${extL}x External Ladder`);
-            if(vents > 0) accStr.push(`${vents}x Air Vent`);
+            t.bom.forEach(sec => sec.items.forEach(it => { let n = it.name.toLowerCase(); let q = Number(it.qty) || 0; if(n.includes('ext') && (n.includes('ladder') || n.includes('lader'))) extL += q; else if(n.includes('int') && (n.includes('ladder') || n.includes('lader'))) intL += q; else if(n.includes('air vent')) vents += q; }));
+            let accStr = []; if(intL > 0) accStr.push(`${intL}x Internal Ladder`); if(extL > 0) accStr.push(`${extL}x External Ladder`); if(vents > 0) accStr.push(`${vents}x Air Vent`);
             let accHtml = accStr.length > 0 ? `<br><span style="color:#0f172a; font-weight:600;">Included: ${accStr.join(', ')}</span>` : '';
-            // -----------------------------------------------------------------------------
-
             tH += `<tr><td class="text-center" style="font-weight:bold;">${i+1}</td><td><strong style="color:#000; font-size:10pt;">Pressed Steel Sectional Water Tank</strong><br><span style="color:#333;">Standard: ${t.std}<br>Dimension: <strong style="font-size:10pt; color:#000;">${dimStr}</strong><br>Material: ${t.coat}${accHtml}</span></td><td class="text-center" style="font-weight:bold;">1 Set</td><td class="text-right" style="font-weight:bold;">RM ${tankSellPrice.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`;
         });
         
-        appCustomItems.forEach((c, i) => {
-            let lineCost = ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0));
-            subtotalAccumulator += lineCost;
-            tH += `<tr><td class="text-center" style="font-weight:bold;">-</td><td><strong style="color:#000; font-size:10pt;">${c.name}</strong></td><td class="text-center" style="font-weight:bold;">${c.qty} ${c.unit}</td><td class="text-right" style="font-weight:bold;">RM ${lineCost.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`;
-        });
-
-        let dscPct = getNum('discountPct');
-        let dscAmt = subtotalAccumulator * (dscPct/100);
-        let net = subtotalAccumulator - dscAmt;
-
-        if (dscAmt > 0) {
-            tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">Gross Subtotal</td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">RM ${subtotalAccumulator.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`;
-            tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">Discount (${dscPct}%)</td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">- RM ${dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`;
-        }
-        
-        let finalCustomerTotal = net.toLocaleString('en-MY',{minimumFractionDigits:2});
-        tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">Total Amount</td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">RM ${finalCustomerTotal}</td></tr>`;
-        
+        appCustomItems.forEach((c, i) => { let lineCost = ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); subtotalAccumulator += lineCost; tH += `<tr><td class="text-center" style="font-weight:bold;">-</td><td><strong style="color:#000; font-size:10pt;">${c.name}</strong></td><td class="text-center" style="font-weight:bold;">${c.qty} ${c.unit}</td><td class="text-right" style="font-weight:bold;">RM ${lineCost.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; });
+        let dscPct = getNum('discountPct'); let dscAmt = subtotalAccumulator * (dscPct/100); let net = subtotalAccumulator - dscAmt;
+        if (dscAmt > 0) { tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">Gross Subtotal</td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">RM ${subtotalAccumulator.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr><tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">Discount (${dscPct}%)</td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">- RM ${dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; }
+        let finalCustomerTotal = net.toLocaleString('en-MY',{minimumFractionDigits:2}); tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">Total Amount</td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">RM ${finalCustomerTotal}</td></tr>`;
         setHtml('cpDynamicTanksBody', tH);
         
         let nozH = ''; appTanks.forEach((t,i) => { if(t.nozzles) t.nozzles.forEach(n => { nozH += `<tr><td style="border:1px solid #000; text-align:center;">${n.type}</td><td style="border:1px solid #000; text-align:center;">${n.size}</td><td style="border:1px solid #000; text-align:center;">${n.qty}</td><td style="border:1px solid #000; padding-left:5px;">Tank ${i+1}: ${n.pos}</td></tr>`; }) });
@@ -1498,77 +1184,32 @@
             soHtml += `<div style="background:#000; color:white; padding:6px 10px; font-weight:bold; font-size:10pt; margin-top:15px; text-transform:uppercase;">TANK ${i+1} - ${t.L}x${t.W}x${t.H}</div>`;
             t.bom.forEach(sec => {
                 let secItems = '';
-                sec.items.forEach(it => {
-                    let qty = sec.category === 'Services' ? 1 : (parseFloat(it.qty)||0);
-                    if (qty > 0) {
-                        let unitDisp = sec.category === 'Services' ? '' : 'Pcs';
-                        let qtyDisp = sec.category === 'Services' ? '' : qty;
-                        
-                        secItems += `<div style="display:flex; padding:5px 10px; border-bottom:1px solid #cbd5e1;">
-                            <div style="width:6%; text-align:center; color:#000;">-</div>
-                            <div style="width:74%; font-weight:bold; color:#000;">${it.name}</div>
-                            <div style="width:10%; text-align:center; color:#000;">${unitDisp}</div>
-                            <div style="width:10%; text-align:center; font-weight:bold; color:#000;">${qtyDisp}</div>
-                        </div>`;
-                    }
-                });
-                if (secItems !== '') {
-                    soHtml += `<div style="padding:4px 10px; font-weight:bold; font-size:9pt; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-top:5px; text-transform:uppercase;">${sec.category}</div>` + secItems;
-                }
+                sec.items.forEach(it => { let qty = sec.category === 'Services' ? 1 : (parseFloat(it.qty)||0); if (qty > 0) { let unitDisp = sec.category === 'Services' ? '' : 'Pcs'; let qtyDisp = sec.category === 'Services' ? '' : qty; secItems += `<div style="display:flex; padding:5px 10px; border-bottom:1px solid #cbd5e1;"><div style="width:6%; text-align:center; color:#000;">-</div><div style="width:74%; font-weight:bold; color:#000;">${it.name}</div><div style="width:10%; text-align:center; color:#000;">${unitDisp}</div><div style="width:10%; text-align:center; font-weight:bold; color:#000;">${qtyDisp}</div></div>`; } });
+                if (secItems !== '') { soHtml += `<div style="padding:4px 10px; font-weight:bold; font-size:9pt; background:#f1f5f9; border-bottom:1px solid #cbd5e1; margin-top:5px; text-transform:uppercase;">${sec.category}</div>` + secItems; }
             });
-        });
-        setHtml('so_table_body', soHtml);
+        }); setHtml('so_table_body', soHtml);
     }
     
     function triggerPrint(type) {
-        if (type !== 'customer_from_preview') {
-            processTankData(); 
-            syncPrintHeader(window.currentUnit||'ft');
-        }
-        
-        if (type === 'customer') {
-            switchTab('preview'); 
-            setTimeout(() => { document.body.className = 'print-customer'; window.print(); }, 200);
-        } else if (type === 'customer_from_preview') {
-            document.body.className = 'print-customer'; setTimeout(() => window.print(), 100);
-        } else if (type === 'internal') {
-            document.body.className = 'print-internal'; setTimeout(() => window.print(), 100);
-        } else if (type === 'checklist') {
-            setTxt('so_customer', getVal('custCompany')); setTxt('so_project', getVal('projectName')); setTxt('so_custpo', getVal('custPoNo')); 
-            document.body.className = 'print-checklist'; setTimeout(() => window.print(), 100);
-        }
-    }
-    window.addEventListener('afterprint', () => { document.body.className = ''; });
+        if (type !== 'customer_from_preview') { processTankData(); syncPrintHeader(window.currentUnit||'ft'); }
+        if (type === 'customer') { switchTab('preview'); setTimeout(() => { document.body.className = 'print-customer'; window.print(); }, 200); } else if (type === 'customer_from_preview') { document.body.className = 'print-customer'; setTimeout(() => window.print(), 100); } else if (type === 'internal') { document.body.className = 'print-internal'; setTimeout(() => window.print(), 100); } else if (type === 'checklist') { setTxt('so_customer', getVal('custCompany')); setTxt('so_project', getVal('projectName')); setTxt('so_custpo', getVal('custPoNo')); document.body.className = 'print-checklist'; setTimeout(() => window.print(), 100); }
+    } window.addEventListener('afterprint', () => { document.body.className = ''; });
 
-    function buildAdminTable() {
-        let h = '';
-        systemBaseStructure.forEach((sec, cIdx) => {
-            h += `<tr style="background:#f1f5f9;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:4px 8px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`;
-            sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0"></td></tr>`; });
-        });
-        setHtml('adminBody', h);
-    }
+    function buildAdminTable() { let h = ''; systemBaseStructure.forEach((sec, cIdx) => { h += `<tr style="background:#f1f5f9;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:4px 8px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`; sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0"></td></tr>`; }); }); setHtml('adminBody', h); }
     function addAdminCat() { systemBaseStructure.push({category: "New Category", markup: 0, items: []}); buildAdminTable(); }
     function addAdminItem(c) { systemBaseStructure[c].items.push({name:"New Item", wt:0, def:0}); buildAdminTable(); }
     function removeAdminItem(c, i) { systemBaseStructure[c].items.splice(i, 1); buildAdminTable(); }
     function saveAdminDefaults() { if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set({data: systemBaseStructure}); showToast("Master BOM Saved"); }
     
-    function renderCustomerAdmin() {
-        let f = getVal('custSearchBox').toLowerCase(); let h = '';
-        Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c)}')">X</button></td></tr>`; });
-        setHtml('customerAdminBody', h);
-    }
+    function renderCustomerAdmin() { let f = getVal('custSearchBox').toLowerCase(); let h = ''; Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c)}')">X</button></td></tr>`; }); setHtml('customerAdminBody', h); }
     function updateCustomerDatalist() { let h = ''; Object.keys(winkoCustomers).forEach(c => h += `<option value="${c}"></option>`); setHtml('customerDatalist', h); }
     function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); } }
     
     function applyCompanyProfileToAdmin() { setVal('profileName', companyProfile.name); setVal('profileReg', companyProfile.reg); setVal('profileAddress', companyProfile.address); setVal('profileContact', companyProfile.contact); setVal('profileWebsite', companyProfile.website); setVal('profileTax', companyProfile.taxRate); setVal('profileTerms', companyProfile.terms); setVal('mat_painted', companyProfile.matMult.painted); setVal('mat_ss304', companyProfile.matMult.ss304); setVal('mat_ss316', companyProfile.matMult.ss316); setVal('profilePrefix', companyProfile.quotePrefix); setVal('profileSeq', companyProfile.quoteSeq); }
-    function saveCompanyProfile() {
-        companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001;
-        if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!');
-    }
+    function saveCompanyProfile() { companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!'); }
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script successfully parsed and loaded into memory!");
+    console.log("✅ Winko ERP Script v161 successfully loaded with Multi-Partition capabilities!");
 </script>
 </body>
 </html>
