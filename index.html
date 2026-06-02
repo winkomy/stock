@@ -137,6 +137,43 @@
             body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; gap: 0 !important;}
             body.print-internal .col-right { display: none !important; }
             body.print-internal .module-card { border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; }
+            body.print-internal .card-header, body.print-internal .card-body { display: block !important; padding-top: 0 !important; margin-top: 0 !important;}@media print {
+            @page { size: A4; margin: 10mm 15mm; }
+            
+            /* 1. MASTER PRINT RESET (Fixes the blank 1st page issue) */
+            html, body { 
+                height: max-content !important; 
+                min-height: auto !important; 
+                overflow: visible !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                background: white; 
+                font-size: 9pt; 
+                color: #000; 
+                font-family: Arial, Helvetica, sans-serif; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+            
+            /* 2. STRIP ALL APP MARGINS/PADDING THAT PUSH CONTENT TO PAGE 2 */
+            #mainContent, .container { padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
+            
+            #topNav, .no-print, .internal-hide, #toast-container, #securityOverlay { display: none !important; }
+            
+            .print-only { display: block !important; }
+            tr, td, th { page-break-inside: avoid; }
+            .avoid-break { page-break-inside: avoid; }
+            .page-break { page-break-before: always; }
+            
+            /* --- PROFESSIONAL INTERNAL PRINT --- */
+            body.print-internal #mainContent { display: block !important; }
+            body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
+            
+            /* 3. FORCE BLOCK LAYOUT (Kills Flexbox bugs that cause random page jumping) */
+            body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; gap: 0 !important; margin: 0 !important;}
+            body.print-internal .col-right { display: none !important; }
+            
+            body.print-internal .module-card { border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; page-break-inside: auto; }
             body.print-internal .card-header, body.print-internal .card-body { display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
             
             /* Clean Corporate Headers & Tables for Internal */
