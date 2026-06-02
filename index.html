@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V166</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V168</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -121,43 +121,24 @@
 
         @media print {
             @page { size: A4; margin: 10mm 15mm; }
-            body { background: white; padding: 0; font-size: 9pt; color: #000; font-family: Arial, Helvetica, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            
-            #topNav, .no-print, .internal-hide, #toast-container, #securityOverlay { display: none !important; }
-            
-            .print-only { display: block !important; }
-            .container { max-width: 100%; padding: 0; box-shadow: none !important;}
-            tr, td, th { page-break-inside: avoid; }
-            .avoid-break { page-break-inside: avoid; }
-            .page-break { page-break-before: always; }
-            
-            /* --- PROFESSIONAL INTERNAL PRINT --- */
-            body.print-internal #mainContent { display: block !important; }
-            body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
-            body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; gap: 0 !important;}
-            body.print-internal .col-right { display: none !important; }
-            body.print-internal .module-card { border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; }
-            body.print-internal .card-header, body.print-internal .card-body { display: block !important; padding-top: 0 !important; margin-top: 0 !important;}@media print {
-            @page { size: A4; margin: 10mm 15mm; }
-            
-            /* 1. MASTER PRINT RESET (Fixes the blank 1st page issue) */
-            html, body { 
-                height: max-content !important; 
-                min-height: auto !important; 
-                overflow: visible !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                background: white; 
-                font-size: 9pt; 
-                color: #000; 
-                font-family: Arial, Helvetica, sans-serif; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
+
+            /* MASTER PRINT RESET to fix blank page bug */
+            html, body {
+                height: max-content !important;
+                min-height: auto !important;
+                overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white;
+                font-size: 9pt;
+                color: #000;
+                font-family: Arial, Helvetica, sans-serif;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
-            
-            /* 2. STRIP ALL APP MARGINS/PADDING THAT PUSH CONTENT TO PAGE 2 */
-            #mainContent, .container { padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
-            
+
+            #mainContent, .container { padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; max-width: 100%; }
+
             #topNav, .no-print, .internal-hide, #toast-container, #securityOverlay { display: none !important; }
             
             .print-only { display: block !important; }
@@ -169,7 +150,6 @@
             body.print-internal #mainContent { display: block !important; }
             body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
             
-            /* 3. FORCE BLOCK LAYOUT (Kills Flexbox bugs that cause random page jumping) */
             body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; gap: 0 !important; margin: 0 !important;}
             body.print-internal .col-right { display: none !important; }
             
@@ -257,7 +237,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V166 - Smart Engineering & Audit Edition</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V168 - Print Master Edition</p>
     </div>
 </div>
 
@@ -680,7 +660,7 @@
         return false;
     };
 
-    const cv = "V166"; 
+    const cv = "V168"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -938,11 +918,26 @@
     function renderInventoryUI() {
         let filterText = getVal('invSearchBox').toLowerCase(); let h = '';
         Object.keys(winkoInventory).sort().forEach(k => {
-            if(filterText && !k.toLowerCase().includes(filterText)) return; let d = winkoInventory[k]; let safeK = encodeURIComponent(k); let isLow = d.stock <= d.alert;
-            h += `<tr style="${isLow ? 'background-color: #fef2f2;' : ''}"><td><strong style="${isLow ? 'color:#dc2626;' : ''}">${k}</strong></td><td class="text-center" style="display:flex; justify-content:center; align-items:center; gap:5px;"><button class="action-btn" style="padding:4px 10px; width:auto; background:#64748b;" onclick="updateStock('${safeK}', -1)">-</button><input type="number" class="admin-input" style="width:70px; margin:0;" value="${d.stock}" onchange="setStock('${safeK}', this.value)"><button class="action-btn" style="padding:4px 10px; width:auto; background:#3b82f6;" onclick="updateStock('${safeK}', 1)">+</button></td><td class="text-center"><input type="number" class="admin-input" style="width:70px;" value="${d.alert}" onchange="setInvAlert('${safeK}', this.value)"></td><td class="text-center"><input type="number" step="0.01" class="admin-input" style="width:100px; color:#10b981;" value="${d.cost || 0}" onchange="setInvCost('${safeK}', this.value)"></td><td class="text-center"><button class="del-btn" onclick="removeInvItem('${safeK}')">X</button></td></tr>`;
+            if(filterText && !k.toLowerCase().includes(filterText)) return; 
+            let d = winkoInventory[k]; 
+            // FIXED: Safely encode single quotes to prevent HTML breaking
+            let safeK = encodeURIComponent(k).replace(/'/g, "%27"); 
+            let isLow = d.stock <= d.alert;
+            h += `<tr style="${isLow ? 'background-color: #fef2f2;' : ''}">
+                <td><strong style="${isLow ? 'color:#dc2626;' : ''}">${k}</strong></td>
+                <td class="text-center" style="display:flex; justify-content:center; align-items:center; gap:5px;">
+                    <button class="action-btn" style="padding:4px 10px; width:auto; background:#64748b;" onclick="updateStock('${safeK}', -1)">-</button>
+                    <input type="number" class="admin-input" style="width:70px; margin:0;" value="${d.stock}" onchange="setStock('${safeK}', this.value)">
+                    <button class="action-btn" style="padding:4px 10px; width:auto; background:#3b82f6;" onclick="updateStock('${safeK}', 1)">+</button>
+                </td>
+                <td class="text-center"><input type="number" class="admin-input" style="width:70px;" value="${d.alert}" onchange="setInvAlert('${safeK}', this.value)"></td>
+                <td class="text-center"><input type="number" step="0.01" class="admin-input" style="width:100px; color:#10b981;" value="${d.cost || 0}" onchange="setInvCost('${safeK}', this.value)"></td>
+                <td class="text-center"><button class="del-btn" onclick="removeInvItem('${safeK}')">X</button></td>
+            </tr>`;
         });
         if(h === '') h = '<tr><td colspan="5" style="text-align:center; padding: 20px; color:#64748b;">No items in inventory.</td></tr>';
-        setHtml('inventoryBody', h); renderInventoryChart();
+        setHtml('inventoryBody', h); 
+        renderInventoryChart();
     }
 
     function setInvCost(safeK, val) { winkoInventory[decodeURIComponent(safeK)].cost = parseFloat(val) || 0; saveInventoryDB(); safeProcess(); }
@@ -1417,7 +1412,7 @@
         showToast("Master BOM Saved"); 
     }
     
-    function renderCustomerAdmin() { let f = getVal('custSearchBox').toLowerCase(); let h = ''; Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c)}')">X</button></td></tr>`; }); setHtml('customerAdminBody', h); }
+    function renderCustomerAdmin() { let f = getVal('custSearchBox').toLowerCase(); let h = ''; Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c).replace(/'/g, "%27")}')">X</button></td></tr>`; }); setHtml('customerAdminBody', h); }
     function updateCustomerDatalist() { let h = ''; Object.keys(winkoCustomers).forEach(c => h += `<option value="${c}"></option>`); setHtml('customerDatalist', h); }
     function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); } }
     
@@ -1444,7 +1439,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v166 successfully loaded with Smart Engineering & Audit Tracking!");
+    console.log("✅ Winko ERP Script v168 successfully loaded (Master Print Fixes Applied)!");
 </script>
 </body>
 </html>
