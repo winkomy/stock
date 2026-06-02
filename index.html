@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V168</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V169</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -122,11 +122,8 @@
         @media print {
             @page { size: A4; margin: 10mm 15mm; }
 
-            /* MASTER PRINT RESET to fix blank page bug */
+            /* MASTER PRINT RESET: Removes app padding and margin */
             html, body {
-                height: max-content !important;
-                min-height: auto !important;
-                overflow: visible !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: white;
@@ -142,7 +139,10 @@
             #topNav, .no-print, .internal-hide, #toast-container, #securityOverlay { display: none !important; }
             
             .print-only { display: block !important; }
-            tr, td, th { page-break-inside: avoid; }
+            
+            /* ALLOW PAGINATION ACROSS TABLES AND CARDS */
+            table { page-break-inside: auto !important; }
+            tr, td, th { page-break-inside: avoid !important; }
             .avoid-break { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
             
@@ -153,9 +153,17 @@
             body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; gap: 0 !important; margin: 0 !important;}
             body.print-internal .col-right { display: none !important; }
             
-            body.print-internal .module-card { border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; page-break-inside: auto; }
-            body.print-internal .card-header, body.print-internal .card-body { display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
+            /* Allow sections to break naturally */
+            body.print-internal .module-card { page-break-inside: auto !important; border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; }
+            body.print-internal .card-header, body.print-internal .card-body { page-break-inside: auto !important; display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
+            body.print-internal .tank-block { page-break-inside: auto !important; margin-top: 15px !important; border-top: 1px solid #000 !important; padding-top: 10px !important; }
             
+            /* V169: KILL CSS GRID IN PRINT (Fixes Chrome blank page overflow bug) */
+            body.print-internal .config-grid, body.print-internal .dim-grid { display: block !important; margin-bottom: 10px !important; }
+            body.print-internal .form-group { display: inline-block !important; width: 48% !important; vertical-align: top; margin-bottom: 8px !important; padding-right: 10px; box-sizing: border-box; }
+            body.print-internal .dim-grid .form-group { width: 31% !important; }
+            body.print-internal .form-group label { display: block; margin-bottom: 2px; font-size: 7.5pt !important; }
+
             /* Clean Corporate Headers & Tables for Internal */
             body.print-internal .card-header { border-bottom: 2px solid #1e293b !important; margin-bottom: 12px !important; font-size: 12pt !important; padding: 0 0 5px 0 !important; color: #1e293b !important;}
             body.print-internal .card-header::after { display: none !important; }
@@ -170,7 +178,7 @@
             body.print-internal tr:nth-child(even) td { background-color: #f8fafc !important; }
             body.print-internal td.text-right { text-align: right; font-weight: 700;}
             
-            body.print-internal input, body.print-internal .desc-input { border: none !important; background: transparent !important; padding: 0 !important; width: auto; font-family: Arial !important; color: #000 !important;}
+            body.print-internal input, body.print-internal .desc-input, body.print-internal textarea, body.print-internal select { border: none !important; background: transparent !important; padding: 0 !important; width: auto; font-family: Arial !important; color: #000 !important; -webkit-appearance: none; appearance: none; resize: none; overflow: hidden; }
             body.print-internal .tank-section-title { background: #f1f5f9 !important; border-left: 4px solid #3b82f6 !important; padding: 8px 12px !important; margin-top: 15px !important; margin-bottom: 10px !important; color: #0f172a !important; font-weight: bold !important; font-size: 10pt !important; border-radius: 0 !important; }
             
             body.print-internal .summary-box { background: #fff !important; border: 2px solid #1e293b !important; border-radius: 6px !important; padding: 0 !important; width: 45% !important; float: right !important;}
@@ -237,7 +245,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V168 - Print Master Edition</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V169 - Stable PDF Format</p>
     </div>
 </div>
 
@@ -660,7 +668,7 @@
         return false;
     };
 
-    const cv = "V168"; 
+    const cv = "V169"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -920,7 +928,6 @@
         Object.keys(winkoInventory).sort().forEach(k => {
             if(filterText && !k.toLowerCase().includes(filterText)) return; 
             let d = winkoInventory[k]; 
-            // FIXED: Safely encode single quotes to prevent HTML breaking
             let safeK = encodeURIComponent(k).replace(/'/g, "%27"); 
             let isLow = d.stock <= d.alert;
             h += `<tr style="${isLow ? 'background-color: #fef2f2;' : ''}">
@@ -1046,17 +1053,43 @@
     const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
 
     function defaultTank() { 
-        return { 
+        let t = { 
             id: Date.now(), std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", 
             L: 12, W: 4, H: 12, partitions: [], ladder1Col: 0, ladder2Col: 0, 
             thickBase: "4.5", thickRoof: "1.5", thickL1: "4.5", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5",
             partL1Angle: "67.5\" (L1 Stay - 50x50x5mm)", partL2Angle: "92.5\" (L2 Stay - 50x50x5mm)", partL3Angle: "135.5\" (L3 Stay - 50x50x5mm)",
             override: "", bom: JSON.parse(JSON.stringify(systemBaseStructure)), nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 
-        }; 
+        };
+        applySmartThickness(t, 0, true);
+        return t; 
     }
 
-    function handleUnitChange() { safeProcess(); }
+    function handleUnitChange() { 
+        appTanks.forEach((t, i) => { applySmartThickness(t, i); autoCalculateBOM(i); });
+        safeProcess(); 
+    }
     
+    // V169 BUG FIX: Separated the Thickness Auto-Matrix so it doesn't overwrite manual inputs.
+    function applySmartThickness(t, tankIndex, isInit = false) {
+        let u = getVal('unitChoice') || 'ft';
+        let H = parseFloat(t.H) || 0;
+        let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
+
+        t.thickRoof = "1.5";
+        if (panelsH === 1) { t.thickBase = "4.5"; t.thickL1 = "4.5"; t.thickL2="3.0"; t.thickL3="3.0"; t.thickL4="1.5"; }
+        else if (panelsH === 2) { t.thickBase = "4.5"; t.thickL1 = "4.5"; t.thickL2 = "3.0"; t.thickL3="3.0"; t.thickL4="1.5"; }
+        else if (panelsH === 3) { t.thickBase = "5.0"; t.thickL1 = "5.0"; t.thickL2 = "4.5"; t.thickL3 = "3.0"; t.thickL4="1.5"; }
+        else if (panelsH >= 4) { t.thickBase = "6.0"; t.thickL1 = "6.0"; t.thickL2 = "5.0"; t.thickL3 = "4.5"; t.thickL4 = "3.0"; }
+
+        if(!isInit) {
+            let ids = ['thickBase', 'thickRoof', 'thickL1', 'thickL2', 'thickL3', 'thickL4'];
+            ids.forEach(f => {
+                let el = document.getElementById(`tank_${tankIndex}_${f}`);
+                if(el) el.value = t[f];
+            });
+        }
+    }
+
     function autoCalculateBOM(tIdx) {
         let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
         
@@ -1064,20 +1097,7 @@
         let coatShort = "HDG"; if (t.coat === 'Painted Steel') coatShort = "Painted"; else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
         
         let panelsL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); let panelsW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
-        
-        // Smart Engineering Matrix (Thickness by Height)
-        t.thickRoof = "1.5";
-        if (panelsH === 1) { 
-            t.thickBase = "4.5"; t.thickL1 = "4.5"; 
-        } else if (panelsH === 2) { 
-            t.thickBase = "4.5"; t.thickL1 = "4.5"; t.thickL2 = "3.0"; 
-        } else if (panelsH === 3) { 
-            t.thickBase = "5.0"; t.thickL1 = "5.0"; t.thickL2 = "4.5"; t.thickL3 = "3.0"; 
-        } else if (panelsH >= 4) { 
-            t.thickBase = "6.0"; t.thickL1 = "6.0"; t.thickL2 = "5.0"; t.thickL3 = "4.5"; t.thickL4 = "3.0"; 
-        }
 
-        // Smart Ladder Sizing
         let ladderTag = u === 'ft' ? `(${panelsH * 4}')` : `(${panelsH}m)`;
         
         if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
@@ -1161,7 +1181,9 @@
     }
 
     function updateTankField(i, f, v, isNum) { 
+        let oldH = appTanks[i].H;
         appTanks[i][f] = isNum ? (parseFloat(v)||0) : v; 
+        
         if (f === 'coat') {
             let mult = (v === 'Painted Steel') ? companyProfile.matMult.painted : (v === 'Stainless Steel (SS 304)' ? companyProfile.matMult.ss304 : (v === 'Stainless Steel (SS 316)' ? companyProfile.matMult.ss316 : 1.0));
             appTanks[i].bom.forEach(sec => sec.items.forEach((it, idx) => { 
@@ -1172,7 +1194,15 @@
                 } 
             }));
         }
-        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std'].includes(f)) { autoCalculateBOM(i); } safeProcess(); 
+
+        if (f === 'H' && oldH !== appTanks[i].H) {
+            applySmartThickness(appTanks[i], i);
+        }
+
+        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std'].includes(f)) { 
+            autoCalculateBOM(i); 
+        } 
+        safeProcess(); 
     }
 
     function addNewTank() { appTanks.push(defaultTank()); renderAllDynamicUI(); autoCalculateBOM(appTanks.length - 1); safeProcess(); }
@@ -1220,12 +1250,12 @@
                 
                 <div class="tank-section-title" style="margin-top:16px; background:#f0fdf4; border-left-color:#22c55e;">🛡️ Panel Thickness Config (mm)</div>
                 <div class="dim-grid" style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom: 20px;">
-                    <div class="form-group"><label>Base Panel</label><input type="text" value="${t.thickBase||'4.5'}" oninput="updateTankField(${i}, 'thickBase', this.value)"></div>
-                    <div class="form-group"><label>Roof Panel</label><input type="text" value="${t.thickRoof||'1.5'}" oninput="updateTankField(${i}, 'thickRoof', this.value)"></div>
-                    <div class="form-group"><label>Wall L1 (Bottom)</label><input type="text" value="${t.thickL1||'4.5'}" oninput="updateTankField(${i}, 'thickL1', this.value)"></div>
-                    <div class="form-group"><label>Wall L2</label><input type="text" value="${t.thickL2||'3.0'}" oninput="updateTankField(${i}, 'thickL2', this.value)"></div>
-                    <div class="form-group"><label>Wall L3</label><input type="text" value="${t.thickL3||'3.0'}" oninput="updateTankField(${i}, 'thickL3', this.value)"></div>
-                    <div class="form-group"><label>Wall L4 (Top)</label><input type="text" value="${t.thickL4||'1.5'}" oninput="updateTankField(${i}, 'thickL4', this.value)"></div>
+                    <div class="form-group"><label>Base Panel</label><input type="text" id="tank_${i}_thickBase" value="${t.thickBase||'4.5'}" oninput="updateTankField(${i}, 'thickBase', this.value)"></div>
+                    <div class="form-group"><label>Roof Panel</label><input type="text" id="tank_${i}_thickRoof" value="${t.thickRoof||'1.5'}" oninput="updateTankField(${i}, 'thickRoof', this.value)"></div>
+                    <div class="form-group"><label>Wall L1 (Bottom)</label><input type="text" id="tank_${i}_thickL1" value="${t.thickL1||'4.5'}" oninput="updateTankField(${i}, 'thickL1', this.value)"></div>
+                    <div class="form-group"><label>Wall L2</label><input type="text" id="tank_${i}_thickL2" value="${t.thickL2||'3.0'}" oninput="updateTankField(${i}, 'thickL2', this.value)"></div>
+                    <div class="form-group"><label>Wall L3</label><input type="text" id="tank_${i}_thickL3" value="${t.thickL3||'3.0'}" oninput="updateTankField(${i}, 'thickL3', this.value)"></div>
+                    <div class="form-group"><label>Wall L4 (Top)</label><input type="text" id="tank_${i}_thickL4" value="${t.thickL4||'1.5'}" oninput="updateTankField(${i}, 'thickL4', this.value)"></div>
                 </div>
 
                 <div class="dim-grid">
@@ -1439,7 +1469,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v168 successfully loaded (Master Print Fixes Applied)!");
+    console.log("✅ Winko ERP Script v169 successfully loaded (Print Pagination + BOM Sync Fixed)!");
 </script>
 </body>
 </html>
