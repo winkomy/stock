@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko - Enterprise Quoting </title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V166</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -220,7 +220,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V165 - Live UI Sync Fix</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V166 - Smart Engineering & Audit Edition</p>
     </div>
 </div>
 
@@ -317,7 +317,14 @@
     <div class="module-card" style="margin-top: 24px;">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>🏢</span> Global Company Profile</div>
         <div class="card-body">
-            <button class="action-btn print-btn" style="width:auto; padding: 10px 20px; background:#10b981; margin-bottom:20px;" onclick="saveCompanyProfile()">💾 Save Company Profile to Cloud</button>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button class="action-btn print-btn" style="width:auto; padding: 10px 20px; background:#10b981; margin:0;" onclick="saveCompanyProfile()">💾 Save Company Profile to Cloud</button>
+                <div id="companyAuditLog" style="font-size: 12px; color: #64748b; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    🕒 <i>No audit data yet</i>
+                </div>
+            </div>
+
             <div class="config-grid">
                 <div class="tank-section-title" style="grid-column: span 2; margin-top:0px; background:#fef3c7; border-left-color:#f59e0b;">🔢 Document Sequencing</div>
                 <div class="form-group"><label>Quote Prefix</label><input type="text" id="profilePrefix"></div>
@@ -357,10 +364,17 @@
     <div class="module-card" style="margin-top: 24px;">
         <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>⚙️</span> Dynamic Base BOM (Fallbacks)</div>
         <div class="card-body">
-            <div style="display: flex; gap: 12px; margin-bottom:20px;">
-                <button class="action-btn print-btn" style="width:auto; padding: 10px 16px; background:#e0f2fe; color:#0369a1; border: 1px solid #bae6fd;" onclick="addAdminCat()">+ Add New Category</button>
-                <button class="action-btn print-btn" style="width:auto; padding: 10px 16px; background:#10b981;" onclick="saveAdminDefaults()">💾 Save Master Structure to Cloud</button>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px;">
+                <div style="display: flex; gap: 12px;">
+                    <button class="action-btn print-btn" style="width:auto; padding: 10px 16px; background:#e0f2fe; color:#0369a1; border: 1px solid #bae6fd; margin:0;" onclick="addAdminCat()">+ Add New Category</button>
+                    <button class="action-btn print-btn" style="width:auto; padding: 10px 16px; background:#10b981; margin:0;" onclick="saveAdminDefaults()">💾 Save Master Structure</button>
+                </div>
+                <div id="bomAuditLog" style="font-size: 12px; color: #64748b; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    🕒 <i>No audit data yet</i>
+                </div>
             </div>
+
             <table class="admin-table">
                 <thead><tr><th style="width:10%; text-align:center;">Action</th><th style="width:50%;">Item Name</th><th style="width:20%;">Default Wt (kg)</th><th style="width:20%;">Fallback Cost (RM)</th></tr></thead>
                 <tbody id="adminBody"></tbody>
@@ -629,7 +643,7 @@
         return false;
     };
 
-    const cv = "V165"; 
+    const cv = "V166"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -650,6 +664,15 @@
     }
     
     function togglePass(id) { let el = document.getElementById(id); if(el) { el.type = el.type === "password" ? "text" : "password"; } }
+
+    function formatAuditDate(isoString) {
+        if(!isoString) return 'Never';
+        let d = new Date(isoString);
+        return d.toLocaleDateString('en-MY', { 
+            year: 'numeric', month: 'short', day: 'numeric', 
+            hour: '2-digit', minute: '2-digit' 
+        });
+    }
 
     const FIREBASE_CONFIG = {
         apiKey: "AIzaSyC4ypeNoU9D_gFxjaDSZA11PJrqh4sOdbM",
@@ -742,10 +765,30 @@
     function initCloudListeners() {
         if (!cloudDB) return;
         try {
-            cloudDB.collection("winko_settings").doc("master_bom").onSnapshot(doc => { if(doc.exists) { systemBaseStructure = doc.data().data || doc.data() || systemBaseStructure; if(document.getElementById('adminContent').style.display === 'block') buildAdminTable(); } });
+            cloudDB.collection("winko_settings").doc("master_bom").onSnapshot(doc => { 
+                if(doc.exists) { 
+                    let d = doc.data(); 
+                    systemBaseStructure = d.data || d || systemBaseStructure; 
+                    if(document.getElementById('adminContent').style.display === 'block') buildAdminTable(); 
+                    
+                    if (d.lastUpdated) {
+                        setHtml('bomAuditLog', `🕒 Updated: <b>${formatAuditDate(d.lastUpdated)}</b> &nbsp;|&nbsp; 👤 By: <b>${d.updatedBy || 'Unknown'}</b>`);
+                    }
+                } 
+            });
             cloudDB.collection("winko_settings").doc("crm").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); winkoCustomers = d.data || d || winkoCustomers; updateCustomerDatalist(); if(document.getElementById('adminContent').style.display === 'block') renderCustomerAdmin(); } });
             cloudDB.collection("winko_settings").doc("inventory").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); winkoInventory = d.data || d || winkoInventory; if(document.getElementById('inventoryContent').style.display === 'block') renderInventoryUI(); safeProcess(); } });
-            cloudDB.collection("winko_settings").doc("company").onSnapshot(doc => { if(doc.exists) { companyProfile = doc.data(); applyCompanyProfileToAdmin(); applyCompanyProfileToHeaders(); } });
+            cloudDB.collection("winko_settings").doc("company").onSnapshot(doc => { 
+                if(doc.exists) { 
+                    companyProfile = doc.data(); 
+                    applyCompanyProfileToAdmin(); 
+                    applyCompanyProfileToHeaders(); 
+                    
+                    if (companyProfile.lastUpdated) {
+                        setHtml('companyAuditLog', `🕒 Updated: <b>${formatAuditDate(companyProfile.lastUpdated)}</b> &nbsp;|&nbsp; 👤 By: <b>${companyProfile.updatedBy || 'Unknown'}</b>`);
+                    }
+                } 
+            });
             cloudDB.collection("winko_settings").doc("users").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); let newUsers = d.data || d; if(Array.isArray(newUsers) && newUsers.length > 0) { winkoUsers = newUsers; if(document.getElementById('adminContent').style.display === 'block') renderUserTable(); } } });
             cloudDB.collection("winko_projects").onSnapshot(snapshot => { let m = {}; snapshot.forEach(doc => { m[doc.id] = doc.data(); }); window.cloudMemoryBank = m; if(document.getElementById('projectsContent').style.display === 'block') drawProjectBankTable(); });
         } catch(e) { console.warn("Snapshot error", e); }
@@ -814,7 +857,25 @@
             "M12 x 100mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 3.00 }, "M16 x 120mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 5.00 },
             "PVC Foam Tape (10m x 3mm)": { stock: 300, alert: 50, cost: 8.00 }, "Aseal Butyl Sealant (80m)": { stock: 200, alert: 30, cost: 1.70 },
             "PVC Bolt Head Cover (M12)": { stock: 1000, alert: 200, cost: 0.20 }, "M12 EPDM Rubber Washer": { stock: 1000, alert: 200, cost: 0.40 },
-            "Ext. Ladder (HDG)": { stock: 40, alert: 5, cost: 55.00 }, "Int. Ladder (HDG)": { stock: 40, alert: 5, cost: 75.00 },
+            
+            "Ext. Ladder (4') (HDG)": { stock: 40, alert: 5, cost: 55.00 },
+            "Ext. Ladder (8') (HDG)": { stock: 40, alert: 5, cost: 110.00 },
+            "Ext. Ladder (12') (HDG)": { stock: 20, alert: 5, cost: 165.00 },
+            "Ext. Ladder (16') (HDG)": { stock: 10, alert: 2, cost: 220.00 },
+            "Int. Ladder (4') (HDG)": { stock: 40, alert: 5, cost: 75.00 },
+            "Int. Ladder (8') (HDG)": { stock: 40, alert: 5, cost: 150.00 },
+            "Int. Ladder (12') (HDG)": { stock: 20, alert: 5, cost: 225.00 },
+            "Int. Ladder (16') (HDG)": { stock: 10, alert: 2, cost: 300.00 },
+            
+            "Ext. Ladder (1m) (HDG)": { stock: 40, alert: 5, cost: 55.00 },
+            "Ext. Ladder (2m) (HDG)": { stock: 40, alert: 5, cost: 110.00 },
+            "Ext. Ladder (3m) (HDG)": { stock: 20, alert: 5, cost: 165.00 },
+            "Ext. Ladder (4m) (HDG)": { stock: 10, alert: 2, cost: 220.00 },
+            "Int. Ladder (1m) (HDG)": { stock: 40, alert: 5, cost: 75.00 },
+            "Int. Ladder (2m) (HDG)": { stock: 40, alert: 5, cost: 150.00 },
+            "Int. Ladder (3m) (HDG)": { stock: 20, alert: 5, cost: 225.00 },
+            "Int. Ladder (4m) (HDG)": { stock: 10, alert: 2, cost: 300.00 },
+            
             "Water Level Indicator (Mechanical)": { stock: 50, alert: 10, cost: 220.00 }, "Air Vent (PVC)": { stock: 80, alert: 15, cost: 85.00 },
             "Installation & Labor": { stock: 999, alert: 10, cost: 3500.00 }, "Transport": { stock: 999, alert: 10, cost: 850.00 }
         };
@@ -902,7 +963,7 @@
         let d = window.cloudMemoryBank[k]; if(!d) return; 
         configIDs.forEach(id => { if(d[id]!==undefined) setVal(id, d[id]); }); 
         appTanks = d.tanks || []; appCustomItems = d.custom || []; 
-        appTanks.forEach((_, i) => autoCalculateBOM(i)); // Force sync against current master inventory
+        appTanks.forEach((_, i) => autoCalculateBOM(i)); 
         switchTab('quote'); safeProcess(); showToast("Project Loaded & Synced!"); 
     }
 
@@ -919,9 +980,34 @@
     }
 
     function confirmOrderAndDeduct() {
-        if(!confirm("⚠️ Are you sure? This will deduct exact quantities from your Master Inventory!")) return; let deducted = 0; let warns = [];
-        appTanks.forEach(t => t.bom.forEach(sec => { if(sec.category === "Services") return; sec.items.forEach(it => { let q = Number(it.qty) || 0; if(q > 0 && winkoInventory[it.name]) { winkoInventory[it.name].stock -= q; deducted++; if(winkoInventory[it.name].stock < 0) warns.push(`${it.name} is negative!`); } }); }));
-        if(deducted > 0) { saveInventoryDB(); let msg = `✅ Deducted ${deducted} items.`; if(warns.length > 0) msg += `\n\nWarnings:\n- ` + warns.join('\n- '); alert(msg); } else { alert("❌ No exact matching inventory items to deduct."); }
+        if(!confirm("⚠️ Are you sure? This will deduct exact quantities from your Master Inventory!")) return; 
+        let deducted = 0; 
+        let warns = [];
+        
+        appTanks.forEach(t => t.bom.forEach(sec => { 
+            if(sec.category === "Services") return; 
+            sec.items.forEach(it => { 
+                let q = Number(it.qty) || 0; 
+                if(q > 0) {
+                    let searchName = it.name.trim().toLowerCase();
+                    let invItemKey = Object.keys(winkoInventory).find(k => k.trim().toLowerCase() === searchName);
+                    if(invItemKey && winkoInventory[invItemKey]) { 
+                        winkoInventory[invItemKey].stock -= q; 
+                        deducted++; 
+                        if(winkoInventory[invItemKey].stock < 0) warns.push(`${invItemKey} dropped below zero!`); 
+                    } 
+                }
+            }); 
+        }));
+        
+        if(deducted > 0) { 
+            saveInventoryDB(); 
+            let msg = `✅ Successfully deducted ${deducted} item lines from Master Inventory.`; 
+            if(warns.length > 0) msg += `\n\nStock Warnings:\n- ` + warns.join('\n- '); 
+            alert(msg); 
+        } else { 
+            alert("❌ No matching inventory items found to deduct. Ensure BOM names match Master Inventory."); 
+        }
     }
 
     let appTanks = []; let appCustomItems = [];
@@ -941,12 +1027,26 @@
     
     function autoCalculateBOM(tIdx) {
         let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
-        if(!t.thickBase) t.thickBase = "4.5"; if(!t.thickRoof) t.thickRoof = "1.5"; if(!t.thickL1) t.thickL1 = "4.5"; if(!t.thickL2) t.thickL2 = "3.0"; if(!t.thickL3) t.thickL3 = "3.0"; if(!t.thickL4) t.thickL4 = "1.5";
         
         let sizeTag = u === 'ft' ? "(4'x4')" : "(1m x 1m)";
         let coatShort = "HDG"; if (t.coat === 'Painted Steel') coatShort = "Painted"; else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
         
         let panelsL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); let panelsW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
+        
+        // Smart Engineering Matrix (Thickness by Height)
+        t.thickRoof = "1.5";
+        if (panelsH === 1) { 
+            t.thickBase = "4.5"; t.thickL1 = "4.5"; 
+        } else if (panelsH === 2) { 
+            t.thickBase = "4.5"; t.thickL1 = "4.5"; t.thickL2 = "3.0"; 
+        } else if (panelsH === 3) { 
+            t.thickBase = "5.0"; t.thickL1 = "5.0"; t.thickL2 = "4.5"; t.thickL3 = "3.0"; 
+        } else if (panelsH >= 4) { 
+            t.thickBase = "6.0"; t.thickL1 = "6.0"; t.thickL2 = "5.0"; t.thickL3 = "4.5"; t.thickL4 = "3.0"; 
+        }
+
+        // Smart Ladder Sizing
+        let ladderTag = u === 'ft' ? `(${panelsH * 4}')` : `(${panelsH}m)`;
         
         if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
         let num_partitions = t.partitions.filter(p => p > 0).length;
@@ -1003,8 +1103,17 @@
                     else if (n.includes("(l3 stay") || n.includes("l3 angle stay")) it.qty = wallL3;
                     else if (n.includes("l4 stay")) it.qty = wallL4;
 
-                    else if (n.includes("ext. ladder") || n.includes("ext ladder")) it.qty = 1;
-                    else if (n.includes("int. ladder") || n.includes("int ladder")) it.qty = manholeQty;
+                    else if (n.includes("ext") && (n.includes("ladder") || n.includes("lader"))) { 
+                        it.name = `Ext. Ladder ${ladderTag} (${coatShort})`; 
+                        it.qty = 1; 
+                        let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput) nameInput.value = it.name;
+                    }
+                    else if (n.includes("int") && (n.includes("ladder") || n.includes("lader"))) { 
+                        it.name = `Int. Ladder ${ladderTag} (${coatShort})`; 
+                        it.qty = manholeQty; 
+                        let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput) nameInput.value = it.name;
+                    }
+                    
                     else if (n.includes("water level indicator")) it.qty = manholeQty;
                     else if (n.includes("air vent")) it.qty = Math.max(1, Math.floor((panelsL * panelsW) / 4));
                     else if (n.includes("pvc foam tape") || n.includes("sealant")) it.qty = Math.ceil((totalPanels * 4) / 10);
@@ -1260,17 +1369,45 @@
     function addAdminCat() { systemBaseStructure.push({category: "New Category", markup: 0, items: []}); buildAdminTable(); }
     function addAdminItem(c) { systemBaseStructure[c].items.push({name:"New Item", wt:0, def:0}); buildAdminTable(); }
     function removeAdminItem(c, i) { systemBaseStructure[c].items.splice(i, 1); buildAdminTable(); }
-    function saveAdminDefaults() { if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set({data: systemBaseStructure}); showToast("Master BOM Saved"); }
+    
+    function saveAdminDefaults() { 
+        let payload = {
+            data: systemBaseStructure,
+            lastUpdated: new Date().toISOString(),
+            updatedBy: loggedInUser ? loggedInUser.username : 'System'
+        };
+        if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set(payload); 
+        showToast("Master BOM Saved"); 
+    }
     
     function renderCustomerAdmin() { let f = getVal('custSearchBox').toLowerCase(); let h = ''; Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c)}')">X</button></td></tr>`; }); setHtml('customerAdminBody', h); }
     function updateCustomerDatalist() { let h = ''; Object.keys(winkoCustomers).forEach(c => h += `<option value="${c}"></option>`); setHtml('customerDatalist', h); }
     function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); } }
     
     function applyCompanyProfileToAdmin() { setVal('profileName', companyProfile.name); setVal('profileReg', companyProfile.reg); setVal('profileAddress', companyProfile.address); setVal('profileContact', companyProfile.contact); setVal('profileWebsite', companyProfile.website); setVal('profileTax', companyProfile.taxRate); setVal('profileTerms', companyProfile.terms); setVal('mat_painted', companyProfile.matMult.painted); setVal('mat_ss304', companyProfile.matMult.ss304); setVal('mat_ss316', companyProfile.matMult.ss316); setVal('profilePrefix', companyProfile.quotePrefix); setVal('profileSeq', companyProfile.quoteSeq); }
-    function saveCompanyProfile() { companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!'); }
+    
+    function saveCompanyProfile() { 
+        companyProfile.name = getVal('profileName'); 
+        companyProfile.reg = getVal('profileReg'); 
+        companyProfile.address = getVal('profileAddress'); 
+        companyProfile.contact = getVal('profileContact'); 
+        companyProfile.website = getVal('profileWebsite'); 
+        companyProfile.taxRate = getNum('profileTax'); 
+        companyProfile.terms = getVal('profileTerms'); 
+        companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; 
+        companyProfile.quotePrefix = getVal('profilePrefix'); 
+        companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; 
+        
+        companyProfile.lastUpdated = new Date().toISOString();
+        companyProfile.updatedBy = loggedInUser ? loggedInUser.username : 'System';
+
+        if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); 
+        showToast('Profile Updated!'); 
+    }
+    
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v165 successfully loaded with Live UI Sync Fix!");
+    console.log("✅ Winko ERP Script v166 successfully loaded with Smart Engineering & Audit Tracking!");
 </script>
 </body>
 </html>
