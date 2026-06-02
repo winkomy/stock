@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V171</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V170</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -158,7 +158,7 @@
             body.print-internal .card-header, body.print-internal .card-body { page-break-inside: auto !important; display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
             body.print-internal .tank-block { page-break-inside: auto !important; margin-top: 15px !important; border-top: 1px solid #000 !important; padding-top: 10px !important; }
             
-            /* KILL CSS GRID IN PRINT */
+            /* KILL CSS GRID IN PRINT (Fixes Chrome blank page overflow bug) */
             body.print-internal .config-grid, body.print-internal .dim-grid { display: block !important; margin-bottom: 10px !important; }
             body.print-internal .form-group { display: inline-block !important; width: 48% !important; vertical-align: top; margin-bottom: 8px !important; padding-right: 10px; box-sizing: border-box; }
             body.print-internal .dim-grid .form-group { width: 31% !important; }
@@ -178,14 +178,12 @@
             body.print-internal tr:nth-child(even) td { background-color: #f8fafc !important; }
             body.print-internal td.text-right { text-align: right; font-weight: 700;}
             
-            /* V171: HIDDEN 0-QTY ROWS FOR INTERNAL PRINT */
-            body.print-internal tr[data-qty="0"] { display: none !important; }
-
             body.print-internal input, body.print-internal .desc-input, body.print-internal textarea, body.print-internal select { border: none !important; background: transparent !important; padding: 0 !important; width: auto; font-family: Arial !important; color: #000 !important; -webkit-appearance: none; appearance: none; resize: none; overflow: hidden; }
             body.print-internal .tank-section-title { background: #f1f5f9 !important; border-left: 4px solid #3b82f6 !important; padding: 8px 12px !important; margin-top: 15px !important; margin-bottom: 10px !important; color: #0f172a !important; font-weight: bold !important; font-size: 10pt !important; border-radius: 0 !important; }
             
             body.print-internal .summary-box { background: #fff !important; border: 2px solid #1e293b !important; border-radius: 6px !important; padding: 0 !important; width: 45% !important; float: right !important;}
             
+            /* V170: HIDE original middle drawings, let bottom duplicate show up */
             body.print-internal .drawings-page { display: none !important; }
 
             /* --- CUSTOMER PRINT --- */
@@ -249,7 +247,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V171 - Advanced Manual BOM Control</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V170 - Bottom Drawings Fix</p>
     </div>
 </div>
 
@@ -483,6 +481,7 @@
                     </div>
                 </div>
 
+                <!-- ORIGINAL DRAWINGS CONTAINER (Hidden on internal print via CSS, visible on screen) -->
                 <div class="module-card drawings-page">
                     <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📏</span> 3. Auto-Drawings (Panel Layout)</div>
                     <div class="card-body">
@@ -565,6 +564,7 @@
             </div>
         </div>
         
+        <!-- V170: NEW DUPLICATE DRAWINGS CONTAINER PUSHED TO THE BOTTOM FOR PRINT -->
         <div class="print-only" id="internal_drawings_print_container" style="clear:both; margin-top: 40px; padding-top: 20px; page-break-inside: auto;"></div>
         
     </div>
@@ -675,7 +675,7 @@
         return false;
     };
 
-    const cv = "V171"; 
+    const cv = "V170"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1059,17 +1059,13 @@
     let appTanks = []; let appCustomItems = [];
     const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
 
-    // V171: Added baseIdx injection to protect material multipliers when rows are deleted
     function defaultTank() { 
-        let baseBOM = JSON.parse(JSON.stringify(systemBaseStructure));
-        baseBOM.forEach(sec => sec.items.forEach((it, iIdx) => { it.baseIdx = iIdx; }));
-
         let t = { 
             id: Date.now(), std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", 
             L: 12, W: 4, H: 12, partitions: [], ladder1Col: 0, ladder2Col: 0, 
             thickBase: "4.5", thickRoof: "1.5", thickL1: "4.5", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5",
             partL1Angle: "67.5\" (L1 Stay - 50x50x5mm)", partL2Angle: "92.5\" (L2 Stay - 50x50x5mm)", partL3Angle: "135.5\" (L3 Stay - 50x50x5mm)",
-            override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 
+            override: "", bom: JSON.parse(JSON.stringify(systemBaseStructure)), nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 
         };
         applySmartThickness(t, 0, true);
         return t; 
@@ -1120,6 +1116,13 @@
         let baseQty = panelsL * panelsW;
         let wallL1 = (panelsL + panelsW) * 2; let wallL2 = panelsH >= 2 ? (panelsL + panelsW) * 2 : 0; let wallL3 = panelsH >= 3 ? (panelsL + panelsW) * 2 : 0; let wallL4 = panelsH >= 4 ? (panelsL + panelsW) * 2 : 0;
         let totalPanels = manholeQty + roofQty + baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels;
+
+        let angleCat = t.bom.find(s => s.category === "Angle Stay");
+        if(angleCat && !angleCat.items.find(i => i._isPartStay === 1)) {
+            angleCat.items.push({name: "Partition L1 Stay", def: 27.25, wt: 4.5, qty: 0, _isPartStay: 1});
+            angleCat.items.push({name: "Partition L2 Stay", def: 38.50, wt: 7.2, qty: 0, _isPartStay: 2});
+            angleCat.items.push({name: "Partition L3 Stay", def: 49.60, wt: 14.5, qty: 0, _isPartStay: 3});
+        }
 
         t.bom.forEach((sec, sIdx) => {
             sec.items.forEach((it, iIdx) => {
@@ -1187,20 +1190,12 @@
         let oldH = appTanks[i].H;
         appTanks[i][f] = isNum ? (parseFloat(v)||0) : v; 
         
-        // V171: Protected Multiplier Logic using baseIdx
         if (f === 'coat') {
             let mult = (v === 'Painted Steel') ? companyProfile.matMult.painted : (v === 'Stainless Steel (SS 304)' ? companyProfile.matMult.ss304 : (v === 'Stainless Steel (SS 316)' ? companyProfile.matMult.ss316 : 1.0));
             appTanks[i].bom.forEach(sec => sec.items.forEach((it, idx) => { 
                 if(sec.category !== 'Services' && !it.manualPrice) { 
                     let baseSec = systemBaseStructure.find(s => s.category == sec.category); 
-                    let baseDef = 0;
-                    if (baseSec && baseSec.items) {
-                        if (it.baseIdx !== undefined && baseSec.items[it.baseIdx]) {
-                            baseDef = baseSec.items[it.baseIdx].def;
-                        } else if (baseSec.items[idx]) {
-                            baseDef = baseSec.items[idx].def;
-                        }
-                    }
+                    let baseDef = (baseSec && baseSec.items && baseSec.items[idx]) ? baseSec.items[idx].def : 0; 
                     it.def = baseDef * mult; 
                 } 
             }));
@@ -1224,29 +1219,6 @@
     function removePartition(tIdx, pIdx) { appTanks[tIdx].partitions.splice(pIdx, 1); renderAllDynamicUI(); autoCalculateBOM(tIdx); safeProcess(); }
 
     function updateBomField(t, s, i, f, v, isNum) { appTanks[t].bom[s].items[i][f] = isNum ? (parseFloat(v)||0) : v; if(f === 'def') appTanks[t].bom[s].items[i].manualPrice = true; if(f === 'name') appTanks[t].bom[s].items[i].manualPrice = false; safeProcess(); }
-    
-    // V171: New Manual BOM Line Control Functions
-    function addBomItem(tIdx, sIdx) {
-        appTanks[tIdx].bom[sIdx].items.push({
-            name: "New Custom Item",
-            qty: 1,
-            wt: 0,
-            def: 0,
-            manualPrice: true,
-            manualAdded: true
-        });
-        renderAllDynamicUI();
-        safeProcess();
-    }
-
-    function removeBomItem(tIdx, sIdx, iIdx) {
-        if(confirm("Remove this item from the BOM list?")) {
-            appTanks[tIdx].bom[sIdx].items.splice(iIdx, 1);
-            renderAllDynamicUI();
-            safeProcess();
-        }
-    }
-    
     function updateNozzle(t, nId, f, v, isNum) { let n = appTanks[t].nozzles.find(x=>x.id==nId); if(n) { n[f] = isNum ? (parseFloat(v)||0) : v; safeProcess(); } }
     function addNozzle(t) { if(!appTanks[t].nozzles) appTanks[t].nozzles = []; appTanks[t].nozzles.push({id: Date.now(), type: "Inlet", size: "2\"", qty: 1, pos: "Side panel"}); renderAllDynamicUI(); }
     function addNewCustomItem() { appCustomItems.push({ id: Date.now(), name: "Custom Service / Add-on", qty: 1, unit: "Lot", cost: 0 }); renderAllDynamicUI(); safeProcess(); }
@@ -1310,46 +1282,15 @@
             
             let rH = "";
             t.bom.forEach((sec, sIdx) => {
-                rH += `<tr>
-                    <td colspan="5" style="background:#f8fafc; font-weight:700; border-bottom: 2px solid #e2e8f0; padding: 6px 10px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span>${sec.category}</span>
-                            <button class="action-btn no-print" style="padding:4px 10px; font-size:10px; width:auto; background:#10b981;" onclick="addBomItem(${i}, ${sIdx})">+ Add Row</button>
-                        </div>
-                    </td>
-                </tr>`;
-                
+                rH += `<tr><td colspan="5" style="background:#f8fafc; font-weight:700; border-bottom: 2px solid #e2e8f0;">${sec.category}</td></tr>`;
                 sec.items.forEach((it, iIdx) => {
-                    let calcQty = (sec.category === "Services") ? 1 : (it.qty||0); 
+                    let isZero = (sec.category !== "Services" && (!it.qty || it.qty == 0)); let rowStyle = isZero ? "display:none;" : ""; 
                     let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
                     let resetBtn = it.manualPrice ? `<button class="del-btn no-print" style="background:#e0f2fe; color:#0369a1; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice = false; safeProcess();">Sync to Inv</button>` : '';
-                    
-                    rH += `<tr class="bom-row-${i}" data-qty="${calcQty}">
-                        <td>
-                            <div style="display:flex; align-items:center;">
-                                <button class="del-btn no-print" style="padding:3px 6px; font-size:10px; margin-right:8px;" onclick="removeBomItem(${i}, ${sIdx}, ${iIdx})" title="Remove Item">X</button>
-                                <input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)">
-                                ${resetBtn}
-                            </div>
-                            <div id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag" style="margin-left: 28px;"></div>
-                        </td>
-                        <td class="col-input">${qtyHtml}</td>
-                        <td><input type="number" class="admin-input" value="${it.wt||0}"></td>
-                        <td><input type="number" class="admin-input" id="cost_in_${i}_${sIdx}_${iIdx}" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td>
-                        <td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td>
-                    </tr>`;
+                    rH += `<tr style="${rowStyle}" class="bom-row-${i}"><td><div style="display:flex; align-items:center;"><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)">${resetBtn}</div><div id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></div></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" id="cost_in_${i}_${sIdx}_${iIdx}" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
                 });
             });
-            bH += `<div class="module-card collapsed" style="margin-top:20px; border: 1px solid #e2e8f0;">
-                <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <span>⚙️ BOM - TANK ${i+1}</span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table>
-                </div>
-            </div>`;
+            bH += `<div class="module-card collapsed" style="margin-top:20px; border: 1px solid #e2e8f0;"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><span>⚙️ BOM - TANK ${i+1}</span><button class="action-btn export-btn no-print" style="padding:6px 12px; font-size:11px; width:auto; margin-right:20px;" onclick="event.stopPropagation(); document.querySelectorAll('.bom-row-${i}').forEach(el=>el.style.display='table-row')">👁️ Show Hidden Items</button></div></div><div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
         });
         setHtml('dynamicTanksContainer', tH); setHtml('dynamicBomContainer', bH);
         
@@ -1373,6 +1314,7 @@
         svg += `</g></svg></div>`; return svg;
     }
 
+    /* V170 Update: Added injection into internal_drawings_print_container */
     function renderDrawings() {
         let h = ``;
         appTanks.forEach((t, i) => {
@@ -1425,4 +1367,118 @@
 
                     let costInput = document.getElementById(`cost_in_${i}_${sIdx}_${iIdx}`);
                     if(costInput && document.activeElement !== costInput) {
-                        costInput.value = unit
+                        costInput.value = unitPrice.toFixed(2);
+                    }
+
+                }); }); totalBase += t.baseCost;
+            });
+
+            let customTotal = 0; appCustomItems.forEach(c => { customTotal += ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); });
+            let mkAmt = totalBase * (getNum('markupPct')/100); let sub = totalBase + mkAmt + customTotal; let dscAmt = sub * (getNum('discountPct')/100); let net = sub - dscAmt; let sstAmt = net * (getNum('sstPct')/100); let grand = net + sstAmt;
+            window.currentGrandTotal = grand.toLocaleString('en-MY',{minimumFractionDigits:2});
+
+            const setM=(ids,v)=>ids.forEach(id=>setTxt(id,v));
+            setM(['sumBaseCost_screen','sumBaseCost_print'],totalBase.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumCustomCost_screen', 'sumCustomCost_print'], customTotal.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumMarkup_screen','sumMarkup_print'],mkAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumSubtotal_screen','sumSubtotal_print'],sub.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumDiscount_screen','sumDiscount_print'],dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumSST_screen','sumSST_print'],sstAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['grandTotal_screen','grandTotal_print'],window.currentGrandTotal); setM(['sumCapacity_screen','sumCapacity_print'], totalC.toLocaleString('en-MY',{maximumFractionDigits:0})+" L");
+            setM(['sumPanels_screen'], totalPanelsCount);
+            renderDrawings();
+        } catch(e) { console.error("Calc error:", e); }
+    }
+    function safeProcess() { processTankData(); }
+
+    function syncPrintHeader(u) {
+        setTxt('metaQuoteId', getVal('quoteIdInput')); setTxt('cpRef', getVal('quoteIdInput')); setTxt('metaDate', new Date().toLocaleDateString()); setTxt('cpDate', new Date().toLocaleDateString()); setTxt('metaProject', getVal('projectName')); setTxt('cpProject', getVal('projectName')); setTxt('cpCustName', getVal('custCompany')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr')); setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>')); setTxt('cpLeadTime', getVal('tcLead')); setTxt('cpDeliveryTerm', getVal('tcDelivery')); setTxt('cpSignName', getVal('signName')); setTxt('cpSignPhone', getVal('signPhone')); setTxt('cpFullTermsText', getVal('fullTermsNotes'));
+        
+        let tH = ''; let subtotalAccumulator = 0;
+        appTanks.forEach((t, i) => {
+            let dimStr = u==='ft' ? `${t.L}' x ${t.W}' x ${t.H}' (H)` : `${t.L}m x ${t.W}m x ${t.H}m (H)`; let mkup = getNum('markupPct') / 100; let tankSellPrice = t.baseCost * (1 + mkup); subtotalAccumulator += tankSellPrice;
+            let extL = 0, intL = 0, vents = 0;
+            t.bom.forEach(sec => sec.items.forEach(it => { let n = it.name.toLowerCase(); let q = Number(it.qty) || 0; if(n.includes('ext') && (n.includes('ladder') || n.includes('lader'))) extL += q; else if(n.includes('int') && (n.includes('ladder') || n.includes('lader'))) intL += q; else if(n.includes('air vent')) vents += q; }));
+            let accStr = []; if(intL > 0) accStr.push(`${intL}x Internal Ladder`); if(extL > 0) accStr.push(`${extL}x External Ladder`); if(vents > 0) accStr.push(`${vents}x Air Vent`);
+            let accHtml = accStr.length > 0 ? `<br><span style="color:#0f172a; font-weight:600;">Included: ${accStr.join(', ')}</span>` : '';
+            tH += `<tr><td class="text-center" style="font-weight:bold;">${i+1}</td><td><strong style="color:#000; font-size:10pt;">Pressed Steel Sectional Water Tank</strong><br><span style="color:#333;">Standard: ${t.std}<br>Dimension: <strong style="font-size:10pt; color:#000;">${dimStr}</strong><br>Material: ${t.coat}${accHtml}</span></td><td class="text-center" style="font-weight:bold;">1 Set</td><td class="text-right" style="font-weight:bold;">RM ${tankSellPrice.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`;
+        });
+        
+        appCustomItems.forEach((c, i) => { let lineCost = ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); subtotalAccumulator += lineCost; tH += `<tr><td class="text-center" style="font-weight:bold;">-</td><td><strong style="color:#000; font-size:10pt;">${c.name}</strong></td><td class="text-center" style="font-weight:bold;">${c.qty} ${c.unit}</td><td class="text-right" style="font-weight:bold;">RM ${lineCost.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; });
+        let dscPct = getNum('discountPct'); let dscAmt = subtotalAccumulator * (dscPct/100); let net = subtotalAccumulator - dscAmt;
+        if (dscAmt > 0) { tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">Gross Subtotal</td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">RM ${subtotalAccumulator.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr><tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">Discount (${dscPct}%)</td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">- RM ${dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; }
+        let finalCustomerTotal = net.toLocaleString('en-MY',{minimumFractionDigits:2}); tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">Total Amount</td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">RM ${finalCustomerTotal}</td></tr>`;
+        setHtml('cpDynamicTanksBody', tH);
+        
+        let nozH = ''; appTanks.forEach((t,i) => { if(t.nozzles) t.nozzles.forEach(n => { nozH += `<tr><td style="text-align:center;">${n.type}</td><td style="text-align:center;">${n.size}</td><td style="text-align:center;">${n.qty}</td><td style="padding-left:10px;">Tank ${i+1}: ${n.pos}</td></tr>`; }) });
+        setHtml('so_nozzle_body', nozH);
+
+        let soHtml = '';
+        appTanks.forEach((t, i) => {
+            soHtml += `<div class="so-section-title">TANK ${i+1} - ${t.L}x${t.W}x${t.H}</div>`;
+            soHtml += `<table class="so-table"><thead><tr><th style="width:5%;">#</th><th style="width:65%; text-align:left;">Description & Specifications</th><th style="width:15%;">Unit</th><th style="width:15%;">Qty</th></tr></thead><tbody>`;
+            t.bom.forEach(sec => {
+                let hasItems = false; let secRows = '';
+                sec.items.forEach(it => { 
+                    let qty = sec.category === 'Services' ? 1 : (parseFloat(it.qty)||0); 
+                    if (qty > 0) { 
+                        hasItems = true; 
+                        let unitDisp = sec.category === 'Services' ? 'Lot' : 'Pcs'; 
+                        let qtyDisp = sec.category === 'Services' ? '' : qty;
+                        secRows += `<tr><td style="text-align:center; color:#94a3b8;">-</td><td><strong>${it.name}</strong></td><td style="text-align:center;">${unitDisp}</td><td style="text-align:center; font-weight:bold; font-size:11pt;">${qtyDisp}</td></tr>`; 
+                    } 
+                });
+                if (hasItems) { 
+                    soHtml += `<tr><td colspan="4" style="background:#f8fafc !important; font-weight:800; color:#475569; font-size:8pt; text-transform:uppercase;">${sec.category}</td></tr>` + secRows; 
+                }
+            });
+            soHtml += `</tbody></table>`;
+        }); 
+        setHtml('so_table_body', soHtml);
+    }
+    
+    function triggerPrint(type) {
+        if (type !== 'customer_from_preview') { processTankData(); syncPrintHeader(window.currentUnit||'ft'); }
+        if (type === 'customer') { switchTab('preview'); setTimeout(() => { document.body.className = 'print-customer'; window.print(); }, 200); } else if (type === 'customer_from_preview') { document.body.className = 'print-customer'; setTimeout(() => window.print(), 100); } else if (type === 'internal') { document.body.className = 'print-internal'; setTimeout(() => window.print(), 100); } else if (type === 'checklist') { setTxt('so_customer', getVal('custCompany')); setTxt('so_project', getVal('projectName')); setTxt('so_custpo', getVal('custPoNo')); setTxt('so_projno', getVal('quoteIdInput')); setTxt('so_deldate', getVal('custDelDate')); document.body.className = 'print-checklist'; setTimeout(() => window.print(), 100); }
+    } window.addEventListener('afterprint', () => { document.body.className = ''; });
+
+    function buildAdminTable() { let h = ''; systemBaseStructure.forEach((sec, cIdx) => { h += `<tr style="background:#f8fafc;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:6px 12px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`; sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" style="text-align:left;" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0; saveAdminDefaults();"></td></tr>`; }); }); setHtml('adminBody', h); }
+    function addAdminCat() { systemBaseStructure.push({category: "New Category", markup: 0, items: []}); buildAdminTable(); }
+    function addAdminItem(c) { systemBaseStructure[c].items.push({name:"New Item", wt:0, def:0}); buildAdminTable(); }
+    function removeAdminItem(c, i) { systemBaseStructure[c].items.splice(i, 1); buildAdminTable(); }
+    
+    function saveAdminDefaults() { 
+        let payload = {
+            data: systemBaseStructure,
+            lastUpdated: new Date().toISOString(),
+            updatedBy: loggedInUser ? loggedInUser.username : 'System'
+        };
+        if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set(payload); 
+        showToast("Master BOM Saved"); 
+    }
+    
+    function renderCustomerAdmin() { let f = getVal('custSearchBox').toLowerCase(); let h = ''; Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c).replace(/'/g, "%27")}')">X</button></td></tr>`; }); setHtml('customerAdminBody', h); }
+    function updateCustomerDatalist() { let h = ''; Object.keys(winkoCustomers).forEach(c => h += `<option value="${c}"></option>`); setHtml('customerDatalist', h); }
+    function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); } }
+    
+    function applyCompanyProfileToAdmin() { setVal('profileName', companyProfile.name); setVal('profileReg', companyProfile.reg); setVal('profileAddress', companyProfile.address); setVal('profileContact', companyProfile.contact); setVal('profileWebsite', companyProfile.website); setVal('profileTax', companyProfile.taxRate); setVal('profileTerms', companyProfile.terms); setVal('mat_painted', companyProfile.matMult.painted); setVal('mat_ss304', companyProfile.matMult.ss304); setVal('mat_ss316', companyProfile.matMult.ss316); setVal('profilePrefix', companyProfile.quotePrefix); setVal('profileSeq', companyProfile.quoteSeq); }
+    
+    function saveCompanyProfile() { 
+        companyProfile.name = getVal('profileName'); 
+        companyProfile.reg = getVal('profileReg'); 
+        companyProfile.address = getVal('profileAddress'); 
+        companyProfile.contact = getVal('profileContact'); 
+        companyProfile.website = getVal('profileWebsite'); 
+        companyProfile.taxRate = getNum('profileTax'); 
+        companyProfile.terms = getVal('profileTerms'); 
+        companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; 
+        companyProfile.quotePrefix = getVal('profilePrefix'); 
+        companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; 
+        
+        companyProfile.lastUpdated = new Date().toISOString();
+        companyProfile.updatedBy = loggedInUser ? loggedInUser.username : 'System';
+
+        if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); 
+        showToast('Profile Updated!'); 
+    }
+    
+    function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
+
+    console.log("✅ Winko ERP Script v170 successfully loaded (Drawings moved to Bottom for Internal PDF)!");
+</script>
+</body>
+</html>
