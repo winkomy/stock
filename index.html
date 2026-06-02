@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V169</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V170</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -158,7 +158,7 @@
             body.print-internal .card-header, body.print-internal .card-body { page-break-inside: auto !important; display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
             body.print-internal .tank-block { page-break-inside: auto !important; margin-top: 15px !important; border-top: 1px solid #000 !important; padding-top: 10px !important; }
             
-            /* V169: KILL CSS GRID IN PRINT (Fixes Chrome blank page overflow bug) */
+            /* KILL CSS GRID IN PRINT (Fixes Chrome blank page overflow bug) */
             body.print-internal .config-grid, body.print-internal .dim-grid { display: block !important; margin-bottom: 10px !important; }
             body.print-internal .form-group { display: inline-block !important; width: 48% !important; vertical-align: top; margin-bottom: 8px !important; padding-right: 10px; box-sizing: border-box; }
             body.print-internal .dim-grid .form-group { width: 31% !important; }
@@ -182,7 +182,9 @@
             body.print-internal .tank-section-title { background: #f1f5f9 !important; border-left: 4px solid #3b82f6 !important; padding: 8px 12px !important; margin-top: 15px !important; margin-bottom: 10px !important; color: #0f172a !important; font-weight: bold !important; font-size: 10pt !important; border-radius: 0 !important; }
             
             body.print-internal .summary-box { background: #fff !important; border: 2px solid #1e293b !important; border-radius: 6px !important; padding: 0 !important; width: 45% !important; float: right !important;}
-            body.print-internal .drawings-page { display: block !important; padding-top: 10px !important; clear: both !important;}
+            
+            /* V170: HIDE original middle drawings, let bottom duplicate show up */
+            body.print-internal .drawings-page { display: none !important; }
 
             /* --- CUSTOMER PRINT --- */
             body.print-customer #mainContent, body.print-customer #adminContent, body.print-customer #inventoryContent, body.print-customer #projectsContent, body.print-customer #checklistPrintView { display: none !important; }
@@ -245,7 +247,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V169 - Stable PDF Format</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V170 - Bottom Drawings Fix</p>
     </div>
 </div>
 
@@ -479,7 +481,8 @@
                     </div>
                 </div>
 
-                <div class="module-card drawings-page internal-hide-except-print">
+                <!-- ORIGINAL DRAWINGS CONTAINER (Hidden on internal print via CSS, visible on screen) -->
+                <div class="module-card drawings-page">
                     <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📏</span> 3. Auto-Drawings (Panel Layout)</div>
                     <div class="card-body">
                         <p style="font-size:12px; color:#64748b; margin-top:0; font-weight:500;">* Pure Schematics: Partitions (red dashed) & Ladders (orange) applied automatically.</p>
@@ -560,6 +563,10 @@
                 </div>
             </div>
         </div>
+        
+        <!-- V170: NEW DUPLICATE DRAWINGS CONTAINER PUSHED TO THE BOTTOM FOR PRINT -->
+        <div class="print-only" id="internal_drawings_print_container" style="clear:both; margin-top: 40px; padding-top: 20px; page-break-inside: auto;"></div>
+        
     </div>
 </div>
 
@@ -668,7 +675,7 @@
         return false;
     };
 
-    const cv = "V169"; 
+    const cv = "V170"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1069,7 +1076,6 @@
         safeProcess(); 
     }
     
-    // V169 BUG FIX: Separated the Thickness Auto-Matrix so it doesn't overwrite manual inputs.
     function applySmartThickness(t, tankIndex, isInit = false) {
         let u = getVal('unitChoice') || 'ft';
         let H = parseFloat(t.H) || 0;
@@ -1308,6 +1314,7 @@
         svg += `</g></svg></div>`; return svg;
     }
 
+    /* V170 Update: Added injection into internal_drawings_print_container */
     function renderDrawings() {
         let h = ``;
         appTanks.forEach((t, i) => {
@@ -1316,7 +1323,9 @@
             let l1 = parseInt(t.ladder1Col) || 0; let l2 = parseInt(t.ladder2Col) || 0;
             h += `<div class="tank-section-title" style="margin-top:24px; background:#e0e7ff; border-left-color:#4f46e5; color: #1e293b;">TANK ${i+1} BLUEPRINTS</div><div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; page-break-inside: avoid;">${createSVG(pL, pH, 'Front View', true, pColsArr, l1, l2)}${createSVG(pW, pH, 'Side View', true, [], 0, 0)}${createSVG(pL, pW, 'Roof Plan', false, pColsArr, 0, 0)}${createSVG(pL, pW, 'Base Plan', false, pColsArr, 0, 0)}</div>`;
         });
-        setHtml('dynamicDrawingsContainer', h); setHtml('so_drawings_container', h);
+        setHtml('dynamicDrawingsContainer', h); 
+        setHtml('so_drawings_container', h); 
+        setHtml('internal_drawings_print_container', h);
     }
 
     function processTankData() {
@@ -1469,7 +1478,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v169 successfully loaded (Print Pagination + BOM Sync Fixed)!");
+    console.log("✅ Winko ERP Script v170 successfully loaded (Drawings moved to Bottom for Internal PDF)!");
 </script>
 </body>
 </html>
