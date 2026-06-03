@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V176</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V177</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -144,15 +144,16 @@
             .avoid-break { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
             
-            /* --- V176: PROFESSIONAL INTERNAL TABLE PRINTING --- */
+            /* --- V177: STRICT INTERNAL TABLE PRINTING (FIXED AUTO HIDE) --- */
             body.print-internal #mainContent { display: block !important; }
             body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #auditContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
             
             body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; gap: 0 !important; margin: 0 !important;}
             body.print-internal .col-right { display: none !important; }
             
-            body.print-internal .module-card { page-break-inside: auto !important; border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; }
-            body.print-internal .card-header, body.print-internal .card-body { page-break-inside: auto !important; display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
+            /* V177 FIX: Force collapsed cards to expand fully during print! */
+            body.print-internal .module-card, body.print-internal .module-card.collapsed { page-break-inside: auto !important; border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; display: block !important; }
+            body.print-internal .card-header, body.print-internal .card-body, body.print-internal .module-card.collapsed .card-body { page-break-inside: auto !important; display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
             body.print-internal .tank-block { page-break-inside: auto !important; margin-top: 15px !important; padding-top: 10px !important; }
             
             body.print-internal .config-grid, body.print-internal .dim-grid { display: block !important; margin-bottom: 10px !important; }
@@ -166,21 +167,18 @@
             body.print-internal .print-header { display: flex !important; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #000 !important; padding-bottom: 15px !important; margin-bottom: 20px !important; }
             body.print-internal .print-header h2 { color: #000 !important; font-size: 16pt !important; letter-spacing: 1px; }
             
-            /* V176: STRICT CRISP TABLES */
             body.print-internal table { font-size: 9pt; margin-bottom: 15px; border-collapse: collapse; width: 100% !important; border: 1.5px solid #000 !important; border-radius: 0 !important; table-layout: auto !important;}
             body.print-internal th { background-color: #f1f5f9 !important; color: #000 !important; padding: 8px 10px; font-weight: bold !important; text-transform: uppercase; border: 1px solid #000 !important; border-bottom: 1.5px solid #000 !important;}
             body.print-internal td { border: 1px solid #000 !important; padding: 6px 10px; color: #000 !important; vertical-align: middle !important;}
             
-            /* Alignments & Bolds */
             body.print-internal th.text-center, body.print-internal td:nth-child(2), body.print-internal td:nth-child(3) { text-align: center !important; }
             body.print-internal td:nth-child(4), body.print-internal td:nth-child(5) { font-weight: bold !important; color: #000 !important; text-align: right !important; }
             body.print-internal td[colspan="5"] { background-color: #e2e8f0 !important; border-top: 1.5px solid #000 !important; border-bottom: 1px solid #000 !important;}
             
-            body.print-internal tr[data-qty="0"] { display: none !important; }
+            /* V177 FIX: REMOVED the rule that hid data-qty="0" rows so the table never disappears! */
 
-            /* V176: Flatten inputs so they don't clip text in PDF */
             body.print-internal td > div { display: block !important; margin: 0 !important; padding: 0 !important; }
-            body.print-internal .price-tag { display: none !important; } /* Hide the UI syncing badges */
+            body.print-internal .price-tag { display: none !important; } 
             
             body.print-internal input, body.print-internal .desc-input, body.print-internal textarea, body.print-internal select, body.print-internal .admin-input { 
                 border: none !important; background: transparent !important; padding: 0 !important; width: 100% !important; font-family: Arial !important; color: #000 !important; 
@@ -253,7 +251,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V176 - Advanced Print Tables UI</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V177 - Print Visibility Fixed</p>
     </div>
 </div>
 
@@ -593,7 +591,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V176)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V177)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -695,7 +693,7 @@
         return false;
     };
 
-    const cv = "V176"; 
+    const cv = "V177"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1403,7 +1401,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v176 successfully loaded!");
+    console.log("✅ Winko ERP Script v177 successfully loaded!");
 </script>
 </body>
 </html>
