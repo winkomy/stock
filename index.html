@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V177</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V179</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -144,28 +144,17 @@
             .avoid-break { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
             
-            /* --- V177: STRICT INTERNAL TABLE PRINTING (FIXED AUTO HIDE) --- */
-            body.print-internal #mainContent { display: block !important; }
-            body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #auditContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
+            /* --- V179: TABLE + TOTAL + DRAWINGS PRINT MODE --- */
+            /* Hide everything EXCEPT the BOM, Footer, and Drawings container */
+            body.print-internal #mainContent > *:not(#dynamicBomContainer):not(#internalPrintFooter):not(#internal_drawings_print_container) { 
+                display: none !important; 
+            }
             
-            body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; gap: 0 !important; margin: 0 !important;}
-            body.print-internal .col-right { display: none !important; }
-            
-            /* V177 FIX: Force collapsed cards to expand fully during print! */
+            body.print-internal #dynamicBomContainer { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
             body.print-internal .module-card, body.print-internal .module-card.collapsed { page-break-inside: auto !important; border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; display: block !important; }
             body.print-internal .card-header, body.print-internal .card-body, body.print-internal .module-card.collapsed .card-body { page-break-inside: auto !important; display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
-            body.print-internal .tank-block { page-break-inside: auto !important; margin-top: 15px !important; padding-top: 10px !important; }
-            
-            body.print-internal .config-grid, body.print-internal .dim-grid { display: block !important; margin-bottom: 10px !important; }
-            body.print-internal .form-group { display: inline-block !important; width: 48% !important; vertical-align: top; margin-bottom: 8px !important; padding-right: 10px; box-sizing: border-box; }
-            body.print-internal .dim-grid .form-group { width: 31% !important; }
-            body.print-internal .form-group label { display: block; margin-bottom: 2px; font-size: 7.5pt !important; color: #475569 !important; }
-
             body.print-internal .card-header { border-bottom: 2px solid #000 !important; margin-bottom: 12px !important; font-size: 12pt !important; padding: 0 0 5px 0 !important; color: #000 !important;}
             body.print-internal .card-header::after { display: none !important; }
-            
-            body.print-internal .print-header { display: flex !important; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #000 !important; padding-bottom: 15px !important; margin-bottom: 20px !important; }
-            body.print-internal .print-header h2 { color: #000 !important; font-size: 16pt !important; letter-spacing: 1px; }
             
             body.print-internal table { font-size: 9pt; margin-bottom: 15px; border-collapse: collapse; width: 100% !important; border: 1.5px solid #000 !important; border-radius: 0 !important; table-layout: auto !important;}
             body.print-internal th { background-color: #f1f5f9 !important; color: #000 !important; padding: 8px 10px; font-weight: bold !important; text-transform: uppercase; border: 1px solid #000 !important; border-bottom: 1.5px solid #000 !important;}
@@ -173,10 +162,8 @@
             
             body.print-internal th.text-center, body.print-internal td:nth-child(2), body.print-internal td:nth-child(3) { text-align: center !important; }
             body.print-internal td:nth-child(4), body.print-internal td:nth-child(5) { font-weight: bold !important; color: #000 !important; text-align: right !important; }
-            body.print-internal td[colspan="5"] { background-color: #e2e8f0 !important; border-top: 1.5px solid #000 !important; border-bottom: 1px solid #000 !important;}
+            body.print-internal td[colspan="5"] { background-color: #e2e8f0 !important; border-top: 1.5px solid #000 !important; border-bottom: 1px solid #000 !important; font-weight: 800 !important;}
             
-            /* V177 FIX: REMOVED the rule that hid data-qty="0" rows so the table never disappears! */
-
             body.print-internal td > div { display: block !important; margin: 0 !important; padding: 0 !important; }
             body.print-internal .price-tag { display: none !important; } 
             
@@ -185,9 +172,11 @@
                 -webkit-appearance: none; appearance: none; resize: none; overflow: visible !important; white-space: pre-wrap !important; word-wrap: break-word !important; 
             }
             
-            body.print-internal .tank-section-title { background: transparent !important; border-bottom: 1.5px solid #000 !important; border-left: none !important; padding: 4px 0 !important; margin-top: 20px !important; margin-bottom: 10px !important; color: #000 !important; font-weight: 900 !important; font-size: 11pt !important; border-radius: 0 !important; }
+            body.print-internal #internalPrintFooter { display: block !important; margin-top: 20px !important; width: 100% !important; }
             body.print-internal .summary-box { background: #fff !important; border: 2px solid #000 !important; border-radius: 0 !important; padding: 0 !important; width: 45% !important; float: right !important; box-shadow: none !important;}
-            body.print-internal .drawings-page { display: none !important; }
+
+            /* Add page break before drawings to keep it neat */
+            body.print-internal #internal_drawings_print_container { display: block !important; page-break-before: always; margin-top: 20px !important; }
 
             /* --- CUSTOMER PRINT --- */
             body.print-customer #mainContent, body.print-customer #adminContent, body.print-customer #inventoryContent, body.print-customer #projectsContent, body.print-customer #auditContent, body.print-customer #checklistPrintView { display: none !important; }
@@ -251,7 +240,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V177 - Print Visibility Fixed</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V179 - Tank Multiplier & KG Fix</p>
     </div>
 </div>
 
@@ -591,7 +580,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V177)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V179)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -693,7 +682,7 @@
         return false;
     };
 
-    const cv = "V177"; 
+    const cv = "V179"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1010,7 +999,7 @@
     function defaultTank() { 
         let baseBOM = JSON.parse(JSON.stringify(systemBaseStructure));
         baseBOM.forEach(sec => sec.items.forEach((it, iIdx) => { it.baseIdx = iIdx; }));
-        let t = { id: Date.now(), std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", L: 20, W: 16, H: 8, partitions: [], ladder1Col: 0, ladder2Col: 0, thickBase: "5.0", thickRoof: "1.5", thickL1: "5.0", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5", partL1Angle: "67 1/2\" Angle Stay", partL2Angle: "92.5\" (L2 Stay)", partL3Angle: "135.5\" (L3 Stay)", override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 };
+        let t = { id: Date.now(), tankQty: 1, std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", L: 20, W: 16, H: 8, partitions: [], ladder1Col: 0, ladder2Col: 0, thickBase: "5.0", thickRoof: "1.5", thickL1: "5.0", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5", partL1Angle: "67 1/2\" Angle Stay", partL2Angle: "92.5\" (L2 Stay)", partL3Angle: "135.5\" (L3 Stay)", override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 };
         applySmartThickness(t, 0, true);
         return t; 
     }
@@ -1024,6 +1013,7 @@
 
     function autoCalculateBOM(tIdx) {
         let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
+        let tQty = Math.max(1, parseInt(t.tankQty) || 1);
         let coatShort = "HDG"; if (t.coat === 'Painted Steel') coatShort = "Painted"; else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
         
         let pL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); let pW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); let pH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
@@ -1040,37 +1030,39 @@
                 if(sec.category !== "Services") {
                     let cleanName = baseName.replace(/\s*\((HDG|Painted|SS 304|SS 316)\)/i, '').trim();
                     it.name = `${cleanName} (${coatShort})`;
-                    
                     let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
 
                     let n = it.name.toLowerCase();
-                    if (n.includes("panel") && !n.includes("partition") && !n.includes("roof")) it.qty = totalTankPanels; 
-                    else if (n.includes("roof") && !n.includes("rim") && !n.includes("truss") && !n.includes("panel")) it.qty = roofPanels; 
-                    else if (n.includes("manhole")) it.qty = manholeQty; 
-                    else if (n.includes("partition panel")) it.qty = partitionPanels;
-                    else if (n.includes("roof trusses") || n.includes("roof truss")) it.qty = Math.max(0, pL - 1); 
-                    else if (n.includes("roof rim")) it.qty = perimeter; 
-                    else if (n.includes("ladder bracket")) it.qty = pH * 3; 
-                    else if (n.includes("rc (a)") || n.includes("rc(a)")) it.qty = pW + 2; 
-                    else if (n.includes("mc (b)") || n.includes("mc(b)")) it.qty = perimeter + (pW * 2); 
-                    else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) it.qty = perimeter; 
-                    else if (n.includes("67 1/2") || n.includes("67.5")) it.qty = perimeter + 4; 
-                    else if (it._isPartStay === 1) { it.name = t.partL1Angle || "Partition Angle Stay"; it.qty = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
-                    else if (n.includes("m14 x 32mm")) it.qty = Math.ceil(totalTankPanels * 29.1); 
-                    else if (n.includes("m16 x 40mm")) it.qty = Math.ceil(totalTankPanels * 4.10); 
-                    else if (n.includes("3/8\" x 3/4\"")) it.qty = Math.ceil(totalTankPanels * 11.96); 
-                    else if (n.includes("3/8\" x 3\"")) it.qty = perimeter; 
-                    else if (n.includes("9/16\" flat washer")) it.qty = Math.ceil(totalTankPanels * 29.1); 
-                    else if (n.includes("5/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 1.96); 
-                    else if (n.includes("3/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 3.39); 
-                    else if (n.includes("bitumen strip")) it.qty = Math.ceil(basePanels / 4); 
-                    else if (n.includes("pvc foam")) it.qty = Math.ceil((totalTankPanels + roofPanels) / 4.22); 
-                    else if (n.includes("8mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2); 
-                    else if (n.includes("24mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2.15); 
-                    else if (n.includes("air-vents") || n.includes("air vent")) it.qty = Math.max(1, Math.floor(roofPanels / 15)); 
-                    else if (n.includes("water level indicator")) it.qty = 1;
-                    else if (n.includes("ext") && n.includes("ladder")) { it.name = `Ext. Ladder (${H + 2} ft) (${coatShort})`; it.qty = 1; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
-                    else if (n.includes("int") && n.includes("ladder")) { it.name = `Int. Ladder (${H} ft) (${coatShort})`; it.qty = manholeQty; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
+                    let calcQ = 0;
+                    if (n.includes("panel") && !n.includes("partition") && !n.includes("roof")) calcQ = totalTankPanels; 
+                    else if (n.includes("roof") && !n.includes("rim") && !n.includes("truss") && !n.includes("panel")) calcQ = roofPanels; 
+                    else if (n.includes("manhole")) calcQ = manholeQty; 
+                    else if (n.includes("partition panel")) calcQ = partitionPanels;
+                    else if (n.includes("roof trusses") || n.includes("roof truss")) calcQ = Math.max(0, pL - 1); 
+                    else if (n.includes("roof rim")) calcQ = perimeter; 
+                    else if (n.includes("ladder bracket")) calcQ = pH * 3; 
+                    else if (n.includes("rc (a)") || n.includes("rc(a)")) calcQ = pW + 2; 
+                    else if (n.includes("mc (b)") || n.includes("mc(b)")) calcQ = perimeter + (pW * 2); 
+                    else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) calcQ = perimeter; 
+                    else if (n.includes("67 1/2") || n.includes("67.5")) calcQ = perimeter + 4; 
+                    else if (it._isPartStay === 1) { it.name = t.partL1Angle || "Partition Angle Stay"; calcQ = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
+                    else if (n.includes("m14 x 32mm")) calcQ = Math.ceil(totalTankPanels * 29.1); 
+                    else if (n.includes("m16 x 40mm")) calcQ = Math.ceil(totalTankPanels * 4.10); 
+                    else if (n.includes("3/8\" x 3/4\"")) calcQ = Math.ceil(totalTankPanels * 11.96); 
+                    else if (n.includes("3/8\" x 3\"")) calcQ = perimeter; 
+                    else if (n.includes("9/16\" flat washer")) calcQ = Math.ceil(totalTankPanels * 29.1); 
+                    else if (n.includes("5/8\" flat washer")) calcQ = Math.ceil(totalTankPanels * 1.96); 
+                    else if (n.includes("3/8\" flat washer")) calcQ = Math.ceil(totalTankPanels * 3.39); 
+                    else if (n.includes("bitumen strip")) calcQ = Math.ceil(basePanels / 4); 
+                    else if (n.includes("pvc foam")) calcQ = Math.ceil((totalTankPanels + roofPanels) / 4.22); 
+                    else if (n.includes("8mm butyl sealant")) calcQ = Math.ceil(totalTankPanels / 2); 
+                    else if (n.includes("24mm butyl sealant")) calcQ = Math.ceil(totalTankPanels / 2.15); 
+                    else if (n.includes("air-vents") || n.includes("air vent")) calcQ = Math.max(1, Math.floor(roofPanels / 15)); 
+                    else if (n.includes("water level indicator")) calcQ = 1;
+                    else if (n.includes("ext") && n.includes("ladder")) { it.name = `Ext. Ladder (${H + 2} ft) (${coatShort})`; calcQ = 1; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
+                    else if (n.includes("int") && n.includes("ladder")) { it.name = `Int. Ladder (${H} ft) (${coatShort})`; calcQ = manholeQty; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
+                    
+                    it.qty = calcQ * tQty;
                 }
                 let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`); if(qInput && sec.category !== "Services") qInput.value = it.qty || 0;
             });
@@ -1092,7 +1084,7 @@
         }
 
         if (f === 'H' && oldH !== appTanks[i].H) applySmartThickness(appTanks[i], i);
-        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std'].includes(f)) autoCalculateBOM(i); 
+        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std', 'tankQty'].includes(f)) autoCalculateBOM(i); 
         safeProcess(); 
     }
 
@@ -1129,8 +1121,10 @@
             let addPartBtn = t.partitions.length < 3 ? `<button class="action-btn" style="width:auto; padding:8px 16px; font-size:12px; background:#fbcfe8; color: #be185d; box-shadow:none;" onclick="addPartition(${i})">+ Add Partition Wall</button>` : `<span style="font-size:12px; color:#ef4444; font-weight:bold;">Max 3 Partitions Reached</span>`;
             let partAnglesHtml = t.partitions.length > 0 ? `<div class="dim-grid" style="margin-top:16px; border-top:1px dashed #fbcfe8; padding-top:16px;"><div class="form-group"><label style="color:#db2777;">Partition L1 Stay (Type)</label><input type="text" value="${t.partL1Angle || 'Partition Angle Stay'}" oninput="updateTankField(${i}, 'partL1Angle', this.value)"></div><div class="form-group"><label style="color:#db2777;">Partition L2 Stay (Type)</label><input type="text" value="${t.partL2Angle || '92.5\" (L2 Stay)'}" oninput="updateTankField(${i}, 'partL2Angle', this.value)"></div><div class="form-group"><label style="color:#db2777;">Partition L3 Stay (Type)</label><input type="text" value="${t.partL3Angle || '135.5\" (L3 Stay)'}" oninput="updateTankField(${i}, 'partL3Angle', this.value)"></div></div>` : ``;
 
+            let displayQtyText = (t.tankQty && t.tankQty > 1) ? ` - ${t.tankQty} Sets` : ``;
+
             tH += `<div class="tank-block" style="border-top:2px dashed #cbd5e1; margin-top:32px; padding-top:24px;">
-                <div class="tank-section-title"><span>Tank ${i+1} Specs</span><button class="del-btn no-print" onclick="removeTank(${i})">X REMOVE</button></div>
+                <div class="tank-section-title"><span>Tank ${i+1} Specs${displayQtyText}</span><button class="del-btn no-print" onclick="removeTank(${i})">X REMOVE</button></div>
                 <div class="config-grid"><div class="form-group"><label>Standard</label><select onchange="updateTankField(${i}, 'std', this.value)"><option ${t.std.includes('SANS')?'selected':''}>SANS 10329:2020 Approved by SIRIM & SPAN</option><option ${t.std.includes('SS 22')?'selected':''}>SS 22: 1979</option></select></div><div class="form-group"><label>Material</label><select onchange="updateTankField(${i}, 'coat', this.value)"><option ${t.coat==='Hot Dipped Galvanised'?'selected':''}>Hot Dipped Galvanised</option><option ${t.coat==='Painted Steel'?'selected':''}>Painted Steel</option><option ${t.coat==='Stainless Steel (SS 304)'?'selected':''}>Stainless Steel (SS 304)</option><option ${t.coat==='Stainless Steel (SS 316)'?'selected':''}>Stainless Steel (SS 316)</option></select></div></div>
                 
                 <div class="tank-section-title" style="margin-top:16px; background:#f0fdf4; border-left-color:#22c55e;">🛡️ Panel Thickness Config (mm)</div>
@@ -1147,6 +1141,7 @@
                     <div class="form-group"><label>Length</label><input type="number" value="${t.L}" oninput="updateTankField(${i}, 'L', this.value, true)"></div>
                     <div class="form-group"><label>Width</label><input type="number" value="${t.W}" oninput="updateTankField(${i}, 'W', this.value, true)"></div>
                     <div class="form-group"><label>Height</label><input type="number" value="${t.H}" oninput="updateTankField(${i}, 'H', this.value, true)"></div>
+                    <div class="form-group"><label style="color:#0284c7; font-weight:800;">Quantity (Sets)</label><input type="number" value="${t.tankQty||1}" oninput="updateTankField(${i}, 'tankQty', this.value, true)"></div>
                     <div class="form-group"><label>Ladder 1 Pos (Col)</label><input type="number" value="${t.ladder1Col||0}" oninput="updateTankField(${i}, 'ladder1Col', this.value, true)"></div>
                     <div class="form-group"><label>Ladder 2 Pos (Col)</label><input type="number" value="${t.ladder2Col||0}" oninput="updateTankField(${i}, 'ladder2Col', this.value, true)"></div>
                 </div>
@@ -1194,7 +1189,7 @@
             bH += `<div class="module-card collapsed" style="margin-top:20px; border: 1px solid #e2e8f0;">
                 <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <span>⚙️ BOM - TANK ${i+1}</span>
+                        <span>⚙️ BOM - TANK ${i+1}${displayQtyText}</span>
                     </div>
                 </div>
                 <div class="card-body">
@@ -1239,9 +1234,11 @@
 
     function processTankData() {
         try {
-            let u = getVal('unitChoice') || 'ft'; window.currentUnit = u; let totalBase = 0, totalC = 0, totalPanelsCount = 0;
+            let u = getVal('unitChoice') || 'ft'; window.currentUnit = u; let totalBase = 0, totalC = 0, totalPanelsCount = 0, totalWeight = 0;
             appTanks.forEach((t, i) => {
-                t.effLiters = ((u === 'ft') ? (t.L * t.W * t.H * 28.3168) : (t.L * t.W * t.H * 1000)) * 0.9; totalC += t.effLiters; t.baseCost = 0;
+                let tQty = Math.max(1, parseInt(t.tankQty) || 1);
+                t.effLiters = (((u === 'ft') ? (t.L * t.W * t.H * 28.3168) : (t.L * t.W * t.H * 1000)) * 0.9) * tQty; totalC += t.effLiters; t.baseCost = 0;
+                
                 t.bom.forEach((sec, sIdx) => { sec.items.forEach((it, iIdx) => {
                     
                     let searchName = it.name.trim().toLowerCase();
@@ -1260,8 +1257,9 @@
                     if (sec.category === "Panels") { totalPanelsCount += calcQty; }
                     
                     let lTot = calcQty * unitPrice; t.baseCost += lTot;
+                    let lWt = calcQty * (parseFloat(it.wt) || 0); totalWeight += lWt;
+
                     let tagEl = document.getElementById(`price_tag_${i}_${sIdx}_${iIdx}`);
-                    
                     if(tagEl) { 
                         if (it.manualPrice) { 
                             tagEl.innerHTML = `<span style="color:#ea580c;">● Manual Override</span>`; tagEl.className = "price-tag"; 
@@ -1291,6 +1289,8 @@
             const setM=(ids,v)=>ids.forEach(id=>setTxt(id,v));
             setM(['sumBaseCost_screen','sumBaseCost_print'],totalBase.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumCustomCost_screen', 'sumCustomCost_print'], customTotal.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumMarkup_screen','sumMarkup_print'],mkAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumSubtotal_screen','sumSubtotal_print'],sub.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumDiscount_screen','sumDiscount_print'],dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['sumSST_screen','sumSST_print'],sstAmt.toLocaleString('en-MY',{minimumFractionDigits:2})); setM(['grandTotal_screen','grandTotal_print'],window.currentGrandTotal); setM(['sumCapacity_screen','sumCapacity_print'], totalC.toLocaleString('en-MY',{maximumFractionDigits:0})+" L");
             setM(['sumPanels_screen'], totalPanelsCount);
+            setM(['sumWeight_screen','sumWeight_print'], totalWeight.toLocaleString('en-MY',{maximumFractionDigits:1}) + " kg");
+
             renderDrawings();
         } catch(e) { console.error("Calc error:", e); }
     }
@@ -1301,6 +1301,7 @@
         
         let tH = ''; let subtotalAccumulator = 0;
         appTanks.forEach((t, i) => {
+            let tQty = Math.max(1, parseInt(t.tankQty) || 1);
             let dimStr = u==='ft' ? `${t.L}' x ${t.W}' x ${t.H}' (H)` : `${t.L}m x ${t.W}m x ${t.H}m (H)`; let mkup = getNum('markupPct') / 100; let tankSellPrice = t.baseCost * (1 + mkup); subtotalAccumulator += tankSellPrice;
             
             let thickStr = `Base: ${t.thickBase||'-'}mm | Roof: ${t.thickRoof||'-'}mm`;
@@ -1320,7 +1321,7 @@
                     <span contenteditable="true" spellcheck="false" style="color:#000; font-size:10pt; font-weight:bold; border-bottom:1px dashed transparent;" onmouseover="this.style.borderBottom='1px dashed #cbd5e1'" onmouseout="this.style.borderBottom='1px dashed transparent'">Pressed Steel Sectional Water Tank</span><br>
                     <span style="color:#333;">Standard: ${t.std}<br>Dimension: <strong style="font-size:10pt; color:#000;">${dimStr}</strong><br>Thickness: <strong>${thickStr}</strong><br>Material: ${t.coat}${accHtml}</span>
                 </td>
-                <td class="text-center" style="font-weight:bold;">1 Set</td>
+                <td class="text-center" style="font-weight:bold;">${tQty} Set${tQty>1?'s':''}</td>
                 <td class="text-right" style="font-weight:bold;">RM ${tankSellPrice.toLocaleString('en-MY',{minimumFractionDigits:2})}</td>
             </tr>`;
         });
@@ -1340,7 +1341,9 @@
 
         let soHtml = '';
         appTanks.forEach((t, i) => {
-            soHtml += `<div class="so-section-title">TANK ${i+1} - ${t.L}x${t.W}x${t.H}</div>`;
+            let tQty = Math.max(1, parseInt(t.tankQty) || 1);
+            let displayQtyText = (tQty > 1) ? ` - ${tQty} Sets` : ``;
+            soHtml += `<div class="so-section-title">TANK ${i+1} - ${t.L}x${t.W}x${t.H}${displayQtyText}</div>`;
             soHtml += `<table class="so-table"><thead><tr><th style="width:5%;">#</th><th style="width:65%; text-align:left;">Description & Specifications</th><th style="width:15%;">Unit</th><th style="width:15%;">Qty</th></tr></thead><tbody>`;
             t.bom.forEach(sec => {
                 let hasItems = false; let secRows = '';
@@ -1401,7 +1404,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v177 successfully loaded!");
+    console.log("✅ Winko ERP Script v179 successfully loaded!");
 </script>
 </body>
 </html>
