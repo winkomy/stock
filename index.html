@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V175</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V176</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -144,7 +144,7 @@
             .avoid-break { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
             
-            /* --- PROFESSIONAL INTERNAL PRINT (V175 PRICING FIX) --- */
+            /* --- V176: PROFESSIONAL INTERNAL TABLE PRINTING --- */
             body.print-internal #mainContent { display: block !important; }
             body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #auditContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
             
@@ -153,36 +153,42 @@
             
             body.print-internal .module-card { page-break-inside: auto !important; border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; }
             body.print-internal .card-header, body.print-internal .card-body { page-break-inside: auto !important; display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
-            body.print-internal .tank-block { page-break-inside: auto !important; margin-top: 15px !important; border-top: 1px solid #000 !important; padding-top: 10px !important; }
+            body.print-internal .tank-block { page-break-inside: auto !important; margin-top: 15px !important; padding-top: 10px !important; }
             
             body.print-internal .config-grid, body.print-internal .dim-grid { display: block !important; margin-bottom: 10px !important; }
             body.print-internal .form-group { display: inline-block !important; width: 48% !important; vertical-align: top; margin-bottom: 8px !important; padding-right: 10px; box-sizing: border-box; }
             body.print-internal .dim-grid .form-group { width: 31% !important; }
-            body.print-internal .form-group label { display: block; margin-bottom: 2px; font-size: 7.5pt !important; }
+            body.print-internal .form-group label { display: block; margin-bottom: 2px; font-size: 7.5pt !important; color: #475569 !important; }
 
-            body.print-internal .card-header { border-bottom: 2px solid #1e293b !important; margin-bottom: 12px !important; font-size: 12pt !important; padding: 0 0 5px 0 !important; color: #1e293b !important;}
+            body.print-internal .card-header { border-bottom: 2px solid #000 !important; margin-bottom: 12px !important; font-size: 12pt !important; padding: 0 0 5px 0 !important; color: #000 !important;}
             body.print-internal .card-header::after { display: none !important; }
-            body.print-internal::before { content: "INTERNAL DOCUMENT"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60pt; font-weight: 900; color: rgba(239, 68, 68, 0.05); z-index: -1; white-space: nowrap; pointer-events: none; }
             
-            body.print-internal .print-header { display: flex !important; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #3b82f6 !important; padding-bottom: 15px !important; margin-bottom: 20px !important; }
-            body.print-internal .print-header h2 { color: #1e293b !important; font-size: 16pt !important; letter-spacing: 1px; }
+            body.print-internal .print-header { display: flex !important; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #000 !important; padding-bottom: 15px !important; margin-bottom: 20px !important; }
+            body.print-internal .print-header h2 { color: #000 !important; font-size: 16pt !important; letter-spacing: 1px; }
             
-            /* V175: Force Table Borders and Bold Cost Columns */
-            body.print-internal table { font-size: 8.5pt; margin-bottom: 15px; border-collapse: collapse; width: 100%; border: 1px solid #000 !important; }
-            body.print-internal th { background-color: #1e293b !important; color: #ffffff !important; padding: 8px 10px; font-weight: 600; text-transform: uppercase; border: 1px solid #000 !important;}
-            body.print-internal td { border: 1px solid #cbd5e1 !important; padding: 6px 10px;}
-            body.print-internal tr:nth-child(even) td { background-color: #f8fafc !important; }
+            /* V176: STRICT CRISP TABLES */
+            body.print-internal table { font-size: 9pt; margin-bottom: 15px; border-collapse: collapse; width: 100% !important; border: 1.5px solid #000 !important; border-radius: 0 !important; table-layout: auto !important;}
+            body.print-internal th { background-color: #f1f5f9 !important; color: #000 !important; padding: 8px 10px; font-weight: bold !important; text-transform: uppercase; border: 1px solid #000 !important; border-bottom: 1.5px solid #000 !important;}
+            body.print-internal td { border: 1px solid #000 !important; padding: 6px 10px; color: #000 !important; vertical-align: middle !important;}
             
-            /* Ensure the Cost and Total Columns stand out clearly in PDF */
+            /* Alignments & Bolds */
+            body.print-internal th.text-center, body.print-internal td:nth-child(2), body.print-internal td:nth-child(3) { text-align: center !important; }
             body.print-internal td:nth-child(4), body.print-internal td:nth-child(5) { font-weight: bold !important; color: #000 !important; text-align: right !important; }
+            body.print-internal td[colspan="5"] { background-color: #e2e8f0 !important; border-top: 1.5px solid #000 !important; border-bottom: 1px solid #000 !important;}
             
             body.print-internal tr[data-qty="0"] { display: none !important; }
 
-            /* Ensure Inputs display correctly as text in print */
-            body.print-internal input, body.print-internal .desc-input, body.print-internal textarea, body.print-internal select { border: none !important; background: transparent !important; padding: 0 !important; width: auto; font-family: Arial !important; color: #000 !important; -webkit-appearance: none; appearance: none; resize: none; overflow: hidden; display: inline-block; font-weight: bold;}
+            /* V176: Flatten inputs so they don't clip text in PDF */
+            body.print-internal td > div { display: block !important; margin: 0 !important; padding: 0 !important; }
+            body.print-internal .price-tag { display: none !important; } /* Hide the UI syncing badges */
             
-            body.print-internal .tank-section-title { background: #f1f5f9 !important; border-left: 4px solid #3b82f6 !important; padding: 8px 12px !important; margin-top: 15px !important; margin-bottom: 10px !important; color: #0f172a !important; font-weight: bold !important; font-size: 10pt !important; border-radius: 0 !important; }
-            body.print-internal .summary-box { background: #fff !important; border: 2px solid #1e293b !important; border-radius: 6px !important; padding: 0 !important; width: 45% !important; float: right !important;}
+            body.print-internal input, body.print-internal .desc-input, body.print-internal textarea, body.print-internal select, body.print-internal .admin-input { 
+                border: none !important; background: transparent !important; padding: 0 !important; width: 100% !important; font-family: Arial !important; color: #000 !important; 
+                -webkit-appearance: none; appearance: none; resize: none; overflow: visible !important; white-space: pre-wrap !important; word-wrap: break-word !important; 
+            }
+            
+            body.print-internal .tank-section-title { background: transparent !important; border-bottom: 1.5px solid #000 !important; border-left: none !important; padding: 4px 0 !important; margin-top: 20px !important; margin-bottom: 10px !important; color: #000 !important; font-weight: 900 !important; font-size: 11pt !important; border-radius: 0 !important; }
+            body.print-internal .summary-box { background: #fff !important; border: 2px solid #000 !important; border-radius: 0 !important; padding: 0 !important; width: 45% !important; float: right !important; box-shadow: none !important;}
             body.print-internal .drawings-page { display: none !important; }
 
             /* --- CUSTOMER PRINT --- */
@@ -247,7 +253,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V175 - Name Lock Fixed & Activity Log</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V176 - Advanced Print Tables UI</p>
     </div>
 </div>
 
@@ -568,13 +574,13 @@
                     <table style="width:100%; border-collapse:collapse; margin:0; font-size:9.5pt; border:none !important;">
                         <tr><td style="padding:6px 10px; font-weight:700; color:#475569; border:none;">CAPACITY:</td><td id="sumCapacity_print" style="text-align:right; font-weight:700; color:#0284c7; border:none;">0 L</td></tr>
                         <tr><td style="padding:6px 10px; font-weight:700; color:#475569; border:none;">WEIGHT:</td><td id="sumWeight_print" style="text-align:right; font-weight:700; color:#ea580c; border:none;">0 kg</td></tr>
-                        <tr><td style="padding:8px 10px; font-weight:700; color:#475569; border:none; border-top:1px solid #e2e8f0;">RAW COST:</td><td style="text-align:right; font-weight:700; border:none; border-top:1px solid #e2e8f0;">RM <span id="sumBaseCost_print">0.00</span></td></tr>
+                        <tr><td style="padding:8px 10px; font-weight:700; color:#475569; border:none; border-top:1px solid #000 !important;">RAW COST:</td><td style="text-align:right; font-weight:700; border:none; border-top:1px solid #000 !important;">RM <span id="sumBaseCost_print">0.00</span></td></tr>
                         <tr><td style="padding:6px 10px; font-weight:700; color:#475569; border:none;">CUSTOM ADD:</td><td style="text-align:right; font-weight:700; color:#c084fc; border:none;">+ RM <span id="sumCustomCost_print">0.00</span></td></tr>
                         <tr><td style="padding:6px 10px; font-weight:700; color:#475569; border:none;">PROJ. MARKUP:</td><td style="text-align:right; font-weight:700; color:#059669; border:none;">+ RM <span id="sumMarkup_print">0.00</span></td></tr>
                         <tr><td style="padding:6px 10px; font-weight:800; color:#0f172a; border:none;">GROSS:</td><td style="text-align:right; font-weight:800; color:#0f172a; border:none;">RM <span id="sumSubtotal_print">0.00</span></td></tr>
                         <tr><td style="padding:6px 10px; font-weight:700; color:#475569; border:none;">DISCOUNT:</td><td style="text-align:right; font-weight:700; color:#d97706; border:none;">- RM <span id="sumDiscount_print">0.00</span></td></tr>
-                        <tr><td style="padding:8px 10px; font-weight:700; color:#475569; border:none; border-bottom:1px solid #e2e8f0;">SST TAX:</td><td style="text-align:right; font-weight:700; border:none; border-bottom:1px solid #e2e8f0;">+ RM <span id="sumSST_print">0.00</span></td></tr>
-                        <tr style="background:#1e293b; color:white;"><td style="padding:10px 10px; font-weight:900; font-size:11pt; border:none;">FINAL:</td><td style="text-align:right; font-weight:900; font-size:11pt; border:none;">RM <span id="grandTotal_print">0.00</span></td></tr>
+                        <tr><td style="padding:8px 10px; font-weight:700; color:#475569; border:none; border-bottom:1px solid #000 !important;">SST TAX:</td><td style="text-align:right; font-weight:700; border:none; border-bottom:1px solid #000 !important;">+ RM <span id="sumSST_print">0.00</span></td></tr>
+                        <tr style="background:#1e293b; color:white;"><td style="padding:10px 10px; font-weight:900; font-size:11pt; border:none;">FINAL:</td><td style="text-align:right; font-weight:900; font-size:11pt; border:none; color:white !important;">RM <span id="grandTotal_print">0.00</span></td></tr>
                     </table>
                 </div>
             </div>
@@ -587,7 +593,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V175)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V176)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -689,7 +695,7 @@
         return false;
     };
 
-    const cv = "V175"; 
+    const cv = "V176"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -738,7 +744,7 @@
     let loggedInUser = null;
     let winkoCustomers = {}; 
     let winkoInventory = {}; 
-    let winkoAuditLog = []; // V175 NEW: Audit array
+    let winkoAuditLog = [];
     let invChart = null;
     window.cloudMemoryBank = {};
     
@@ -760,7 +766,6 @@
 
     let systemBaseStructure = JSON.parse(JSON.stringify(JUTARAMA_DEFAULT_BOM));
 
-    // V175 NEW: Log actions globally
     function logAction(actionStr) {
         let user = loggedInUser ? loggedInUser.username : 'System';
         winkoAuditLog.unshift({ time: new Date().toISOString(), user: user, action: actionStr });
@@ -795,7 +800,6 @@
             cloudDB.collection("winko_settings").doc("users").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); let newUsers = d.data || d; if(Array.isArray(newUsers) && newUsers.length > 0) { winkoUsers = newUsers; if(document.getElementById('adminContent').style.display === 'block') renderUserTable(); } } });
             cloudDB.collection("winko_projects").onSnapshot(snapshot => { let m = {}; snapshot.forEach(doc => { m[doc.id] = doc.data(); }); window.cloudMemoryBank = m; if(document.getElementById('projectsContent').style.display === 'block') drawProjectBankTable(); });
             
-            // V175: Listen to Audit Log
             cloudDB.collection("winko_settings").doc("audit_log").onSnapshot(doc => {
                 if(doc.exists) { winkoAuditLog = doc.data().data || []; if(document.getElementById('auditContent').style.display === 'block') renderAuditLog(); }
             });
@@ -1032,20 +1036,16 @@
 
         t.bom.forEach((sec, sIdx) => {
             sec.items.forEach((it, iIdx) => {
-                // V175 FIX: Use the base name from the master structure, strip any old coat suffix, and apply new coat.
-                // This means whatever you type in Master BOM is exactly what loads here!
                 let baseItem = systemBaseStructure[sIdx] && systemBaseStructure[sIdx].items[iIdx];
                 let baseName = baseItem ? baseItem.name : it.name;
                 
                 if(sec.category !== "Services") {
-                    // Strips off old "(HDG)", "(Painted)", etc., and appends the current one dynamically.
                     let cleanName = baseName.replace(/\s*\((HDG|Painted|SS 304|SS 316)\)/i, '').trim();
                     it.name = `${cleanName} (${coatShort})`;
                     
                     let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
 
                     let n = it.name.toLowerCase();
-                    // V175 FIX: Better, broader quantity matching rules
                     if (n.includes("panel") && !n.includes("partition") && !n.includes("roof")) it.qty = totalTankPanels; 
                     else if (n.includes("roof") && !n.includes("rim") && !n.includes("truss") && !n.includes("panel")) it.qty = roofPanels; 
                     else if (n.includes("manhole")) it.qty = manholeQty; 
@@ -1174,7 +1174,7 @@
                 
                 sec.items.forEach((it, iIdx) => {
                     let calcQty = (sec.category === "Services") ? 1 : (it.qty||0); 
-                    let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
+                    let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" class="admin-input" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
                     let resetBtn = it.manualPrice ? `<button class="del-btn no-print" style="background:#e0f2fe; color:#0369a1; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice = false; safeProcess();">Sync to Inv</button>` : '';
                     
                     rH += `<tr class="bom-row-${i}" data-qty="${calcQty}">
@@ -1200,7 +1200,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table>
+                    <table><thead><tr><th>Description</th><th class="text-center" style="width:12%;">Qty</th><th class="text-center" style="width:15%;">Wt(kg)</th><th class="text-center" style="width:15%;">Cost(RM)</th><th class="text-right" style="width:18%;">Total</th></tr></thead><tbody>${rH}</tbody></table>
                 </div>
             </div>`;
         });
@@ -1403,7 +1403,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v175 successfully loaded!");
+    console.log("✅ Winko ERP Script v176 successfully loaded!");
 </script>
 </body>
 </html>
