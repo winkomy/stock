@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V170</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V172</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -158,7 +158,7 @@
             body.print-internal .card-header, body.print-internal .card-body { page-break-inside: auto !important; display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
             body.print-internal .tank-block { page-break-inside: auto !important; margin-top: 15px !important; border-top: 1px solid #000 !important; padding-top: 10px !important; }
             
-            /* KILL CSS GRID IN PRINT (Fixes Chrome blank page overflow bug) */
+            /* KILL CSS GRID IN PRINT */
             body.print-internal .config-grid, body.print-internal .dim-grid { display: block !important; margin-bottom: 10px !important; }
             body.print-internal .form-group { display: inline-block !important; width: 48% !important; vertical-align: top; margin-bottom: 8px !important; padding-right: 10px; box-sizing: border-box; }
             body.print-internal .dim-grid .form-group { width: 31% !important; }
@@ -178,12 +178,14 @@
             body.print-internal tr:nth-child(even) td { background-color: #f8fafc !important; }
             body.print-internal td.text-right { text-align: right; font-weight: 700;}
             
+            /* V171: HIDDEN 0-QTY ROWS FOR INTERNAL PRINT */
+            body.print-internal tr[data-qty="0"] { display: none !important; }
+
             body.print-internal input, body.print-internal .desc-input, body.print-internal textarea, body.print-internal select { border: none !important; background: transparent !important; padding: 0 !important; width: auto; font-family: Arial !important; color: #000 !important; -webkit-appearance: none; appearance: none; resize: none; overflow: hidden; }
             body.print-internal .tank-section-title { background: #f1f5f9 !important; border-left: 4px solid #3b82f6 !important; padding: 8px 12px !important; margin-top: 15px !important; margin-bottom: 10px !important; color: #0f172a !important; font-weight: bold !important; font-size: 10pt !important; border-radius: 0 !important; }
             
             body.print-internal .summary-box { background: #fff !important; border: 2px solid #1e293b !important; border-radius: 6px !important; padding: 0 !important; width: 45% !important; float: right !important;}
             
-            /* V170: HIDE original middle drawings, let bottom duplicate show up */
             body.print-internal .drawings-page { display: none !important; }
 
             /* --- CUSTOMER PRINT --- */
@@ -247,7 +249,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V170 - Bottom Drawings Fix</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V172 - Jutarama Delivery Order Logic</p>
     </div>
 </div>
 
@@ -481,7 +483,7 @@
                     </div>
                 </div>
 
-                <!-- ORIGINAL DRAWINGS CONTAINER (Hidden on internal print via CSS, visible on screen) -->
+                <!-- ORIGINAL DRAWINGS CONTAINER -->
                 <div class="module-card drawings-page">
                     <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📏</span> 3. Auto-Drawings (Panel Layout)</div>
                     <div class="card-body">
@@ -564,7 +566,7 @@
             </div>
         </div>
         
-        <!-- V170: NEW DUPLICATE DRAWINGS CONTAINER PUSHED TO THE BOTTOM FOR PRINT -->
+        <!-- DUPLICATE DRAWINGS CONTAINER PUSHED TO THE BOTTOM FOR PRINT -->
         <div class="print-only" id="internal_drawings_print_container" style="clear:both; margin-top: 40px; padding-top: 20px; page-break-inside: auto;"></div>
         
     </div>
@@ -675,7 +677,7 @@
         return false;
     };
 
-    const cv = "V170"; 
+    const cv = "V172"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -742,54 +744,48 @@
         terms: "Scope of Supply\n1. Standard tank accessories such as bolt, nut, washer, foam tape, air vent, 600x600mm access manhole, internal stays & brackets, internal & external ladder, water level indicator, subject to manufacturer's design and standard and item mentioned in quotation.\n2. Pipe hole opening at factory (Exclude flange). Pipe hole opening on site will be an additional charge.\n\nExcluded from the Supply\n1. Float valve chamber or top sump.\n2. Flanges, nozzles, pipes, valves, vortex, electrode sensor, pumps and filter.\n3. RC works and RC plinths.\n4. Scaffolding & safety platform for installation.\n5. Unloading, shifting and hoisting of materials at site.\n6. Safety training courses, equipment and medical test require to install tank.\n\nNote:\n1. Tank design to sit on 1M Center to center RC tank support/Plinths with at least 500mm height and 200mm width. Design to be provided by others.\n2. RC plinths MUST be level with maximum tolerance of ± 3mm.\n3. Leak test should be done within 3 months from completion of tank installation to maintain the quality of foam tape.\n4. The customer shall be responsible for the security of materials at site after delivery. Missing item shall be replaced with additional charges."
     };
     
+    // V172: Updated Master BOM to exactly mirror Jutarama DO Line Items
     let systemBaseStructure = [
         { category: "Panels", markup: 0, items: [
-            {name: "Manhole Panel (4'x4') (HDG)", def: 450, wt: 55}, 
-            {name: "1.5mm Roof Panel (4'x4') (HDG)", def: 162.75, wt: 26},
-            {name: "4.5mm Base Panel (4'x4') (HDG)", def: 263.50, wt: 68},
-            {name: "4.5mm Wall Panel (L1) (4'x4') (HDG)", def: 263.50, wt: 68},
-            {name: "3.0mm Wall Panel (L2) (4'x4') (HDG)", def: 162.75, wt: 48},
-            {name: "3.0mm Wall Panel (L3) (4'x4') (HDG)", def: 162.75, wt: 48},
-            {name: "1.5mm Wall Panel (L4) (4'x4') (HDG)", def: 162.75, wt: 26},
+            {name: "4'x4' Tank Panels (Base/Wall) (HDG)", def: 263.50, wt: 68},
+            {name: "Cambered Roof Covers 4'x4' (HDG)", def: 162.75, wt: 26},
+            {name: "Access Manhole (HDG)", def: 450, wt: 55},
             {name: "Partition Panel (4'x4') (HDG)", def: 253.50, wt: 48}
         ] },
-        { category: "Cleat & Trusses", markup: 0, items: [
-            {name: "Partition Cleat HDG", def: 15.00, wt: 1.2},
-            {name: "8mm (B) Cleat HDG", def: 16.50, wt: 1.8},
-            {name: "Type C Cleat HDG", def: 30, wt: 2.5}, 
-            {name: "Ø1\" Pipe (HDG AAA)", def: 18.00, wt: 1.6},
-            {name: "Ø1.5\" Pipe (HDG AAA)", def: 26.60, wt: 2.2},
-            {name: "50x50x1.9mm SHS Truss (4' HDG)", def: 28.20, wt: 5.0},
-            {name: "50x50x1.9mm SHS Truss (8' HDG)", def: 59.00, wt: 10.0},
-            {name: "50x50x1.9mm SHS Truss (12' HDG)", def: 74.40, wt: 15.0}
+        { category: "Cleats, Trusses & Rims", markup: 0, items: [
+            {name: "Roof Trusses (16 ft)", def: 74.40, wt: 15.0},
+            {name: "2\" x 4'(L) Roof Rim", def: 25.00, wt: 5.0},
+            {name: "Type RC (A) Cleat", def: 15.00, wt: 1.2},
+            {name: "Type MC (B) Cleat", def: 16.50, wt: 1.8},
+            {name: "Type SC (C) Cleat", def: 30, wt: 2.5},
+            {name: "Type SC1 (C1) Cleat", def: 30, wt: 2.5},
+            {name: "Ladder Brackets", def: 10, wt: 1.0}
         ] },
-        { category: "Angle Stay", markup: 0, items: [
-            {name: "67.5\" (L1 Stay - 50x50x5mm)", def: 27.25, wt: 4.5},
-            {name: "92.5\" (L2 Stay - 50x50x5mm)", def: 38.50, wt: 7.2},
-            {name: "135.5\" (L3 Stay - 50x50x5mm)", def: 49.60, wt: 14.5},
-            {name: "15' 8.5\" (L4 Stay)", def: 125, wt: 19.8},
-            {name: "Partition L1 Stay", def: 27.25, wt: 4.5, _isPartStay: 1},
-            {name: "Partition L2 Stay", def: 38.50, wt: 7.2, _isPartStay: 2},
-            {name: "Partition L3 Stay", def: 49.60, wt: 14.5, _isPartStay: 3}
+        { category: "Angle Stays", markup: 0, items: [
+            {name: "44 1/2\" Angle Stay", def: 20.00, wt: 3.5},
+            {name: "67 1/2\" Angle Stay", def: 27.25, wt: 4.5},
+            {name: "68\" Angle Stay", def: 28.00, wt: 4.6},
+            {name: "Partition Angle Stay", def: 27.25, wt: 4.5, _isPartStay: 1}
         ] },
-        { category: "Accessories", markup: 0, items: [
-            {name: "Ext. Ladder (HDG)", def: 55, wt: 3.5}, 
-            {name: "Int. Ladder (HDG)", def: 75, wt: 3.5}, 
-            {name: "Water Level Indicator (Mechanical)", def: 220, wt: 2.5}, 
-            {name: "Air Vent (PVC)", def: 85, wt: 1.5}, 
-            {name: "PVC Foam Tape (10m x 3mm)", def: 8.00, wt: 0.8},
-            {name: "Aseal Butyl Sealant (80m)", def: 1.70, wt: 0.2},
-            {name: "M10 x 35mm HDG (Bolt, Nut & Washer)", def: 1.20, wt: 0.10}, 
-            {name: "M12 x 45mm HDG (Bolt, Nut & Washer)", def: 1.50, wt: 0.15}, 
-            {name: "M14 x 30mm HDG (Box/Unit cost)", def: 8.65, wt: 0.20},
-            {name: "M16 x 40mm HDG HT B/N", def: 1.10, wt: 0.25},
-            {name: "M12 x 100mm Expansion Bolt (HDG)", def: 3.00, wt: 0.30}, 
-            {name: "M16 x 120mm Expansion Bolt (HDG)", def: 5.00, wt: 0.50}, 
-            {name: "PVC Bolt Head Cover (M12)", def: 0.20, wt: 0.01}, 
-            {name: "M12 EPDM Rubber Washer", def: 0.40, wt: 0.01}
+        { category: "Accessories & Fasteners", markup: 0, items: [
+            {name: "Ext. Ladder (10 ft) (HDG)", def: 150, wt: 8.5},
+            {name: "Int. Ladder (8 ft) (HDG)", def: 120, wt: 8.5},
+            {name: "Air-Vents", def: 85, wt: 1.5},
+            {name: "Water Level Indicator", def: 220, wt: 2.5},
+            {name: "M14 x 32mm Bolts & Nuts", def: 1.20, wt: 0.10},
+            {name: "M16 x 40mm Bolts & Nuts", def: 1.50, wt: 0.15},
+            {name: "3/8\" x 3/4\" Bolts & Nuts", def: 0.50, wt: 0.05},
+            {name: "3/8\" x 3\" Bolts & Nuts", def: 0.80, wt: 0.08},
+            {name: "9/16\" Flat Washer", def: 0.20, wt: 0.01},
+            {name: "5/8\" Flat Washer", def: 0.20, wt: 0.01},
+            {name: "3/8\" Flat Washer", def: 0.10, wt: 0.01},
+            {name: "Bitumen Strip x 13 metre", def: 15.00, wt: 2.0},
+            {name: "PVC Foam x 15 metre", def: 8.00, wt: 0.8},
+            {name: "8mm Butyl Sealant", def: 1.70, wt: 0.2},
+            {name: "24mm Butyl Sealant", def: 3.50, wt: 0.4}
         ]},
         { category: "Services", markup: 0, items: [
-            {name: "Installation & Labor", def: 3500, wt: 0}, 
+            {name: "Installation & Labor", def: 3500, wt: 0},
             {name: "Transport", def: 850, wt: 0}
         ]}
     ];
@@ -881,48 +877,19 @@
 
     function autoPopulateInventory() {
         const masterItems = {
-            "Partition Cleat HDG": { stock: 150, alert: 30, cost: 15.00 }, "8mm (B) Cleat HDG": { stock: 500, alert: 100, cost: 16.50 }, "Type C Cleat HDG": { stock: 300, alert: 50, cost: 30.00 },
-            "67.5\" (L1 Stay - 50x50x5mm)": { stock: 200, alert: 40, cost: 27.25 }, "92.5\" (L2 Stay - 50x50x5mm)": { stock: 150, alert: 30, cost: 38.50 }, "135.5\" (L3 Stay - 50x50x5mm)": { stock: 100, alert: 20, cost: 49.60 }, "15' 8.5\" (L4 Stay)": { stock: 50, alert: 10, cost: 125.00 },
-            "50x50x1.9mm SHS Truss (4' HDG)": { stock: 100, alert: 20, cost: 28.20 }, "50x50x1.9mm SHS Truss (8' HDG)": { stock: 100, alert: 20, cost: 59.00 }, "50x50x1.9mm SHS Truss (12' HDG)": { stock: 100, alert: 20, cost: 74.40 },
-            "Ø1\" Pipe (HDG AAA)": { stock: 80, alert: 15, cost: 18.00 }, "Ø1.5\" Pipe (HDG AAA)": { stock: 80, alert: 15, cost: 26.60 },
-            "M10 x 35mm HDG (Bolt, Nut & Washer)": { stock: 800, alert: 100, cost: 1.20 }, "M12 x 45mm HDG (Bolt, Nut & Washer)": { stock: 800, alert: 100, cost: 1.50 }, "M14 x 30mm HDG (Box/Unit cost)": { stock: 150, alert: 20, cost: 8.65 }, "M16 x 40mm HDG HT B/N": { stock: 300, alert: 50, cost: 1.10 },
-            "M12 x 100mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 3.00 }, "M16 x 120mm Expansion Bolt (HDG)": { stock: 200, alert: 50, cost: 5.00 },
-            "PVC Foam Tape (10m x 3mm)": { stock: 300, alert: 50, cost: 8.00 }, "Aseal Butyl Sealant (80m)": { stock: 200, alert: 30, cost: 1.70 },
-            "PVC Bolt Head Cover (M12)": { stock: 1000, alert: 200, cost: 0.20 }, "M12 EPDM Rubber Washer": { stock: 1000, alert: 200, cost: 0.40 },
-            
-            "Ext. Ladder (4') (HDG)": { stock: 40, alert: 5, cost: 55.00 },
-            "Ext. Ladder (8') (HDG)": { stock: 40, alert: 5, cost: 110.00 },
-            "Ext. Ladder (12') (HDG)": { stock: 20, alert: 5, cost: 165.00 },
-            "Ext. Ladder (16') (HDG)": { stock: 10, alert: 2, cost: 220.00 },
-            "Int. Ladder (4') (HDG)": { stock: 40, alert: 5, cost: 75.00 },
-            "Int. Ladder (8') (HDG)": { stock: 40, alert: 5, cost: 150.00 },
-            "Int. Ladder (12') (HDG)": { stock: 20, alert: 5, cost: 225.00 },
-            "Int. Ladder (16') (HDG)": { stock: 10, alert: 2, cost: 300.00 },
-            
-            "Ext. Ladder (1m) (HDG)": { stock: 40, alert: 5, cost: 55.00 },
-            "Ext. Ladder (2m) (HDG)": { stock: 40, alert: 5, cost: 110.00 },
-            "Ext. Ladder (3m) (HDG)": { stock: 20, alert: 5, cost: 165.00 },
-            "Ext. Ladder (4m) (HDG)": { stock: 10, alert: 2, cost: 220.00 },
-            "Int. Ladder (1m) (HDG)": { stock: 40, alert: 5, cost: 75.00 },
-            "Int. Ladder (2m) (HDG)": { stock: 40, alert: 5, cost: 150.00 },
-            "Int. Ladder (3m) (HDG)": { stock: 20, alert: 5, cost: 225.00 },
-            "Int. Ladder (4m) (HDG)": { stock: 10, alert: 2, cost: 300.00 },
-            
-            "Water Level Indicator (Mechanical)": { stock: 50, alert: 10, cost: 220.00 }, "Air Vent (PVC)": { stock: 80, alert: 15, cost: 85.00 },
+            "Type RC (A) Cleat": { stock: 150, alert: 30, cost: 15.00 }, "Type MC (B) Cleat": { stock: 500, alert: 100, cost: 16.50 }, "Type SC (C) Cleat": { stock: 300, alert: 50, cost: 30.00 },
+            "67 1/2\" Angle Stay": { stock: 200, alert: 40, cost: 27.25 },
+            "M14 x 32mm Bolts & Nuts": { stock: 8000, alert: 1000, cost: 1.20 }, "M16 x 40mm Bolts & Nuts": { stock: 800, alert: 100, cost: 1.50 },
+            "PVC Foam x 15 metre": { stock: 300, alert: 50, cost: 8.00 }, "8mm Butyl Sealant": { stock: 200, alert: 30, cost: 1.70 },
             "Installation & Labor": { stock: 999, alert: 10, cost: 3500.00 }, "Transport": { stock: 999, alert: 10, cost: 850.00 }
         };
 
-        const sizes = ["(4'x4')", "(1m x 1m)"]; const coats = ["HDG", "Painted", "SS 304", "SS 316"];
-        const panelTypes = [
-            { type: "Base Panel", thicknesses: ["4.5", "5.0", "6.0"], baseCost: 263.50 }, { type: "Roof Panel", thicknesses: ["1.5", "2.0", "3.0"], baseCost: 162.75 }, { type: "Wall Panel (L1)", thicknesses: ["4.5", "5.0", "6.0"], baseCost: 263.50 },
-            { type: "Wall Panel (L2)", thicknesses: ["3.0", "4.0", "4.5", "5.0"], baseCost: 162.75 }, { type: "Wall Panel (L3)", thicknesses: ["1.5", "2.0", "3.0", "4.5"], baseCost: 162.75 }, { type: "Wall Panel (L4)", thicknesses: ["1.5", "2.0", "3.0"], baseCost: 162.75 }
-        ];
-
+        const sizes = ["(4'x4')"]; const coats = ["HDG", "Painted", "SS 304"];
         coats.forEach(coat => {
-            let mult = (coat === 'Painted') ? 0.85 : (coat === 'SS 304' ? 3.0 : (coat === 'SS 316' ? 4.5 : 1.0));
+            let mult = (coat === 'Painted') ? 0.85 : (coat === 'SS 304' ? 3.0 : 1.0);
             sizes.forEach(size => {
-                panelTypes.forEach(pt => { pt.thicknesses.forEach(th => { masterItems[`${th}mm ${pt.type} ${size} (${coat})`] = { stock: 100, alert: 20, cost: parseFloat((pt.baseCost * mult).toFixed(2)) }; }); });
-                masterItems[`Manhole Panel ${size} (${coat})`] = { stock: 20, alert: 5, cost: parseFloat((450 * mult).toFixed(2)) }; masterItems[`Partition Panel ${size} (${coat})`] = { stock: 20, alert: 5, cost: parseFloat((253.50 * mult).toFixed(2)) };
+                masterItems[`4'x4' Tank Panels (Base/Wall) (${coat})`] = { stock: 100, alert: 20, cost: parseFloat((263.50 * mult).toFixed(2)) };
+                masterItems[`Cambered Roof Covers 4'x4' (${coat})`] = { stock: 100, alert: 20, cost: parseFloat((162.75 * mult).toFixed(2)) };
             });
         });
 
@@ -1060,12 +1027,15 @@
     const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
 
     function defaultTank() { 
+        let baseBOM = JSON.parse(JSON.stringify(systemBaseStructure));
+        baseBOM.forEach(sec => sec.items.forEach((it, iIdx) => { it.baseIdx = iIdx; }));
+
         let t = { 
             id: Date.now(), std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", 
-            L: 12, W: 4, H: 12, partitions: [], ladder1Col: 0, ladder2Col: 0, 
-            thickBase: "4.5", thickRoof: "1.5", thickL1: "4.5", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5",
-            partL1Angle: "67.5\" (L1 Stay - 50x50x5mm)", partL2Angle: "92.5\" (L2 Stay - 50x50x5mm)", partL3Angle: "135.5\" (L3 Stay - 50x50x5mm)",
-            override: "", bom: JSON.parse(JSON.stringify(systemBaseStructure)), nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 
+            L: 20, W: 16, H: 8, partitions: [], ladder1Col: 0, ladder2Col: 0, 
+            thickBase: "5.0", thickRoof: "1.5", thickL1: "5.0", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5",
+            partL1Angle: "67 1/2\" Angle Stay", partL2Angle: "92.5\" (L2 Stay)", partL3Angle: "135.5\" (L3 Stay)",
+            override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 
         };
         applySmartThickness(t, 0, true);
         return t; 
@@ -1081,12 +1051,6 @@
         let H = parseFloat(t.H) || 0;
         let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
 
-        t.thickRoof = "1.5";
-        if (panelsH === 1) { t.thickBase = "4.5"; t.thickL1 = "4.5"; t.thickL2="3.0"; t.thickL3="3.0"; t.thickL4="1.5"; }
-        else if (panelsH === 2) { t.thickBase = "4.5"; t.thickL1 = "4.5"; t.thickL2 = "3.0"; t.thickL3="3.0"; t.thickL4="1.5"; }
-        else if (panelsH === 3) { t.thickBase = "5.0"; t.thickL1 = "5.0"; t.thickL2 = "4.5"; t.thickL3 = "3.0"; t.thickL4="1.5"; }
-        else if (panelsH >= 4) { t.thickBase = "6.0"; t.thickL1 = "6.0"; t.thickL2 = "5.0"; t.thickL3 = "4.5"; t.thickL4 = "3.0"; }
-
         if(!isInit) {
             let ids = ['thickBase', 'thickRoof', 'thickL1', 'thickL2', 'thickL3', 'thickL4'];
             ids.forEach(f => {
@@ -1096,89 +1060,86 @@
         }
     }
 
+    // V172: Updated Auto-Calculate BOM with Jutarama DO Logic
     function autoCalculateBOM(tIdx) {
         let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
         
-        let sizeTag = u === 'ft' ? "(4'x4')" : "(1m x 1m)";
         let coatShort = "HDG"; if (t.coat === 'Painted Steel') coatShort = "Painted"; else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
         
-        let panelsL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); let panelsW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); let panelsH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
+        let pL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); 
+        let pW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); 
+        let pH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
 
-        let ladderTag = u === 'ft' ? `(${panelsH * 4}')` : `(${panelsH}m)`;
-        
         if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
         let num_partitions = t.partitions.filter(p => p > 0).length;
-        let partitionPanels = num_partitions * (panelsW * panelsH);
+        let partitionPanels = num_partitions * (pW * pH);
         
+        // Exact Jutarama Math Variables
+        let perimeter = (pL + pW) * 2;
+        let basePanels = pL * pW;
+        let wallPanels = perimeter * pH;
+        let totalTankPanels = basePanels + wallPanels; // e.g. 56
         let manholeQty = num_partitions + 1; 
-        let roofQty = Math.max(0, (panelsL * panelsW) - manholeQty);
-        
-        let baseQty = panelsL * panelsW;
-        let wallL1 = (panelsL + panelsW) * 2; let wallL2 = panelsH >= 2 ? (panelsL + panelsW) * 2 : 0; let wallL3 = panelsH >= 3 ? (panelsL + panelsW) * 2 : 0; let wallL4 = panelsH >= 4 ? (panelsL + panelsW) * 2 : 0;
-        let totalPanels = manholeQty + roofQty + baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels;
-
-        let angleCat = t.bom.find(s => s.category === "Angle Stay");
-        if(angleCat && !angleCat.items.find(i => i._isPartStay === 1)) {
-            angleCat.items.push({name: "Partition L1 Stay", def: 27.25, wt: 4.5, qty: 0, _isPartStay: 1});
-            angleCat.items.push({name: "Partition L2 Stay", def: 38.50, wt: 7.2, qty: 0, _isPartStay: 2});
-            angleCat.items.push({name: "Partition L3 Stay", def: 49.60, wt: 14.5, qty: 0, _isPartStay: 3});
-        }
+        let roofPanels = Math.max(0, (pL * pW)); // Based on DO, Roof Covers = 20, Manhole = 1.
 
         t.bom.forEach((sec, sIdx) => {
             sec.items.forEach((it, iIdx) => {
                 let n = it.name.toLowerCase();
                 
                 if(sec.category !== "Services") {
-                    if (sec.category === "Panels") {
-                        if (n.includes("base panel") && !n.includes("partition")) it.name = `${t.thickBase}mm Base Panel ${sizeTag} (${coatShort})`;
-                        else if (n.includes("roof panel") && !n.includes("partition")) it.name = `${t.thickRoof}mm Roof Panel ${sizeTag} (${coatShort})`;
-                        else if (n.includes("wall panel (l1)")) it.name = `${t.thickL1}mm Wall Panel (L1) ${sizeTag} (${coatShort})`;
-                        else if (n.includes("wall panel (l2)")) it.name = `${t.thickL2}mm Wall Panel (L2) ${sizeTag} (${coatShort})`;
-                        else if (n.includes("wall panel (l3)")) it.name = `${t.thickL3}mm Wall Panel (L3) ${sizeTag} (${coatShort})`;
-                        else if (n.includes("wall panel (l4)")) it.name = `${t.thickL4}mm Wall Panel (L4) ${sizeTag} (${coatShort})`;
-                        else if (n.includes("manhole panel")) it.name = `Manhole Panel ${sizeTag} (${coatShort})`;
-                        else if (n.includes("partition panel")) { it.name = `Partition Panel ${sizeTag} (${coatShort})`; it.qty = partitionPanels; }
-                        n = it.name.toLowerCase(); let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
-                    }
-
-                    if (n.includes("manhole panel")) it.qty = manholeQty;
-                    else if (n.includes("roof panel") && !n.includes("partition")) it.qty = roofQty;
-                    else if (n.includes("base panel") && !n.includes("partition")) it.qty = baseQty;
-                    else if (n.includes("wall panel (l1)")) it.qty = wallL1;
-                    else if (n.includes("wall panel (l2)")) it.qty = wallL2;
-                    else if (n.includes("wall panel (l3)")) it.qty = wallL3;
-                    else if (n.includes("wall panel (l4)")) it.qty = wallL4;
                     
-                    else if (it._isPartStay === 1) { it.name = t.partL1Angle || "67.5\" (L1 Stay - 50x50x5mm)"; it.qty = num_partitions > 0 ? (panelsW * 2 * num_partitions) : 0; }
-                    else if (it._isPartStay === 2) { it.name = t.partL2Angle || "92.5\" (L2 Stay - 50x50x5mm)"; it.qty = (num_partitions > 0 && panelsH >= 2) ? (panelsW * 2 * num_partitions) : 0; }
-                    else if (it._isPartStay === 3) { it.name = t.partL3Angle || "135.5\" (L3 Stay - 50x50x5mm)"; it.qty = (num_partitions > 0 && panelsH >= 3) ? (panelsW * 2 * num_partitions) : 0; }
+                    // Rename Panels to include HDG/Painted state
+                    if (n.includes("4'x4' tank panel")) it.name = `4'x4' Tank Panels (Base/Wall) (${coatShort})`;
+                    if (n.includes("roof cover")) it.name = `Cambered Roof Covers 4'x4' (${coatShort})`;
+                    if (n.includes("access manhole")) it.name = `Access Manhole (${coatShort})`;
                     
-                    else if (n.includes("8mm (b) cleat") || n.includes("wall cleat")) it.qty = (wallL1 + wallL2 + wallL3 + wallL4) * 2;
-                    else if (n.includes("type c cleat") || n.includes("roof cleat")) it.qty = (roofQty + manholeQty) * 2;
-                    else if (n.includes("partition cleat")) it.qty = partitionPanels * 4;
-                    else if (n.includes("(l1 stay") || n.includes("l1 angle stay")) it.qty = wallL1;
-                    else if (n.includes("(l2 stay") || n.includes("l2 angle stay")) it.qty = wallL2;
-                    else if (n.includes("(l3 stay") || n.includes("l3 angle stay")) it.qty = wallL3;
-                    else if (n.includes("l4 stay")) it.qty = wallL4;
+                    let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); 
+                    if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
 
-                    else if (n.includes("ext") && (n.includes("ladder") || n.includes("lader"))) { 
-                        it.name = `Ext. Ladder ${ladderTag} (${coatShort})`; 
+                    // Quantity Allocations (Matching Delivery Order)
+                    if (n.includes("4'x4' tank panel")) it.qty = totalTankPanels;
+                    else if (n.includes("roof cover")) it.qty = roofPanels;
+                    else if (n.includes("access manhole")) it.qty = manholeQty;
+                    else if (n.includes("partition panel")) it.qty = partitionPanels;
+                    
+                    else if (n.includes("roof trusses")) it.qty = Math.max(0, pL - 1); // 5 - 1 = 4
+                    else if (n.includes("roof rim")) it.qty = perimeter; // 18
+                    else if (n.includes("ladder bracket")) it.qty = pH * 3; // 2 * 3 = 6
+                    
+                    else if (n.includes("rc (a)")) it.qty = pW + 2; // 4 + 2 = 6
+                    else if (n.includes("mc (b)")) it.qty = perimeter + (pW * 2); // 18 + 8 = 26
+                    else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) it.qty = perimeter; // 18
+                    
+                    else if (n.includes("67 1/2") || n.includes("67.5")) it.qty = perimeter + 4; // 18 + 4 = 22
+                    else if (it._isPartStay === 1) { it.name = t.partL1Angle || "Partition Angle Stay"; it.qty = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
+                    
+                    else if (n.includes("m14 x 32mm")) it.qty = Math.ceil(totalTankPanels * 29.1); // ~1630
+                    else if (n.includes("m16 x 40mm")) it.qty = Math.ceil(totalTankPanels * 4.10); // ~230
+                    else if (n.includes("3/8\" x 3/4\"")) it.qty = Math.ceil(totalTankPanels * 11.96); // ~670
+                    else if (n.includes("3/8\" x 3\"")) it.qty = perimeter; // 18
+                    
+                    else if (n.includes("9/16\" flat washer")) it.qty = Math.ceil(totalTankPanels * 29.1); // 1630
+                    else if (n.includes("5/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 1.96); // 110
+                    else if (n.includes("3/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 3.39); // 190
+
+                    else if (n.includes("bitumen strip")) it.qty = Math.ceil(basePanels / 4); // 5
+                    else if (n.includes("pvc foam")) it.qty = Math.ceil((totalTankPanels + roofPanels) / 4.22); // 18
+                    else if (n.includes("8mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2); // 28
+                    else if (n.includes("24mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2.15); // 26
+
+                    else if (n.includes("air-vents") || n.includes("air vent")) it.qty = Math.max(1, Math.floor(roofPanels / 15)); 
+                    else if (n.includes("water level indicator")) it.qty = 1;
+
+                    else if (n.includes("ext") && n.includes("ladder")) { 
+                        it.name = `Ext. Ladder (${H + 2} ft) (${coatShort})`; 
                         it.qty = 1; 
-                        let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput) nameInput.value = it.name;
+                        let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name;
                     }
-                    else if (n.includes("int") && (n.includes("ladder") || n.includes("lader"))) { 
-                        it.name = `Int. Ladder ${ladderTag} (${coatShort})`; 
+                    else if (n.includes("int") && n.includes("ladder")) { 
+                        it.name = `Int. Ladder (${H} ft) (${coatShort})`; 
                         it.qty = manholeQty; 
-                        let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput) nameInput.value = it.name;
+                        let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name;
                     }
-                    
-                    else if (n.includes("water level indicator")) it.qty = manholeQty;
-                    else if (n.includes("air vent")) it.qty = Math.max(1, Math.floor((panelsL * panelsW) / 4));
-                    else if (n.includes("pvc foam tape") || n.includes("sealant")) it.qty = Math.ceil((totalPanels * 4) / 10);
-                    
-                    else if (n.includes("m10") && (n.includes("bolt") || n.includes("b/n"))) { it.qty = Math.ceil((roofQty + manholeQty) * 24); }
-                    else if (n.includes("m12") && (n.includes("bolt") || n.includes("b/n"))) { it.qty = Math.ceil((baseQty + wallL1 + wallL2 + wallL3 + wallL4 + partitionPanels) * 28); }
-                    else if (n.includes("expansion bolt")) { it.qty = Math.ceil((panelsL + 1) * (panelsW + 1)); }
                 }
                 
                 let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`); if(qInput && sec.category !== "Services") qInput.value = it.qty || 0;
@@ -1195,7 +1156,14 @@
             appTanks[i].bom.forEach(sec => sec.items.forEach((it, idx) => { 
                 if(sec.category !== 'Services' && !it.manualPrice) { 
                     let baseSec = systemBaseStructure.find(s => s.category == sec.category); 
-                    let baseDef = (baseSec && baseSec.items && baseSec.items[idx]) ? baseSec.items[idx].def : 0; 
+                    let baseDef = 0;
+                    if (baseSec && baseSec.items) {
+                        if (it.baseIdx !== undefined && baseSec.items[it.baseIdx]) {
+                            baseDef = baseSec.items[it.baseIdx].def;
+                        } else if (baseSec.items[idx]) {
+                            baseDef = baseSec.items[idx].def;
+                        }
+                    }
                     it.def = baseDef * mult; 
                 } 
             }));
@@ -1219,6 +1187,28 @@
     function removePartition(tIdx, pIdx) { appTanks[tIdx].partitions.splice(pIdx, 1); renderAllDynamicUI(); autoCalculateBOM(tIdx); safeProcess(); }
 
     function updateBomField(t, s, i, f, v, isNum) { appTanks[t].bom[s].items[i][f] = isNum ? (parseFloat(v)||0) : v; if(f === 'def') appTanks[t].bom[s].items[i].manualPrice = true; if(f === 'name') appTanks[t].bom[s].items[i].manualPrice = false; safeProcess(); }
+    
+    function addBomItem(tIdx, sIdx) {
+        appTanks[tIdx].bom[sIdx].items.push({
+            name: "New Custom Item",
+            qty: 1,
+            wt: 0,
+            def: 0,
+            manualPrice: true,
+            manualAdded: true
+        });
+        renderAllDynamicUI();
+        safeProcess();
+    }
+
+    function removeBomItem(tIdx, sIdx, iIdx) {
+        if(confirm("Remove this item from the BOM list?")) {
+            appTanks[tIdx].bom[sIdx].items.splice(iIdx, 1);
+            renderAllDynamicUI();
+            safeProcess();
+        }
+    }
+    
     function updateNozzle(t, nId, f, v, isNum) { let n = appTanks[t].nozzles.find(x=>x.id==nId); if(n) { n[f] = isNum ? (parseFloat(v)||0) : v; safeProcess(); } }
     function addNozzle(t) { if(!appTanks[t].nozzles) appTanks[t].nozzles = []; appTanks[t].nozzles.push({id: Date.now(), type: "Inlet", size: "2\"", qty: 1, pos: "Side panel"}); renderAllDynamicUI(); }
     function addNewCustomItem() { appCustomItems.push({ id: Date.now(), name: "Custom Service / Add-on", qty: 1, unit: "Lot", cost: 0 }); renderAllDynamicUI(); safeProcess(); }
@@ -1245,9 +1235,9 @@
 
             let partAnglesHtml = t.partitions.length > 0 ? `
             <div class="dim-grid" style="margin-top:16px; border-top:1px dashed #fbcfe8; padding-top:16px;">
-                <div class="form-group"><label style="color:#db2777;">Partition L1 Stay (Type)</label><input type="text" value="${t.partL1Angle || '67.5\" (L1 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL1Angle', this.value)"></div>
-                <div class="form-group"><label style="color:#db2777;">Partition L2 Stay (Type)</label><input type="text" value="${t.partL2Angle || '92.5\" (L2 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL2Angle', this.value)"></div>
-                <div class="form-group"><label style="color:#db2777;">Partition L3 Stay (Type)</label><input type="text" value="${t.partL3Angle || '135.5\" (L3 Stay - 50x50x5mm)'}" oninput="updateTankField(${i}, 'partL3Angle', this.value)"></div>
+                <div class="form-group"><label style="color:#db2777;">Partition L1 Stay (Type)</label><input type="text" value="${t.partL1Angle || 'Partition Angle Stay'}" oninput="updateTankField(${i}, 'partL1Angle', this.value)"></div>
+                <div class="form-group"><label style="color:#db2777;">Partition L2 Stay (Type)</label><input type="text" value="${t.partL2Angle || '92.5\" (L2 Stay)'}" oninput="updateTankField(${i}, 'partL2Angle', this.value)"></div>
+                <div class="form-group"><label style="color:#db2777;">Partition L3 Stay (Type)</label><input type="text" value="${t.partL3Angle || '135.5\" (L3 Stay)'}" oninput="updateTankField(${i}, 'partL3Angle', this.value)"></div>
             </div>` : ``;
 
             tH += `<div class="tank-block" style="border-top:2px dashed #cbd5e1; margin-top:32px; padding-top:24px;">
@@ -1282,15 +1272,46 @@
             
             let rH = "";
             t.bom.forEach((sec, sIdx) => {
-                rH += `<tr><td colspan="5" style="background:#f8fafc; font-weight:700; border-bottom: 2px solid #e2e8f0;">${sec.category}</td></tr>`;
+                rH += `<tr>
+                    <td colspan="5" style="background:#f8fafc; font-weight:700; border-bottom: 2px solid #e2e8f0; padding: 6px 10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>${sec.category}</span>
+                            <button class="action-btn no-print" style="padding:4px 10px; font-size:10px; width:auto; background:#10b981;" onclick="addBomItem(${i}, ${sIdx})">+ Add Row</button>
+                        </div>
+                    </td>
+                </tr>`;
+                
                 sec.items.forEach((it, iIdx) => {
-                    let isZero = (sec.category !== "Services" && (!it.qty || it.qty == 0)); let rowStyle = isZero ? "display:none;" : ""; 
+                    let calcQty = (sec.category === "Services") ? 1 : (it.qty||0); 
                     let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
                     let resetBtn = it.manualPrice ? `<button class="del-btn no-print" style="background:#e0f2fe; color:#0369a1; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice = false; safeProcess();">Sync to Inv</button>` : '';
-                    rH += `<tr style="${rowStyle}" class="bom-row-${i}"><td><div style="display:flex; align-items:center;"><input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)">${resetBtn}</div><div id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag"></div></td><td class="col-input">${qtyHtml}</td><td><input type="number" class="admin-input" value="${it.wt||0}"></td><td><input type="number" class="admin-input" id="cost_in_${i}_${sIdx}_${iIdx}" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td><td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td></tr>`;
+                    
+                    rH += `<tr class="bom-row-${i}" data-qty="${calcQty}">
+                        <td>
+                            <div style="display:flex; align-items:center;">
+                                <button class="del-btn no-print" style="padding:3px 6px; font-size:10px; margin-right:8px;" onclick="removeBomItem(${i}, ${sIdx}, ${iIdx})" title="Remove Item">X</button>
+                                <input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)">
+                                ${resetBtn}
+                            </div>
+                            <div id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag" style="margin-left: 28px;"></div>
+                        </td>
+                        <td class="col-input">${qtyHtml}</td>
+                        <td><input type="number" class="admin-input" value="${it.wt||0}"></td>
+                        <td><input type="number" class="admin-input" id="cost_in_${i}_${sIdx}_${iIdx}" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td>
+                        <td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td>
+                    </tr>`;
                 });
             });
-            bH += `<div class="module-card collapsed" style="margin-top:20px; border: 1px solid #e2e8f0;"><div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><span>⚙️ BOM - TANK ${i+1}</span><button class="action-btn export-btn no-print" style="padding:6px 12px; font-size:11px; width:auto; margin-right:20px;" onclick="event.stopPropagation(); document.querySelectorAll('.bom-row-${i}').forEach(el=>el.style.display='table-row')">👁️ Show Hidden Items</button></div></div><div class="card-body"><table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table></div></div>`;
+            bH += `<div class="module-card collapsed" style="margin-top:20px; border: 1px solid #e2e8f0;">
+                <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <span>⚙️ BOM - TANK ${i+1}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table><thead><tr><th>Description</th><th class="text-center">Qty</th><th class="text-center">Wt(kg)</th><th class="text-center">Cost(RM)</th><th class="text-right">Total</th></tr></thead><tbody>${rH}</tbody></table>
+                </div>
+            </div>`;
         });
         setHtml('dynamicTanksContainer', tH); setHtml('dynamicBomContainer', bH);
         
@@ -1314,7 +1335,6 @@
         svg += `</g></svg></div>`; return svg;
     }
 
-    /* V170 Update: Added injection into internal_drawings_print_container */
     function renderDrawings() {
         let h = ``;
         appTanks.forEach((t, i) => {
@@ -1478,7 +1498,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v170 successfully loaded (Drawings moved to Bottom for Internal PDF)!");
+    console.log("✅ Winko ERP Script v172 successfully loaded (Jutarama Custom Auto-Fill Logic Enabled)!");
 </script>
 </body>
 </html>
