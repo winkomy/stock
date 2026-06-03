@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V174</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V175</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -42,7 +42,7 @@
         .user-menu-btn:hover { background: #475569; }
         .logout-btn { background: #ef4444; } .logout-btn:hover { background: #dc2626; }
         
-        #mainContent, #adminContent, #customerPreviewContainer, #projectsContent, #inventoryContent { display: none; padding: 24px; }
+        #mainContent, #adminContent, #customerPreviewContainer, #projectsContent, #inventoryContent, #auditContent { display: none; padding: 24px; }
         #checklistPrintView, .print-only, .internal-only-tag { display: none; }
         
         .container { max-width: 1500px; margin: auto; }
@@ -122,7 +122,6 @@
         @media print {
             @page { size: A4; margin: 10mm 15mm; }
 
-            /* MASTER PRINT RESET: Removes app padding and margin */
             html, body {
                 margin: 0 !important;
                 padding: 0 !important;
@@ -140,31 +139,27 @@
             
             .print-only { display: block !important; }
             
-            /* ALLOW PAGINATION ACROSS TABLES AND CARDS */
             table { page-break-inside: auto !important; }
             tr, td, th { page-break-inside: avoid !important; }
             .avoid-break { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
             
-            /* --- PROFESSIONAL INTERNAL PRINT --- */
+            /* --- PROFESSIONAL INTERNAL PRINT (V175 PRICING FIX) --- */
             body.print-internal #mainContent { display: block !important; }
-            body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
+            body.print-internal #adminContent, body.print-internal #inventoryContent, body.print-internal #projectsContent, body.print-internal #auditContent, body.print-internal #customerPreviewContainer, body.print-internal #checklistPrintView { display: none !important; }
             
             body.print-internal .app-layout, body.print-internal .col-left { display: block !important; width: 100% !important; gap: 0 !important; margin: 0 !important;}
             body.print-internal .col-right { display: none !important; }
             
-            /* Allow sections to break naturally */
             body.print-internal .module-card { page-break-inside: auto !important; border: none !important; padding: 0 !important; margin-bottom: 15px !important; box-shadow: none !important; background: transparent !important; }
             body.print-internal .card-header, body.print-internal .card-body { page-break-inside: auto !important; display: block !important; padding-top: 0 !important; margin-top: 0 !important;}
             body.print-internal .tank-block { page-break-inside: auto !important; margin-top: 15px !important; border-top: 1px solid #000 !important; padding-top: 10px !important; }
             
-            /* KILL CSS GRID IN PRINT */
             body.print-internal .config-grid, body.print-internal .dim-grid { display: block !important; margin-bottom: 10px !important; }
             body.print-internal .form-group { display: inline-block !important; width: 48% !important; vertical-align: top; margin-bottom: 8px !important; padding-right: 10px; box-sizing: border-box; }
             body.print-internal .dim-grid .form-group { width: 31% !important; }
             body.print-internal .form-group label { display: block; margin-bottom: 2px; font-size: 7.5pt !important; }
 
-            /* Clean Corporate Headers & Tables for Internal */
             body.print-internal .card-header { border-bottom: 2px solid #1e293b !important; margin-bottom: 12px !important; font-size: 12pt !important; padding: 0 0 5px 0 !important; color: #1e293b !important;}
             body.print-internal .card-header::after { display: none !important; }
             body.print-internal::before { content: "INTERNAL DOCUMENT"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60pt; font-weight: 900; color: rgba(239, 68, 68, 0.05); z-index: -1; white-space: nowrap; pointer-events: none; }
@@ -172,23 +167,26 @@
             body.print-internal .print-header { display: flex !important; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #3b82f6 !important; padding-bottom: 15px !important; margin-bottom: 20px !important; }
             body.print-internal .print-header h2 { color: #1e293b !important; font-size: 16pt !important; letter-spacing: 1px; }
             
-            body.print-internal table { font-size: 8.5pt; margin-bottom: 15px; border-collapse: collapse; width: 100%; border: 1px solid #cbd5e1 !important; border-radius: 4px !important; overflow: hidden; }
-            body.print-internal th { background-color: #1e293b !important; color: #ffffff !important; padding: 8px 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
-            body.print-internal td { border-right: 1px solid #e2e8f0; padding: 6px 10px; border-bottom: 1px solid #e2e8f0;}
+            /* V175: Force Table Borders and Bold Cost Columns */
+            body.print-internal table { font-size: 8.5pt; margin-bottom: 15px; border-collapse: collapse; width: 100%; border: 1px solid #000 !important; }
+            body.print-internal th { background-color: #1e293b !important; color: #ffffff !important; padding: 8px 10px; font-weight: 600; text-transform: uppercase; border: 1px solid #000 !important;}
+            body.print-internal td { border: 1px solid #cbd5e1 !important; padding: 6px 10px;}
             body.print-internal tr:nth-child(even) td { background-color: #f8fafc !important; }
-            body.print-internal td.text-right { text-align: right; font-weight: 700;}
+            
+            /* Ensure the Cost and Total Columns stand out clearly in PDF */
+            body.print-internal td:nth-child(4), body.print-internal td:nth-child(5) { font-weight: bold !important; color: #000 !important; text-align: right !important; }
             
             body.print-internal tr[data-qty="0"] { display: none !important; }
 
-            body.print-internal input, body.print-internal .desc-input, body.print-internal textarea, body.print-internal select { border: none !important; background: transparent !important; padding: 0 !important; width: auto; font-family: Arial !important; color: #000 !important; -webkit-appearance: none; appearance: none; resize: none; overflow: hidden; }
+            /* Ensure Inputs display correctly as text in print */
+            body.print-internal input, body.print-internal .desc-input, body.print-internal textarea, body.print-internal select { border: none !important; background: transparent !important; padding: 0 !important; width: auto; font-family: Arial !important; color: #000 !important; -webkit-appearance: none; appearance: none; resize: none; overflow: hidden; display: inline-block; font-weight: bold;}
+            
             body.print-internal .tank-section-title { background: #f1f5f9 !important; border-left: 4px solid #3b82f6 !important; padding: 8px 12px !important; margin-top: 15px !important; margin-bottom: 10px !important; color: #0f172a !important; font-weight: bold !important; font-size: 10pt !important; border-radius: 0 !important; }
-            
             body.print-internal .summary-box { background: #fff !important; border: 2px solid #1e293b !important; border-radius: 6px !important; padding: 0 !important; width: 45% !important; float: right !important;}
-            
             body.print-internal .drawings-page { display: none !important; }
 
             /* --- CUSTOMER PRINT --- */
-            body.print-customer #mainContent, body.print-customer #adminContent, body.print-customer #inventoryContent, body.print-customer #projectsContent, body.print-customer #checklistPrintView { display: none !important; }
+            body.print-customer #mainContent, body.print-customer #adminContent, body.print-customer #inventoryContent, body.print-customer #projectsContent, body.print-customer #auditContent, body.print-customer #checklistPrintView { display: none !important; }
             body.print-customer #customerPreviewContainer { display: flex !important; padding: 0 !important; margin: 0 !important; background: white !important; }
             body.print-customer .preview-toolbar { display: none !important; }
             body.print-customer #customerPrintViewEditor { max-width: none !important; padding: 0 !important; margin: 0 !important; border:none; box-shadow:none;}
@@ -200,7 +198,7 @@
             .cp-classic-table td.text-right { text-align: right; }
 
             /* --- PROFESSIONAL SO CHECKLIST PRINT --- */
-            body.print-checklist #mainContent, body.print-checklist #customerPreviewContainer, body.print-checklist #adminContent, body.print-checklist #inventoryContent, body.print-checklist #projectsContent { display: none !important; }
+            body.print-checklist #mainContent, body.print-checklist #customerPreviewContainer, body.print-checklist #adminContent, body.print-checklist #inventoryContent, body.print-checklist #auditContent, body.print-checklist #projectsContent { display: none !important; }
             body.print-checklist #checklistPrintView { display: block !important; font-size: 9.5pt; padding: 0; color: #000; }
             .chk-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; text-align: center; line-height: 12px; margin-right: 4px; font-weight:bold;}
             
@@ -249,7 +247,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V174 - Inventory Auto-Sync & PDF UI Upgrade</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V175 - Name Lock Fixed & Activity Log</p>
     </div>
 </div>
 
@@ -266,8 +264,24 @@
         <button class="nav-btn" id="btnTabInv" onclick="switchTab('inventory')">📦 Inventory</button>
         <button class="nav-btn" id="btnTabPreview" onclick="switchTab('preview')">📄 Edit Quote PDF</button>
         <button class="nav-btn" id="btnTabAdmin" onclick="switchTab('admin')">⚙️ Master Control</button>
+        <button class="nav-btn" id="btnTabAudit" onclick="switchTab('audit')" style="background:#fef3c7; color:#b45309; margin-left: 10px;">📜 Activity Log</button>
     </div>
 </div>
+
+<div id="auditContent"><div class="container">
+    <div class="module-card">
+        <div class="card-header"><span>📜</span> System Activity Log</div>
+        <div class="card-body">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px; font-weight: 500;">Chronological history of major system changes, inventory deductions, and quote saves.</p>
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead><tr><th style="width: 25%;">Date & Time</th><th style="width: 15%;">User</th><th style="width: 60%;">Action Taken</th></tr></thead>
+                    <tbody id="auditTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div></div>
 
 <div id="inventoryContent"><div class="container">
     <div class="module-card">
@@ -573,7 +587,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V174 Editable UI)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V175)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -675,7 +689,7 @@
         return false;
     };
 
-    const cv = "V174"; 
+    const cv = "V175"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -724,6 +738,7 @@
     let loggedInUser = null;
     let winkoCustomers = {}; 
     let winkoInventory = {}; 
+    let winkoAuditLog = []; // V175 NEW: Audit array
     let invChart = null;
     window.cloudMemoryBank = {};
     
@@ -745,7 +760,21 @@
 
     let systemBaseStructure = JSON.parse(JSON.stringify(JUTARAMA_DEFAULT_BOM));
 
-    // V174 NEW: Master Inventory Dropdown Sync
+    // V175 NEW: Log actions globally
+    function logAction(actionStr) {
+        let user = loggedInUser ? loggedInUser.username : 'System';
+        winkoAuditLog.unshift({ time: new Date().toISOString(), user: user, action: actionStr });
+        if (winkoAuditLog.length > 200) winkoAuditLog.pop();
+        if (cloudDB) cloudDB.collection("winko_settings").doc("audit_log").set({ data: winkoAuditLog });
+        if (document.getElementById('auditContent').style.display === 'block') renderAuditLog();
+    }
+
+    function renderAuditLog() {
+        let h = '';
+        winkoAuditLog.forEach(l => { h += `<tr><td>${formatAuditDate(l.time)}</td><td><strong>${l.user}</strong></td><td>${l.action}</td></tr>`; });
+        setHtml('auditTableBody', h || '<tr><td colspan="3" class="text-center">No activity recorded yet.</td></tr>');
+    }
+
     function updateInvDatalist() {
         let h = ''; Object.keys(winkoInventory).forEach(k => { h += `<option value="${k}"></option>`; }); setHtml('invDatalist', h);
     }
@@ -758,17 +787,18 @@
             });
             cloudDB.collection("winko_settings").doc("crm").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); winkoCustomers = d.data || d || winkoCustomers; updateCustomerDatalist(); if(document.getElementById('adminContent').style.display === 'block') renderCustomerAdmin(); } });
             cloudDB.collection("winko_settings").doc("inventory").onSnapshot(doc => { 
-                if(doc.exists) { 
-                    let d = doc.data(); winkoInventory = d.data || d || winkoInventory; 
-                    updateInvDatalist(); // Ensure BOM inputs auto-suggest new inventory items
-                    if(document.getElementById('inventoryContent').style.display === 'block') renderInventoryUI(); safeProcess(); 
-                } 
+                if(doc.exists) { let d = doc.data(); winkoInventory = d.data || d || winkoInventory; updateInvDatalist(); if(document.getElementById('inventoryContent').style.display === 'block') renderInventoryUI(); safeProcess(); } 
             });
             cloudDB.collection("winko_settings").doc("company").onSnapshot(doc => { 
                 if(doc.exists) { companyProfile = doc.data(); applyCompanyProfileToAdmin(); applyCompanyProfileToHeaders(); if (companyProfile.lastUpdated) setHtml('companyAuditLog', `🕒 Updated: <b>${formatAuditDate(companyProfile.lastUpdated)}</b> &nbsp;|&nbsp; 👤 By: <b>${companyProfile.updatedBy || 'Unknown'}</b>`); } 
             });
             cloudDB.collection("winko_settings").doc("users").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); let newUsers = d.data || d; if(Array.isArray(newUsers) && newUsers.length > 0) { winkoUsers = newUsers; if(document.getElementById('adminContent').style.display === 'block') renderUserTable(); } } });
             cloudDB.collection("winko_projects").onSnapshot(snapshot => { let m = {}; snapshot.forEach(doc => { m[doc.id] = doc.data(); }); window.cloudMemoryBank = m; if(document.getElementById('projectsContent').style.display === 'block') drawProjectBankTable(); });
+            
+            // V175: Listen to Audit Log
+            cloudDB.collection("winko_settings").doc("audit_log").onSnapshot(doc => {
+                if(doc.exists) { winkoAuditLog = doc.data().data || []; if(document.getElementById('auditContent').style.display === 'block') renderAuditLog(); }
+            });
         } catch(e) { console.warn("Snapshot error", e); }
     }
 
@@ -789,26 +819,28 @@
             loggedInUser = user; setDisp('securityOverlay', false); setDisp('topNav', true); setDisp('mainContent', true);
             if(user.role === 'admin') document.getElementById('btnTabAdmin').style.display = 'inline-block'; else document.getElementById('btnTabAdmin').style.display = 'none';
             switchTab('quote'); appTanks = [defaultTank()]; renderAllDynamicUI(); autoCalculateBOM(0); safeProcess(); showToast(`Welcome back, ${u}!`);
+            logAction("User Logged In");
         } else { showToast("Invalid credentials", "error"); }
     }
     
     function openMyProfile() { setVal('myNewPassword', ''); document.getElementById('profileOverlay').style.display = 'flex'; }
-    function saveMyPassword() { let p = getVal('myNewPassword').trim(); if(!p) return showToast("Password cannot be empty", "error"); let userIndex = winkoUsers.findIndex(x => x.username === loggedInUser.username); if(userIndex > -1) { winkoUsers[userIndex].password = p; loggedInUser.password = p; if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); showToast("Password updated successfully!"); document.getElementById('profileOverlay').style.display = 'none'; } }
-    function logout() { loggedInUser = null; setDisp('topNav', false); setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false); setDisp('securityOverlay', true); setVal('userInput', ''); setVal('passInput', ''); }
+    function saveMyPassword() { let p = getVal('myNewPassword').trim(); if(!p) return showToast("Password cannot be empty", "error"); let userIndex = winkoUsers.findIndex(x => x.username === loggedInUser.username); if(userIndex > -1) { winkoUsers[userIndex].password = p; loggedInUser.password = p; if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); showToast("Password updated successfully!"); document.getElementById('profileOverlay').style.display = 'none'; logAction("User Updated Password"); } }
+    function logout() { loggedInUser = null; setDisp('topNav', false); setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false); setDisp('auditContent', false); setDisp('securityOverlay', true); setVal('userInput', ''); setVal('passInput', ''); }
 
     function switchTab(tabId) {
-        setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false);
-        ['btnTabQuote', 'btnTabAdmin', 'btnTabPreview', 'btnTabProjects', 'btnTabInv'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).classList.remove('active'); });
+        setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false); setDisp('auditContent', false);
+        ['btnTabQuote', 'btnTabAdmin', 'btnTabPreview', 'btnTabProjects', 'btnTabInv', 'btnTabAudit'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).classList.remove('active'); });
         if(tabId === 'quote') { setDisp('mainContent', true); document.getElementById('btnTabQuote').classList.add('active'); }
         else if(tabId === 'preview') { safeProcess(); syncPrintHeader(window.currentUnit||'ft'); document.getElementById('customerPreviewContainer').style.display='flex'; document.getElementById('btnTabPreview').classList.add('active'); }
         else if(tabId === 'admin') { setDisp('adminContent', true); document.getElementById('btnTabAdmin').classList.add('active'); buildAdminTable(); renderCustomerAdmin(); renderUserTable(); }
         else if(tabId === 'projects') { setDisp('projectsContent', true); document.getElementById('btnTabProjects').classList.add('active'); drawProjectBankTable(); }
         else if(tabId === 'inventory') { setDisp('inventoryContent', true); document.getElementById('btnTabInv').classList.add('active'); renderInventoryUI(); }
+        else if(tabId === 'audit') { setDisp('auditContent', true); document.getElementById('btnTabAudit').classList.add('active'); renderAuditLog(); }
     }
 
     function renderUserTable() { let h = ''; winkoUsers.forEach((u, i) => { h += `<tr><td>${u.username}</td><td>${u.password}</td><td>${u.role}</td><td class="text-center"><button class="del-btn" onclick="removeUser(${i})">X</button></td></tr>`; }); setHtml('userTableBody', h); }
-    function addUser() { let u = getVal('newUsername').trim(); let p = getVal('newPassword').trim(); let r = getVal('newRole'); if(!u || !p) return showToast("Username and password required.", "error"); winkoUsers.push({username: u, password: p, role: r}); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); setVal('newUsername', ''); setVal('newPassword', ''); renderUserTable(); showToast("User added!"); }
-    function removeUser(i) { if(confirm("Remove user?")) { winkoUsers.splice(i, 1); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); renderUserTable(); } }
+    function addUser() { let u = getVal('newUsername').trim(); let p = getVal('newPassword').trim(); let r = getVal('newRole'); if(!u || !p) return showToast("Username and password required.", "error"); winkoUsers.push({username: u, password: p, role: r}); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); setVal('newUsername', ''); setVal('newPassword', ''); renderUserTable(); showToast("User added!"); logAction(`Created new user: ${u}`); }
+    function removeUser(i) { if(confirm("Remove user?")) { logAction(`Deleted user: ${winkoUsers[i].username}`); winkoUsers.splice(i, 1); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); renderUserTable(); } }
 
     function checkCustomerAutoFill() { let c = getVal('custCompany'); if(winkoCustomers[c]) { setVal('custAttn', winkoCustomers[c].attn); setVal('custAddr', winkoCustomers[c].addr); safeProcess(); } }
 
@@ -820,7 +852,7 @@
                     let n = parts[0].replace(/['"]/g,'').trim(); let cost = parseFloat(parts[1])||0;
                     if(n && !winkoInventory[n]) { winkoInventory[n] = {stock: 0, alert: 5, cost: cost}; count++; }
                 }
-            } saveInventoryDB(); showToast(`Bulk imported ${count} items.`); event.target.value = '';
+            } saveInventoryDB(); showToast(`Bulk imported ${count} items.`); event.target.value = ''; logAction(`Bulk Imported ${count} Inventory Items`);
         }; reader.readAsText(file);
     }
 
@@ -843,7 +875,7 @@
         });
 
         let itemsAdded = 0; for (let item in masterItems) { if (!winkoInventory[item]) { winkoInventory[item] = masterItems[item]; itemsAdded++; } }
-        if (itemsAdded > 0) { saveInventoryDB(); showToast(`Success! Generated & Linked ${itemsAdded} smart inventory items.`); } else { showToast("All dynamic panel combinations are already synced.", "info"); }
+        if (itemsAdded > 0) { saveInventoryDB(); showToast(`Success! Generated & Linked ${itemsAdded} smart inventory items.`); logAction("Auto-populated standard inventory"); } else { showToast("All dynamic panel combinations are already synced.", "info"); }
     }
 
     function renderInventoryUI() {
@@ -874,19 +906,19 @@
     function setStock(safeK, val) { winkoInventory[decodeURIComponent(safeK)].stock = parseInt(val) || 0; saveInventoryDB(); }
     function updateStock(safeK, amt) { winkoInventory[decodeURIComponent(safeK)].stock += amt; saveInventoryDB(); }
     function setInvAlert(safeK, val) { winkoInventory[decodeURIComponent(safeK)].alert = parseInt(val) || 0; saveInventoryDB(); }
-    function addInvItem() { let n = getVal('newInvName').trim(); let s = getNum('newInvStock') || 0; let a = getNum('newInvAlert') || 5; if(!n) return showToast("Item Name required.", "error"); winkoInventory[n] = { stock: s, alert: a, cost: 0 }; setVal('newInvName', ''); saveInventoryDB(); showToast(`Added ${n}`); }
+    function addInvItem() { let n = getVal('newInvName').trim(); let s = getNum('newInvStock') || 0; let a = getNum('newInvAlert') || 5; if(!n) return showToast("Item Name required.", "error"); winkoInventory[n] = { stock: s, alert: a, cost: 0 }; setVal('newInvName', ''); saveInventoryDB(); showToast(`Added ${n}`); logAction(`Manually Added Inventory Item: ${n}`); }
     
-    // V174 NEW: Quick Add from BOM workspace
     function quickAddToInv(safeName, cost) {
         let name = decodeURIComponent(safeName);
         if(!winkoInventory[name]) {
             winkoInventory[name] = { stock: 0, alert: 5, cost: parseFloat(cost) || 0 };
             saveInventoryDB();
             showToast(`"${name}" successfully linked to Master Inventory!`);
+            logAction(`Quick-Linked Item to Inventory: ${name}`);
         }
     }
 
-    function removeInvItem(safeK) { let k = decodeURIComponent(safeK); if(confirm(`Remove ${k}?`)) { delete winkoInventory[k]; saveInventoryDB(); } }
+    function removeInvItem(safeK) { let k = decodeURIComponent(safeK); if(confirm(`Remove ${k}?`)) { delete winkoInventory[k]; saveInventoryDB(); logAction(`Deleted Inventory Item: ${k}`); } }
     function saveInventoryDB() { if(cloudDB) cloudDB.collection("winko_settings").doc("inventory").set({data: winkoInventory}); renderInventoryUI(); safeProcess(); updateInvDatalist(); }
 
     function renderInventoryChart() {
@@ -902,7 +934,9 @@
     function saveToMemory() {
         let qid = getVal('quoteIdInput'); if(!qid) return showToast("Enter Quote ID first", "error");
         let d = { tanks: appTanks, custom: appCustomItems, projectName: getVal('projectName'), customer: getVal('custCompany'), total: window.currentGrandTotal, date: new Date().toISOString().split('T')[0] };
-        configIDs.forEach(id => d[id] = getVal(id)); if(cloudDB) cloudDB.collection("winko_projects").doc(qid).set(d); showToast("Project Saved to Cloud!");
+        configIDs.forEach(id => d[id] = getVal(id)); if(cloudDB) cloudDB.collection("winko_projects").doc(qid).set(d); 
+        showToast("Project Saved to Cloud!");
+        logAction(`Saved / Updated Project Quote: ${qid}`);
     }
 
     function exportCSV() {
@@ -916,6 +950,7 @@
         });
         if(appCustomItems.length > 0) { csv += `\nCUSTOM ITEMS & SERVICES,,,\n`; appCustomItems.forEach(c => { csv += `"${c.name}",${c.qty},${c.cost},${c.qty*c.cost}\n`; }); }
         let blob = new Blob([csv], { type: 'text/csv' }); let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = `Winko_${getVal('quoteIdInput')}.csv`; a.click();
+        logAction(`Exported Quote CSV: ${getVal('quoteIdInput')}`);
     }
 
     function drawProjectBankTable() {
@@ -936,8 +971,9 @@
     }
 
     function backupSystem() {
-        let backupData = { company: companyProfile, master_bom: {data: systemBaseStructure}, users: {data: winkoUsers}, crm: {data: winkoCustomers}, inventory: {data: winkoInventory}, projects: window.cloudMemoryBank || {} };
+        let backupData = { company: companyProfile, master_bom: {data: systemBaseStructure}, users: {data: winkoUsers}, crm: {data: winkoCustomers}, inventory: {data: winkoInventory}, projects: window.cloudMemoryBank || {}, audit_log: {data: winkoAuditLog} };
         let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData)); let a = document.createElement('a'); a.href = dataStr; a.download = "winko_cloud_backup_" + new Date().toISOString().split('T')[0] + ".json"; document.body.appendChild(a); a.click(); a.remove(); showToast("Cloud Snapshot Downloaded!");
+        logAction("Downloaded Full System Backup JSON");
     }
 
     function restoreSystem(event) {
@@ -948,6 +984,7 @@
     }
 
     function confirmOrderAndDeduct() {
+        let qid = getVal('quoteIdInput');
         if(!confirm("⚠️ Are you sure? This will deduct exact quantities from your Master Inventory!")) return; 
         let deducted = 0; let warns = [];
         appTanks.forEach(t => t.bom.forEach(sec => { if(sec.category === "Services") return; 
@@ -956,7 +993,13 @@
                 if(invItemKey && winkoInventory[invItemKey]) { winkoInventory[invItemKey].stock -= q; deducted++; if(winkoInventory[invItemKey].stock < 0) warns.push(`${invItemKey} dropped below zero!`); } 
             }}); 
         }));
-        if(deducted > 0) { saveInventoryDB(); let msg = `✅ Successfully deducted ${deducted} item lines from Master Inventory.`; if(warns.length > 0) msg += `\n\nStock Warnings:\n- ` + warns.join('\n- '); alert(msg); } else { alert("❌ No matching inventory items found to deduct. Ensure BOM names match Master Inventory."); }
+        if(deducted > 0) { 
+            saveInventoryDB(); 
+            let msg = `✅ Successfully deducted ${deducted} item lines from Master Inventory.`; 
+            if(warns.length > 0) msg += `\n\nStock Warnings:\n- ` + warns.join('\n- '); 
+            alert(msg); 
+            logAction(`Confirmed Order & Deducted Stock for Quote: ${qid}`);
+        } else { alert("❌ No matching inventory items found to deduct. Ensure BOM names match Master Inventory."); }
     }
 
     let appTanks = []; let appCustomItems = [];
@@ -989,21 +1032,45 @@
 
         t.bom.forEach((sec, sIdx) => {
             sec.items.forEach((it, iIdx) => {
-                let n = it.name.toLowerCase();
+                // V175 FIX: Use the base name from the master structure, strip any old coat suffix, and apply new coat.
+                // This means whatever you type in Master BOM is exactly what loads here!
+                let baseItem = systemBaseStructure[sIdx] && systemBaseStructure[sIdx].items[iIdx];
+                let baseName = baseItem ? baseItem.name : it.name;
+                
                 if(sec.category !== "Services") {
-                    if (n.includes("4'x4' tank panel")) it.name = `4'x4' Tank Panels (Base/Wall) (${coatShort})`;
-                    if (n.includes("roof cover")) it.name = `Cambered Roof Covers 4'x4' (${coatShort})`;
-                    if (n.includes("access manhole")) it.name = `Access Manhole (${coatShort})`;
+                    // Strips off old "(HDG)", "(Painted)", etc., and appends the current one dynamically.
+                    let cleanName = baseName.replace(/\s*\((HDG|Painted|SS 304|SS 316)\)/i, '').trim();
+                    it.name = `${cleanName} (${coatShort})`;
+                    
                     let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
 
-                    if (n.includes("4'x4' tank panel")) it.qty = totalTankPanels; else if (n.includes("roof cover")) it.qty = roofPanels; else if (n.includes("access manhole")) it.qty = manholeQty; else if (n.includes("partition panel")) it.qty = partitionPanels;
-                    else if (n.includes("roof trusses")) it.qty = Math.max(0, pL - 1); else if (n.includes("roof rim")) it.qty = perimeter; else if (n.includes("ladder bracket")) it.qty = pH * 3; 
-                    else if (n.includes("rc (a)")) it.qty = pW + 2; else if (n.includes("mc (b)")) it.qty = perimeter + (pW * 2); else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) it.qty = perimeter; 
-                    else if (n.includes("67 1/2") || n.includes("67.5")) it.qty = perimeter + 4; else if (it._isPartStay === 1) { it.name = t.partL1Angle || "Partition Angle Stay"; it.qty = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
-                    else if (n.includes("m14 x 32mm")) it.qty = Math.ceil(totalTankPanels * 29.1); else if (n.includes("m16 x 40mm")) it.qty = Math.ceil(totalTankPanels * 4.10); else if (n.includes("3/8\" x 3/4\"")) it.qty = Math.ceil(totalTankPanels * 11.96); else if (n.includes("3/8\" x 3\"")) it.qty = perimeter; 
-                    else if (n.includes("9/16\" flat washer")) it.qty = Math.ceil(totalTankPanels * 29.1); else if (n.includes("5/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 1.96); else if (n.includes("3/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 3.39); 
-                    else if (n.includes("bitumen strip")) it.qty = Math.ceil(basePanels / 4); else if (n.includes("pvc foam")) it.qty = Math.ceil((totalTankPanels + roofPanels) / 4.22); else if (n.includes("8mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2); else if (n.includes("24mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2.15); 
-                    else if (n.includes("air-vents") || n.includes("air vent")) it.qty = Math.max(1, Math.floor(roofPanels / 15)); else if (n.includes("water level indicator")) it.qty = 1;
+                    let n = it.name.toLowerCase();
+                    // V175 FIX: Better, broader quantity matching rules
+                    if (n.includes("panel") && !n.includes("partition") && !n.includes("roof")) it.qty = totalTankPanels; 
+                    else if (n.includes("roof") && !n.includes("rim") && !n.includes("truss") && !n.includes("panel")) it.qty = roofPanels; 
+                    else if (n.includes("manhole")) it.qty = manholeQty; 
+                    else if (n.includes("partition panel")) it.qty = partitionPanels;
+                    else if (n.includes("roof trusses") || n.includes("roof truss")) it.qty = Math.max(0, pL - 1); 
+                    else if (n.includes("roof rim")) it.qty = perimeter; 
+                    else if (n.includes("ladder bracket")) it.qty = pH * 3; 
+                    else if (n.includes("rc (a)") || n.includes("rc(a)")) it.qty = pW + 2; 
+                    else if (n.includes("mc (b)") || n.includes("mc(b)")) it.qty = perimeter + (pW * 2); 
+                    else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) it.qty = perimeter; 
+                    else if (n.includes("67 1/2") || n.includes("67.5")) it.qty = perimeter + 4; 
+                    else if (it._isPartStay === 1) { it.name = t.partL1Angle || "Partition Angle Stay"; it.qty = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
+                    else if (n.includes("m14 x 32mm")) it.qty = Math.ceil(totalTankPanels * 29.1); 
+                    else if (n.includes("m16 x 40mm")) it.qty = Math.ceil(totalTankPanels * 4.10); 
+                    else if (n.includes("3/8\" x 3/4\"")) it.qty = Math.ceil(totalTankPanels * 11.96); 
+                    else if (n.includes("3/8\" x 3\"")) it.qty = perimeter; 
+                    else if (n.includes("9/16\" flat washer")) it.qty = Math.ceil(totalTankPanels * 29.1); 
+                    else if (n.includes("5/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 1.96); 
+                    else if (n.includes("3/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 3.39); 
+                    else if (n.includes("bitumen strip")) it.qty = Math.ceil(basePanels / 4); 
+                    else if (n.includes("pvc foam")) it.qty = Math.ceil((totalTankPanels + roofPanels) / 4.22); 
+                    else if (n.includes("8mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2); 
+                    else if (n.includes("24mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2.15); 
+                    else if (n.includes("air-vents") || n.includes("air vent")) it.qty = Math.max(1, Math.floor(roofPanels / 15)); 
+                    else if (n.includes("water level indicator")) it.qty = 1;
                     else if (n.includes("ext") && n.includes("ladder")) { it.name = `Ext. Ladder (${H + 2} ft) (${coatShort})`; it.qty = 1; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
                     else if (n.includes("int") && n.includes("ladder")) { it.name = `Int. Ladder (${H} ft) (${coatShort})`; it.qty = manholeQty; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
                 }
@@ -1110,7 +1177,6 @@
                     let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
                     let resetBtn = it.manualPrice ? `<button class="del-btn no-print" style="background:#e0f2fe; color:#0369a1; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice = false; safeProcess();">Sync to Inv</button>` : '';
                     
-                    // V174 FIX: Added list="invDatalist" for autocomplete
                     rH += `<tr class="bom-row-${i}" data-qty="${calcQty}">
                         <td>
                             <div style="display:flex; align-items:center;">
@@ -1199,7 +1265,6 @@
                     let tagEl = document.getElementById(`price_tag_${i}_${sIdx}_${iIdx}`);
                     
                     if(tagEl) { 
-                        // V174 FIX: Better tag naming and Quick Inv Add button
                         if (it.manualPrice) { 
                             tagEl.innerHTML = `<span style="color:#ea580c;">● Manual Override</span>`; tagEl.className = "price-tag"; 
                         } else if (invData && invData.cost > 0) { 
@@ -1240,7 +1305,6 @@
         appTanks.forEach((t, i) => {
             let dimStr = u==='ft' ? `${t.L}' x ${t.W}' x ${t.H}' (H)` : `${t.L}m x ${t.W}m x ${t.H}m (H)`; let mkup = getNum('markupPct') / 100; let tankSellPrice = t.baseCost * (1 + mkup); subtotalAccumulator += tankSellPrice;
             
-            // V174 FIX: Format dynamic thickness data
             let thickStr = `Base: ${t.thickBase||'-'}mm | Roof: ${t.thickRoof||'-'}mm`;
             if (t.thickL1) thickStr += ` | L1: ${t.thickL1}mm`;
             if (t.thickL2) thickStr += ` | L2: ${t.thickL2}mm`;
@@ -1252,7 +1316,6 @@
             let accStr = []; if(intL > 0) accStr.push(`${intL}x Internal Ladder`); if(extL > 0) accStr.push(`${extL}x External Ladder`); if(vents > 0) accStr.push(`${vents}x Air Vent`);
             let accHtml = accStr.length > 0 ? `<br><span style="color:#0f172a; font-weight:600;">Included: ${accStr.join(', ')}</span>` : '';
             
-            // V174 FIX: Wrapped main item text in contenteditable span, and added thickness string
             tH += `<tr>
                 <td class="text-center" style="font-weight:bold;">${i+1}</td>
                 <td>
@@ -1266,7 +1329,6 @@
         
         appCustomItems.forEach((c, i) => { 
             let lineCost = ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); subtotalAccumulator += lineCost; 
-            // V174 FIX: Custom items also editable
             tH += `<tr><td class="text-center" style="font-weight:bold;">-</td><td><span contenteditable="true" spellcheck="false" style="color:#000; font-size:10pt; font-weight:bold; border-bottom:1px dashed transparent;" onmouseover="this.style.borderBottom='1px dashed #cbd5e1'" onmouseout="this.style.borderBottom='1px dashed transparent'">${c.name}</span></td><td class="text-center" style="font-weight:bold;">${c.qty} ${c.unit}</td><td class="text-right" style="font-weight:bold;">RM ${lineCost.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; 
         });
 
@@ -1316,6 +1378,7 @@
         let payload = { data: systemBaseStructure, lastUpdated: new Date().toISOString(), updatedBy: loggedInUser ? loggedInUser.username : 'System' };
         if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set(payload); 
         showToast("Master BOM Saved"); 
+        logAction("Updated Master BOM Structure & Defaults");
     }
     
     function forceResetCloudBOM() {
@@ -1327,7 +1390,7 @@
 
     function renderCustomerAdmin() { let f = getVal('custSearchBox').toLowerCase(); let h = ''; Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c).replace(/'/g, "%27")}')">X</button></td></tr>`; }); setHtml('customerAdminBody', h); }
     function updateCustomerDatalist() { let h = ''; Object.keys(winkoCustomers).forEach(c => h += `<option value="${c}"></option>`); setHtml('customerDatalist', h); }
-    function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); } }
+    function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); logAction(`Deleted Customer CRM: ${c}`); } }
     
     function applyCompanyProfileToAdmin() { setVal('profileName', companyProfile.name); setVal('profileReg', companyProfile.reg); setVal('profileAddress', companyProfile.address); setVal('profileContact', companyProfile.contact); setVal('profileWebsite', companyProfile.website); setVal('profileTax', companyProfile.taxRate); setVal('profileTerms', companyProfile.terms); setVal('mat_painted', companyProfile.matMult.painted); setVal('mat_ss304', companyProfile.matMult.ss304); setVal('mat_ss316', companyProfile.matMult.ss316); setVal('profilePrefix', companyProfile.quotePrefix); setVal('profileSeq', companyProfile.quoteSeq); }
     
@@ -1335,11 +1398,12 @@
         companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; 
         companyProfile.lastUpdated = new Date().toISOString(); companyProfile.updatedBy = loggedInUser ? loggedInUser.username : 'System';
         if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!'); 
+        logAction("Updated Global Company Profile");
     }
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v174 successfully loaded!");
+    console.log("✅ Winko ERP Script v175 successfully loaded!");
 </script>
 </body>
 </html>
