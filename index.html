@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V181</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V182</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -132,7 +132,7 @@
             .avoid-break { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
             
-            /* --- V181: PROFESSIONAL INTERNAL PRINT MODE (FIXED) --- */
+            /* --- V182: PROFESSIONAL INTERNAL PRINT MODE (FIXED) --- */
             /* 1. Hide the Sidebar and the standard Input Cards (Project Info, Engineering, etc) */
             body.print-internal .col-right,
             body.print-internal .app-header-bar,
@@ -263,7 +263,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V181 - Strict Blueprint Controls</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V182 - Dynamic Roof Trusses</p>
     </div>
 </div>
 
@@ -607,7 +607,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V181)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V182)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -709,7 +709,7 @@
         return false;
     };
 
-    const cv = "V181"; 
+    const cv = "V182"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1067,7 +1067,14 @@
                     else if (n.includes("roof") && !n.includes("rim") && !n.includes("truss") && !n.includes("panel")) calcQ = roofPanels; 
                     else if (n.includes("manhole")) calcQ = manholeQty; 
                     else if (n.includes("partition panel")) calcQ = partitionPanels;
-                    else if (n.includes("roof trusses") || n.includes("roof truss")) calcQ = Math.max(0, pL - 1); 
+                    else if (n.includes("roof trusses") || n.includes("roof truss")) {
+                        let spanPanels = Math.min(pL, pW);
+                        let runPanels = Math.max(pL, pW);
+                        let trussLenFt = spanPanels * 4;
+                        it.name = `Roof Trusses (${trussLenFt} ft) (${coatShort})`;
+                        calcQ = Math.max(0, runPanels - 1);
+                        let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name;
+                    } 
                     else if (n.includes("roof rim")) calcQ = perimeter; 
                     else if (n.includes("ladder bracket")) calcQ = numLadders > 0 ? (pH * 3 * numLadders) : 0; 
                     else if (n.includes("rc (a)") || n.includes("rc(a)")) calcQ = pW + 2; 
@@ -1434,7 +1441,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v181 successfully loaded!");
+    console.log("✅ Winko ERP Script v182 successfully loaded!");
 </script>
 </body>
 </html>
