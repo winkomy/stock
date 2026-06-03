@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V172</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V173</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -178,7 +178,6 @@
             body.print-internal tr:nth-child(even) td { background-color: #f8fafc !important; }
             body.print-internal td.text-right { text-align: right; font-weight: 700;}
             
-            /* V171: HIDDEN 0-QTY ROWS FOR INTERNAL PRINT */
             body.print-internal tr[data-qty="0"] { display: none !important; }
 
             body.print-internal input, body.print-internal .desc-input, body.print-internal textarea, body.print-internal select { border: none !important; background: transparent !important; padding: 0 !important; width: auto; font-family: Arial !important; color: #000 !important; -webkit-appearance: none; appearance: none; resize: none; overflow: hidden; }
@@ -249,7 +248,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V172 - Jutarama Delivery Order Logic</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V173 - Master BOM Reset Override</p>
     </div>
 </div>
 
@@ -398,6 +397,7 @@
                 <div style="display: flex; gap: 12px;">
                     <button class="action-btn print-btn" style="width:auto; padding: 10px 16px; background:#e0f2fe; color:#0369a1; border: 1px solid #bae6fd; margin:0;" onclick="addAdminCat()">+ Add New Category</button>
                     <button class="action-btn print-btn" style="width:auto; padding: 10px 16px; background:#10b981; margin:0;" onclick="saveAdminDefaults()">💾 Save Master Structure</button>
+                    <button class="action-btn" style="width:auto; padding: 10px 16px; background:#ef4444; border: 1px solid #dc2626; margin:0;" onclick="forceResetCloudBOM()">⚠️ Force Reset Cloud BOM to DO Defaults</button>
                 </div>
                 <div id="bomAuditLog" style="font-size: 12px; color: #64748b; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
                     🕒 <i>No audit data yet</i>
@@ -483,7 +483,6 @@
                     </div>
                 </div>
 
-                <!-- ORIGINAL DRAWINGS CONTAINER -->
                 <div class="module-card drawings-page">
                     <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📏</span> 3. Auto-Drawings (Panel Layout)</div>
                     <div class="card-body">
@@ -566,7 +565,6 @@
             </div>
         </div>
         
-        <!-- DUPLICATE DRAWINGS CONTAINER PUSHED TO THE BOTTOM FOR PRINT -->
         <div class="print-only" id="internal_drawings_print_container" style="clear:both; margin-top: 40px; padding-top: 20px; page-break-inside: auto;"></div>
         
     </div>
@@ -677,7 +675,7 @@
         return false;
     };
 
-    const cv = "V172"; 
+    const cv = "V173"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -744,8 +742,8 @@
         terms: "Scope of Supply\n1. Standard tank accessories such as bolt, nut, washer, foam tape, air vent, 600x600mm access manhole, internal stays & brackets, internal & external ladder, water level indicator, subject to manufacturer's design and standard and item mentioned in quotation.\n2. Pipe hole opening at factory (Exclude flange). Pipe hole opening on site will be an additional charge.\n\nExcluded from the Supply\n1. Float valve chamber or top sump.\n2. Flanges, nozzles, pipes, valves, vortex, electrode sensor, pumps and filter.\n3. RC works and RC plinths.\n4. Scaffolding & safety platform for installation.\n5. Unloading, shifting and hoisting of materials at site.\n6. Safety training courses, equipment and medical test require to install tank.\n\nNote:\n1. Tank design to sit on 1M Center to center RC tank support/Plinths with at least 500mm height and 200mm width. Design to be provided by others.\n2. RC plinths MUST be level with maximum tolerance of ± 3mm.\n3. Leak test should be done within 3 months from completion of tank installation to maintain the quality of foam tape.\n4. The customer shall be responsible for the security of materials at site after delivery. Missing item shall be replaced with additional charges."
     };
     
-    // V172: Updated Master BOM to exactly mirror Jutarama DO Line Items
-    let systemBaseStructure = [
+    // V173: Extracted Default DO Array
+    const JUTARAMA_DEFAULT_BOM = [
         { category: "Panels", markup: 0, items: [
             {name: "4'x4' Tank Panels (Base/Wall) (HDG)", def: 263.50, wt: 68},
             {name: "Cambered Roof Covers 4'x4' (HDG)", def: 162.75, wt: 26},
@@ -789,6 +787,8 @@
             {name: "Transport", def: 850, wt: 0}
         ]}
     ];
+
+    let systemBaseStructure = JSON.parse(JSON.stringify(JUTARAMA_DEFAULT_BOM));
 
     function initCloudListeners() {
         if (!cloudDB) return;
@@ -1060,7 +1060,7 @@
         }
     }
 
-    // V172: Updated Auto-Calculate BOM with Jutarama DO Logic
+    // V172/V173: Updated Auto-Calculate BOM with Jutarama DO Logic
     function autoCalculateBOM(tIdx) {
         let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
         
@@ -1078,9 +1078,9 @@
         let perimeter = (pL + pW) * 2;
         let basePanels = pL * pW;
         let wallPanels = perimeter * pH;
-        let totalTankPanels = basePanels + wallPanels; // e.g. 56
+        let totalTankPanels = basePanels + wallPanels; 
         let manholeQty = num_partitions + 1; 
-        let roofPanels = Math.max(0, (pL * pW)); // Based on DO, Roof Covers = 20, Manhole = 1.
+        let roofPanels = Math.max(0, (pL * pW)); 
 
         t.bom.forEach((sec, sIdx) => {
             sec.items.forEach((it, iIdx) => {
@@ -1088,7 +1088,6 @@
                 
                 if(sec.category !== "Services") {
                     
-                    // Rename Panels to include HDG/Painted state
                     if (n.includes("4'x4' tank panel")) it.name = `4'x4' Tank Panels (Base/Wall) (${coatShort})`;
                     if (n.includes("roof cover")) it.name = `Cambered Roof Covers 4'x4' (${coatShort})`;
                     if (n.includes("access manhole")) it.name = `Access Manhole (${coatShort})`;
@@ -1102,30 +1101,30 @@
                     else if (n.includes("access manhole")) it.qty = manholeQty;
                     else if (n.includes("partition panel")) it.qty = partitionPanels;
                     
-                    else if (n.includes("roof trusses")) it.qty = Math.max(0, pL - 1); // 5 - 1 = 4
-                    else if (n.includes("roof rim")) it.qty = perimeter; // 18
-                    else if (n.includes("ladder bracket")) it.qty = pH * 3; // 2 * 3 = 6
+                    else if (n.includes("roof trusses")) it.qty = Math.max(0, pL - 1); 
+                    else if (n.includes("roof rim")) it.qty = perimeter; 
+                    else if (n.includes("ladder bracket")) it.qty = pH * 3; 
                     
-                    else if (n.includes("rc (a)")) it.qty = pW + 2; // 4 + 2 = 6
-                    else if (n.includes("mc (b)")) it.qty = perimeter + (pW * 2); // 18 + 8 = 26
-                    else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) it.qty = perimeter; // 18
+                    else if (n.includes("rc (a)")) it.qty = pW + 2; 
+                    else if (n.includes("mc (b)")) it.qty = perimeter + (pW * 2); 
+                    else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) it.qty = perimeter; 
                     
-                    else if (n.includes("67 1/2") || n.includes("67.5")) it.qty = perimeter + 4; // 18 + 4 = 22
+                    else if (n.includes("67 1/2") || n.includes("67.5")) it.qty = perimeter + 4; 
                     else if (it._isPartStay === 1) { it.name = t.partL1Angle || "Partition Angle Stay"; it.qty = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
                     
-                    else if (n.includes("m14 x 32mm")) it.qty = Math.ceil(totalTankPanels * 29.1); // ~1630
-                    else if (n.includes("m16 x 40mm")) it.qty = Math.ceil(totalTankPanels * 4.10); // ~230
-                    else if (n.includes("3/8\" x 3/4\"")) it.qty = Math.ceil(totalTankPanels * 11.96); // ~670
-                    else if (n.includes("3/8\" x 3\"")) it.qty = perimeter; // 18
+                    else if (n.includes("m14 x 32mm")) it.qty = Math.ceil(totalTankPanels * 29.1); 
+                    else if (n.includes("m16 x 40mm")) it.qty = Math.ceil(totalTankPanels * 4.10); 
+                    else if (n.includes("3/8\" x 3/4\"")) it.qty = Math.ceil(totalTankPanels * 11.96); 
+                    else if (n.includes("3/8\" x 3\"")) it.qty = perimeter; 
                     
-                    else if (n.includes("9/16\" flat washer")) it.qty = Math.ceil(totalTankPanels * 29.1); // 1630
-                    else if (n.includes("5/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 1.96); // 110
-                    else if (n.includes("3/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 3.39); // 190
+                    else if (n.includes("9/16\" flat washer")) it.qty = Math.ceil(totalTankPanels * 29.1); 
+                    else if (n.includes("5/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 1.96); 
+                    else if (n.includes("3/8\" flat washer")) it.qty = Math.ceil(totalTankPanels * 3.39); 
 
-                    else if (n.includes("bitumen strip")) it.qty = Math.ceil(basePanels / 4); // 5
-                    else if (n.includes("pvc foam")) it.qty = Math.ceil((totalTankPanels + roofPanels) / 4.22); // 18
-                    else if (n.includes("8mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2); // 28
-                    else if (n.includes("24mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2.15); // 26
+                    else if (n.includes("bitumen strip")) it.qty = Math.ceil(basePanels / 4); 
+                    else if (n.includes("pvc foam")) it.qty = Math.ceil((totalTankPanels + roofPanels) / 4.22); 
+                    else if (n.includes("8mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2); 
+                    else if (n.includes("24mm butyl sealant")) it.qty = Math.ceil(totalTankPanels / 2.15); 
 
                     else if (n.includes("air-vents") || n.includes("air vent")) it.qty = Math.max(1, Math.floor(roofPanels / 15)); 
                     else if (n.includes("water level indicator")) it.qty = 1;
@@ -1471,6 +1470,27 @@
         showToast("Master BOM Saved"); 
     }
     
+    // V173 Function to forcefully reset the cloud
+    function forceResetCloudBOM() {
+        if(confirm("⚠️ WARNING: This will overwrite your current Cloud Master BOM with the Jutarama Delivery Order defaults. Do you want to continue?")) {
+            let payload = {
+                data: JUTARAMA_DEFAULT_BOM,
+                lastUpdated: new Date().toISOString(),
+                updatedBy: loggedInUser ? loggedInUser.username : 'System'
+            };
+            if(cloudDB) {
+                cloudDB.collection("winko_settings").doc("master_bom").set(payload).then(() => {
+                    alert("✅ Cloud Database Successfully Overwritten!\n\nThe page will now reload to apply the new changes.");
+                    window.location.reload();
+                }).catch((error) => {
+                    alert("Error saving to cloud: " + error);
+                });
+            } else {
+                alert("Cloud DB not connected. Running in offline mode.");
+            }
+        }
+    }
+
     function renderCustomerAdmin() { let f = getVal('custSearchBox').toLowerCase(); let h = ''; Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c).replace(/'/g, "%27")}')">X</button></td></tr>`; }); setHtml('customerAdminBody', h); }
     function updateCustomerDatalist() { let h = ''; Object.keys(winkoCustomers).forEach(c => h += `<option value="${c}"></option>`); setHtml('customerDatalist', h); }
     function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); } }
@@ -1498,7 +1518,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v172 successfully loaded (Jutarama Custom Auto-Fill Logic Enabled)!");
+    console.log("✅ Winko ERP Script v173 successfully loaded (Master Cloud Reset Button Added)!");
 </script>
 </body>
 </html>
