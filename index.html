@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V180</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V181</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -132,7 +132,7 @@
             .avoid-break { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
             
-            /* --- V180: PROFESSIONAL INTERNAL PRINT MODE (FIXED) --- */
+            /* --- V181: PROFESSIONAL INTERNAL PRINT MODE (FIXED) --- */
             /* 1. Hide the Sidebar and the standard Input Cards (Project Info, Engineering, etc) */
             body.print-internal .col-right,
             body.print-internal .app-header-bar,
@@ -263,7 +263,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V180 - Modern Internal Print UI</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V181 - Strict Blueprint Controls</p>
     </div>
 </div>
 
@@ -523,7 +523,7 @@
                 <div class="module-card drawings-page">
                     <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📏</span> 3. Auto-Drawings (Panel Layout)</div>
                     <div class="card-body">
-                        <p style="font-size:12px; color:#64748b; margin-top:0; font-weight:500;">* Pure Schematics: Partitions (red dashed) & Ladders (orange) applied automatically.</p>
+                        <p style="font-size:12px; color:#64748b; margin-top:0; font-weight:500;">* Pure Schematics: Partitions (red dashed) & Ladders (orange) applied automatically based STRICTLY on your column input.</p>
                         <div id="dynamicDrawingsContainer"></div>
                     </div>
                 </div>
@@ -607,7 +607,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V180)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V181)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -709,7 +709,7 @@
         return false;
     };
 
-    const cv = "V180"; 
+    const cv = "V181"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1026,7 +1026,7 @@
     function defaultTank() { 
         let baseBOM = JSON.parse(JSON.stringify(systemBaseStructure));
         baseBOM.forEach(sec => sec.items.forEach((it, iIdx) => { it.baseIdx = iIdx; }));
-        let t = { id: Date.now(), tankQty: 1, std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", L: 20, W: 16, H: 8, partitions: [], ladder1Col: 0, ladder2Col: 0, thickBase: "5.0", thickRoof: "1.5", thickL1: "5.0", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5", partL1Angle: "67 1/2\" Angle Stay", partL2Angle: "92.5\" (L2 Stay)", partL3Angle: "135.5\" (L3 Stay)", override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 };
+        let t = { id: Date.now(), tankQty: 1, std: "SANS 10329:2020", coat: "Hot Dipped Galvanised", L: 20, W: 16, H: 8, partitions: [], ladder1Col: 1, ladder2Col: 0, thickBase: "5.0", thickRoof: "1.5", thickL1: "5.0", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5", partL1Angle: "67 1/2\" Angle Stay", partL2Angle: "92.5\" (L2 Stay)", partL3Angle: "135.5\" (L3 Stay)", override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 };
         applySmartThickness(t, 0, true);
         return t; 
     }
@@ -1049,6 +1049,8 @@
         
         let perimeter = (pL + pW) * 2; let basePanels = pL * pW; let wallPanels = perimeter * pH; let totalTankPanels = basePanels + wallPanels; let manholeQty = num_partitions + 1; let roofPanels = Math.max(0, (pL * pW)); 
 
+        let numLadders = (parseInt(t.ladder1Col) > 0 ? 1 : 0) + (parseInt(t.ladder2Col) > 0 ? 1 : 0);
+
         t.bom.forEach((sec, sIdx) => {
             sec.items.forEach((it, iIdx) => {
                 let baseItem = systemBaseStructure[sIdx] && systemBaseStructure[sIdx].items[iIdx];
@@ -1067,7 +1069,7 @@
                     else if (n.includes("partition panel")) calcQ = partitionPanels;
                     else if (n.includes("roof trusses") || n.includes("roof truss")) calcQ = Math.max(0, pL - 1); 
                     else if (n.includes("roof rim")) calcQ = perimeter; 
-                    else if (n.includes("ladder bracket")) calcQ = pH * 3; 
+                    else if (n.includes("ladder bracket")) calcQ = numLadders > 0 ? (pH * 3 * numLadders) : 0; 
                     else if (n.includes("rc (a)") || n.includes("rc(a)")) calcQ = pW + 2; 
                     else if (n.includes("mc (b)") || n.includes("mc(b)")) calcQ = perimeter + (pW * 2); 
                     else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) calcQ = perimeter; 
@@ -1086,8 +1088,8 @@
                     else if (n.includes("24mm butyl sealant")) calcQ = Math.ceil(totalTankPanels / 2.15); 
                     else if (n.includes("air-vents") || n.includes("air vent")) calcQ = Math.max(1, Math.floor(roofPanels / 15)); 
                     else if (n.includes("water level indicator")) calcQ = 1;
-                    else if (n.includes("ext") && n.includes("ladder")) { it.name = `Ext. Ladder (${H + 2} ft) (${coatShort})`; calcQ = 1; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
-                    else if (n.includes("int") && n.includes("ladder")) { it.name = `Int. Ladder (${H} ft) (${coatShort})`; calcQ = manholeQty; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
+                    else if (n.includes("ext") && n.includes("ladder")) { it.name = `Ext. Ladder (${H + 2} ft) (${coatShort})`; calcQ = numLadders; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
+                    else if (n.includes("int") && n.includes("ladder")) { it.name = `Int. Ladder (${H} ft) (${coatShort})`; calcQ = numLadders > 0 ? Math.max(numLadders, manholeQty) : 0; let ni = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(ni) ni.value = it.name; }
                     
                     it.qty = calcQ * tQty;
                 }
@@ -1237,7 +1239,8 @@
         
         if(title === 'Front View') {
             let drawLadder = (colNum) => { if(colNum > 0 && colNum <= cols) { let lx = (colNum - 1) * pSize + (pSize/2); svg += `<line x1="${lx-8}" y1="0" x2="${lx-8}" y2="${h}" stroke="#ea580c" stroke-width="2"/><line x1="${lx+8}" y1="0" x2="${lx+8}" y2="${h}" stroke="#ea580c" stroke-width="2"/>`; for(let r=10; r<h; r+=10) { svg += `<line x1="${lx-8}" y1="${r}" x2="${lx+8}" y2="${r}" stroke="#ea580c" stroke-width="1.5"/>`; } } };
-            if(ladder1Col > 0 || ladder2Col > 0) { drawLadder(ladder1Col); drawLadder(ladder2Col); } else if (cols >= 5) { drawLadder(3); drawLadder(5); }
+            if(ladder1Col > 0) drawLadder(ladder1Col);
+            if(ladder2Col > 0) drawLadder(ladder2Col);
         }
 
         if (partitionsArr && partitionsArr.length > 0 && (title === 'Front View' || title === 'Roof Plan' || title === 'Base Plan')) {
@@ -1431,7 +1434,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v180 successfully loaded!");
+    console.log("✅ Winko ERP Script v181 successfully loaded!");
 </script>
 </body>
 </html>
