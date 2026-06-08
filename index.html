@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V184</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V185</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -255,7 +255,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V184 - Geometric Joints & Excel Names</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V185 - Dynamic Panel Weights & Thicknesses</p>
     </div>
 </div>
 
@@ -579,7 +579,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V184)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V185)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -681,7 +681,7 @@
         return false;
     };
 
-    const cv = "V184"; 
+    const cv = "V185"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -870,13 +870,23 @@
             "Installation & Labor": { stock: 999, alert: 10, cost: 3500.00 }, "Transport": { stock: 999, alert: 10, cost: 850.00 }
         };
 
-        const sizes = ["(4'x4')"]; const coats = ["HDG", "Painted", "SS 304"];
+        const coats = ["HDG", "Painted", "SS 304"];
+        const standardThicknesses = ["1.5", "3.0", "4.0", "4.5", "5.0"]; // V185 thicknesses
+        
         coats.forEach(coat => {
             let mult = (coat === 'Painted') ? 0.85 : (coat === 'SS 304' ? 3.0 : 1.0);
-            sizes.forEach(size => {
-                masterItems[`4'x4' Tank Panels (Base/Wall) (${coat})`] = { stock: 100, alert: 20, cost: parseFloat((263.50 * mult).toFixed(2)) };
-                masterItems[`Cambered Roof Covers 4'x4' (${coat})`] = { stock: 100, alert: 20, cost: parseFloat((162.75 * mult).toFixed(2)) };
+            standardThicknesses.forEach(th => {
+                let wt = parseFloat(th) * 14.1;
+                let wallCost = parseFloat((wt * 3.875 * mult).toFixed(2));
+                masterItems[`4'x4' Tank Panel (${th}mm) (${coat})`] = { stock: 100, alert: 20, cost: wallCost };
+                
+                // Only thinner ones usually for roof, but populate anyway for safety
+                if(th === "1.5" || th === "2.0") {
+                    let roofCost = parseFloat((wt * 6.26 * mult).toFixed(2));
+                    masterItems[`Cambered Roof Cover (${th}mm) (${coat})`] = { stock: 100, alert: 20, cost: roofCost };
+                }
             });
+            masterItems[`Access Manhole (${coat})`] = { stock: 20, alert: 5, cost: parseFloat((450 * mult).toFixed(2)) };
         });
 
         let itemsAdded = 0; for (let item in masterItems) { if (!winkoInventory[item]) { winkoInventory[item] = masterItems[item]; itemsAdded++; } }
@@ -1029,6 +1039,7 @@
         let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
         let tQty = Math.max(1, parseInt(t.tankQty) || 1);
         let coatShort = "HDG"; if (t.coat === 'Painted Steel') coatShort = "Painted"; else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
+        let mult = (t.coat === 'Painted Steel') ? companyProfile.matMult.painted : (t.coat === 'Stainless Steel (SS 304)' ? companyProfile.matMult.ss304 : (t.coat === 'Stainless Steel (SS 316)' ? companyProfile.matMult.ss316 : 1.0));
         
         let pL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); let pW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); let pH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
         if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
@@ -1047,74 +1058,101 @@
         
         let perimeter = perimeterJoints; 
         let basePanels = pL * pW; let wallPanels = perimeter * pH; let totalTankPanels = basePanels + wallPanels; let manholeQty = num_partitions + 1; let roofPanels = Math.max(0, (pL * pW)); 
-
         let numLadders = (parseInt(t.ladder1Col) > 0 ? 1 : 0) + (parseInt(t.ladder2Col) > 0 ? 1 : 0);
 
+        // --- V185 Dynamic Panel Generation ---
+        let panelsToBuild = {};
+        const addP = (name, q, th, type) => {
+            if(q <= 0) return;
+            let key = name;
+            let wt = 0; let defCost = 0;
+            if (type === 'manhole') { wt = 55; defCost = 450; }
+            else { 
+                wt = parseFloat(th) * 14.1; // 14.1 kg per mm of thickness mathematically derived from user excel
+                defCost = (type === 'roof' ? (wt * 6.26) : (wt * 3.875)); // Fallback HDG base cost calculation
+            }
+            if(!panelsToBuild[key]) panelsToBuild[key] = { qty: 0, wt: wt, def: defCost * mult };
+            panelsToBuild[key].qty += q;
+        };
+
+        addP(`Access Manhole (${coatShort})`, manholeQty, 0, 'manhole');
+        addP(`Cambered Roof Cover (${parseFloat(t.thickRoof).toFixed(1)}mm) (${coatShort})`, Math.max(0, roofPanels - manholeQty), t.thickRoof, 'roof');
+        addP(`4'x4' Tank Panel (${parseFloat(t.thickBase).toFixed(1)}mm) (${coatShort})`, basePanels, t.thickBase, 'base');
+        if(pH >= 1) addP(`4'x4' Tank Panel (${parseFloat(t.thickL1).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL1, 'wall');
+        if(pH >= 2) addP(`4'x4' Tank Panel (${parseFloat(t.thickL2).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL2, 'wall');
+        if(pH >= 3) addP(`4'x4' Tank Panel (${parseFloat(t.thickL3).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL3, 'wall');
+        if(pH >= 4) addP(`4'x4' Tank Panel (${parseFloat(t.thickL4).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL4, 'wall');
+        if(partitionPanels > 0) addP(`Partition Panel (${parseFloat(t.thickL1).toFixed(1)}mm) (${coatShort})`, partitionPanels, t.thickL1, 'wall');
+
         t.bom.forEach((sec, sIdx) => {
-            sec.items.forEach((it, iIdx) => {
-                let baseItem = (it.baseIdx !== undefined && systemBaseStructure[sIdx]) ? systemBaseStructure[sIdx].items[it.baseIdx] : null;
-                let baseName = baseItem ? baseItem.name : it.name;
-                
-                if(sec.category !== "Services") {
-                    let cleanName = baseName.replace(/\s*\((HDG|Painted|SS 304|SS 316)\)/i, '').trim();
-                    let computedName = `${cleanName} (${coatShort})`;
+            if (sec.category === "Panels") {
+                let newItems = [];
+                Object.keys(panelsToBuild).forEach(k => {
+                    let existing = sec.items.find(x => x.name === k);
+                    if (existing) {
+                        if (!existing.manualQty) existing.qty = panelsToBuild[k].qty * tQty;
+                        if (!existing.manualPrice) { existing.def = panelsToBuild[k].def; existing.wt = panelsToBuild[k].wt; }
+                        newItems.push(existing);
+                    } else {
+                        newItems.push({ name: k, qty: panelsToBuild[k].qty * tQty, wt: panelsToBuild[k].wt, def: panelsToBuild[k].def, manualPrice: false, manualQty: false });
+                    }
+                });
+                sec.items.forEach(it => { if(it.manualAdded && !newItems.find(x=>x.name===it.name)) newItems.push(it); });
+                sec.items = newItems;
+            } else {
+                sec.items.forEach((it, iIdx) => {
+                    let baseItem = (it.baseIdx !== undefined && systemBaseStructure[sIdx]) ? systemBaseStructure[sIdx].items[it.baseIdx] : null;
+                    let baseName = baseItem ? baseItem.name : it.name;
                     
-                    if (baseName.toLowerCase().includes("roof trusses") || baseName.toLowerCase().includes("roof truss")) {
-                        let spanPanels = Math.min(pL, pW);
-                        if (u === 'm_100') {
-                            computedName = `Roof Trusses (${spanPanels} m) (${coatShort})`;
-                        } else {
-                            let trussLenFt = spanPanels * 4;
-                            computedName = `Roof Trusses (${trussLenFt} ft) (${coatShort})`;
-                        }
-                    } else if (baseName.toLowerCase().includes("ext. ladder")) {
-                        computedName = `Ext. Ladder (${H + 2} ft) (${coatShort})`;
-                    } else if (baseName.toLowerCase().includes("int. ladder")) {
-                        computedName = `Int. Ladder (${H} ft) (${coatShort})`;
-                    }
-
-                    it.name = computedName;
-                    let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
-
-                    if (!it.manualQty) {
-                        let n = baseName.toLowerCase();
-                        let calcQ = 0;
-                        if (n.includes("panel") && !n.includes("partition") && !n.includes("roof")) calcQ = totalTankPanels; 
-                        else if (n.includes("roof") && !n.includes("rim") && !n.includes("truss") && !n.includes("panel")) calcQ = roofPanels; 
-                        else if (n.includes("manhole")) calcQ = manholeQty; 
-                        else if (n.includes("partition panel")) calcQ = partitionPanels;
-                        else if (n.includes("roof trusses") || n.includes("roof truss")) {
-                            let runPanels = Math.max(pL, pW);
-                            calcQ = Math.max(0, runPanels - 1);
-                        } 
-                        else if (n.includes("roof rim")) calcQ = perimeter; 
-                        else if (n.includes("ladder bracket")) calcQ = numLadders > 0 ? (pH * 3 * numLadders) : 0; 
-                        else if (n.includes("rc (a)") || n.includes("rc(a)")) calcQ = pW + 2; 
-                        else if (n.includes("mc (b)") || n.includes("mc(b)")) calcQ = perimeter + (pW * 2); 
-                        else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) calcQ = perimeter; 
-                        else if (n.includes("67 1/2") || n.includes("67.5")) calcQ = perimeter + 4; 
-                        else if (it._isPartStay === 1) { it.name = t.partL1Angle || "Partition Angle Stay"; calcQ = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
-                        // --- V184 Geometric Quantities ---
-                        else if (n.includes("5x45x10m")) calcQ = Math.ceil((totalBaseWallJoints * 1.22 * 1.1) / 10); 
-                        else if (n.includes("3x40x10m")) calcQ = Math.ceil((totalRoofJoints * 1.22 * 1.1) / 10);
-                        else if (n.includes("m14x30 bn")) calcQ = m14Joints * 16;
-                        else if (n.includes("m14 washer")) calcQ = m14Joints * 16;
-                        else if (n.includes("3/8 x 3/4 bn")) calcQ = totalRoofJoints * 16;
-                        else if (n.includes("5/8 x 1½ bn") || n.includes("5/8 x 1½ w")) calcQ = (perimeterJoints * 2) + (pH * 4); 
-                        else if (n.includes("3/8 x 3 bn")) calcQ = perimeterJoints; 
-                        // --- Legacy Fallbacks ---
-                        else if (n.includes("8mm butyl sealant")) calcQ = Math.ceil(totalTankPanels / 2); 
-                        else if (n.includes("24mm butyl sealant")) calcQ = Math.ceil(totalTankPanels / 2.15); 
-                        else if (n.includes("air-vents") || n.includes("air vent")) calcQ = Math.max(1, Math.floor(roofPanels / 15)); 
-                        else if (n.includes("water level indicator")) calcQ = 1;
-                        else if (n.includes("ext") && n.includes("ladder")) calcQ = numLadders; 
-                        else if (n.includes("int") && n.includes("ladder")) calcQ = numLadders > 0 ? Math.max(numLadders, manholeQty) : 0; 
+                    if(sec.category !== "Services") {
+                        let cleanName = baseName.replace(/\s*\((HDG|Painted|SS 304|SS 316)\)/i, '').trim();
+                        let computedName = `${cleanName} (${coatShort})`;
                         
-                        it.qty = calcQ * tQty;
+                        if (baseName.toLowerCase().includes("roof trusses") || baseName.toLowerCase().includes("roof truss")) {
+                            let spanPanels = Math.min(pL, pW);
+                            if (u === 'm_100') { computedName = `Roof Trusses (${spanPanels} m) (${coatShort})`; } 
+                            else { let trussLenFt = spanPanels * 4; computedName = `Roof Trusses (${trussLenFt} ft) (${coatShort})`; }
+                        } else if (baseName.toLowerCase().includes("ext. ladder")) {
+                            computedName = `Ext. Ladder (${H + 2} ft) (${coatShort})`;
+                        } else if (baseName.toLowerCase().includes("int. ladder")) {
+                            computedName = `Int. Ladder (${H} ft) (${coatShort})`;
+                        }
+
+                        it.name = computedName;
+                        let nameInput = document.getElementById(`t_${tIdx}_n_${sIdx}_${iIdx}`); if(nameInput && nameInput.value !== it.name) nameInput.value = it.name;
+
+                        if (!it.manualQty) {
+                            let n = baseName.toLowerCase();
+                            let calcQ = 0;
+                            // HW and Cleat calculations
+                            if (n.includes("roof trusses") || n.includes("roof truss")) { let runPanels = Math.max(pL, pW); calcQ = Math.max(0, runPanels - 1); } 
+                            else if (n.includes("roof rim")) calcQ = perimeter; 
+                            else if (n.includes("ladder bracket")) calcQ = numLadders > 0 ? (pH * 3 * numLadders) : 0; 
+                            else if (n.includes("rc (a)") || n.includes("rc(a)")) calcQ = pW + 2; 
+                            else if (n.includes("mc (b)") || n.includes("mc(b)")) calcQ = perimeter + (pW * 2); 
+                            else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) calcQ = perimeter; 
+                            else if (n.includes("67 1/2") || n.includes("67.5")) calcQ = perimeter + 4; 
+                            else if (it._isPartStay === 1) { it.name = t.partL1Angle || "Partition Angle Stay"; calcQ = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
+                            else if (n.includes("5x45x10m")) calcQ = Math.ceil((totalBaseWallJoints * 1.22 * 1.1) / 10); 
+                            else if (n.includes("3x40x10m")) calcQ = Math.ceil((totalRoofJoints * 1.22 * 1.1) / 10);
+                            else if (n.includes("m14x30 bn")) calcQ = m14Joints * 16;
+                            else if (n.includes("m14 washer")) calcQ = m14Joints * 16;
+                            else if (n.includes("3/8 x 3/4 bn")) calcQ = totalRoofJoints * 16;
+                            else if (n.includes("5/8 x 1½ bn") || n.includes("5/8 x 1½ w")) calcQ = (perimeterJoints * 2) + (pH * 4); 
+                            else if (n.includes("3/8 x 3 bn")) calcQ = perimeterJoints; 
+                            else if (n.includes("8mm butyl sealant")) calcQ = Math.ceil(totalTankPanels / 2); 
+                            else if (n.includes("24mm butyl sealant")) calcQ = Math.ceil(totalTankPanels / 2.15); 
+                            else if (n.includes("air-vents") || n.includes("air vent")) calcQ = Math.max(1, Math.floor(roofPanels / 15)); 
+                            else if (n.includes("water level indicator")) calcQ = 1;
+                            else if (n.includes("ext") && n.includes("ladder")) calcQ = numLadders; 
+                            else if (n.includes("int") && n.includes("ladder")) calcQ = numLadders > 0 ? Math.max(numLadders, manholeQty) : 0; 
+                            
+                            it.qty = calcQ * tQty;
+                        }
+                        let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`); if(qInput && document.activeElement !== qInput) qInput.value = it.qty || 0;
                     }
-                    let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`); if(qInput && document.activeElement !== qInput) qInput.value = it.qty || 0;
-                }
-            });
+                });
+            }
         });
     }
 
@@ -1124,7 +1162,7 @@
         if (f === 'coat') {
             let mult = (v === 'Painted Steel') ? companyProfile.matMult.painted : (v === 'Stainless Steel (SS 304)' ? companyProfile.matMult.ss304 : (v === 'Stainless Steel (SS 316)' ? companyProfile.matMult.ss316 : 1.0));
             appTanks[i].bom.forEach(sec => sec.items.forEach((it, idx) => { 
-                if(sec.category !== 'Services' && !it.manualPrice) { 
+                if(sec.category !== 'Services' && !it.manualPrice && sec.category !== 'Panels') { 
                     let baseSec = systemBaseStructure.find(s => s.category == sec.category); let baseDef = 0;
                     if (baseSec && baseSec.items) { if (it.baseIdx !== undefined && baseSec.items[it.baseIdx]) { baseDef = baseSec.items[it.baseIdx].def; } else if (baseSec.items[idx]) { baseDef = baseSec.items[idx].def; } }
                     it.def = baseDef * mult; 
@@ -1456,7 +1494,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v184 successfully loaded!");
+    console.log("✅ Winko ERP Script v185 successfully loaded!");
 </script>
 </body>
 </html>
