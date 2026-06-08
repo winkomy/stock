@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V185</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V186</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -255,7 +255,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V185 - Dynamic Panel Weights & Thicknesses</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V186 - Explicit Base/Wall Separation</p>
     </div>
 </div>
 
@@ -579,7 +579,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V185)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V186)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -681,7 +681,7 @@
         return false;
     };
 
-    const cv = "V185"; 
+    const cv = "V186"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -743,7 +743,7 @@
     };
     
     const JUTARAMA_DEFAULT_BOM = [
-        { category: "Panels", markup: 0, items: [{name: "4'x4' Tank Panels (Base/Wall) (HDG)", def: 263.50, wt: 68}, {name: "Cambered Roof Covers 4'x4' (HDG)", def: 162.75, wt: 26}, {name: "Access Manhole (HDG)", def: 450, wt: 55}, {name: "Partition Panel (4'x4') (HDG)", def: 253.50, wt: 48}] },
+        { category: "Panels", markup: 0, items: [{name: "Base Panel (4.5mm) (HDG)", def: 263.50, wt: 68}, {name: "Wall Panel (3.0mm) (HDG)", def: 263.50, wt: 68}, {name: "Roof Panel (1.5mm) (HDG)", def: 162.75, wt: 26}, {name: "Access Manhole (HDG)", def: 450, wt: 55}, {name: "Partition Panel (3.0mm) (HDG)", def: 253.50, wt: 48}] },
         { category: "Cleats, Trusses & Rims", markup: 0, items: [{name: "Roof Trusses (16 ft)", def: 74.40, wt: 15.0}, {name: "2\" x 4'(L) Roof Rim", def: 25.00, wt: 5.0}, {name: "Type RC (A) Cleat", def: 15.00, wt: 1.2}, {name: "Type MC (B) Cleat", def: 16.50, wt: 1.8}, {name: "Type SC (C) Cleat", def: 30, wt: 2.5}, {name: "Type SC1 (C1) Cleat", def: 30, wt: 2.5}, {name: "Ladder Brackets", def: 10, wt: 1.0}] },
         { category: "Angle Stays", markup: 0, items: [{name: "44 1/2\" Angle Stay", def: 20.00, wt: 3.5}, {name: "67 1/2\" Angle Stay", def: 27.25, wt: 4.5}, {name: "68\" Angle Stay", def: 28.00, wt: 4.6}, {name: "Partition Angle Stay", def: 27.25, wt: 4.5, _isPartStay: 1}] },
         { category: "Accessories & Fasteners", markup: 0, items: [
@@ -871,19 +871,21 @@
         };
 
         const coats = ["HDG", "Painted", "SS 304"];
-        const standardThicknesses = ["1.5", "3.0", "4.0", "4.5", "5.0"]; // V185 thicknesses
+        const standardThicknesses = ["1.5", "2.0", "3.0", "4.0", "4.5", "5.0"]; // Explicit Standard Thicknesses
         
         coats.forEach(coat => {
             let mult = (coat === 'Painted') ? 0.85 : (coat === 'SS 304' ? 3.0 : 1.0);
             standardThicknesses.forEach(th => {
                 let wt = parseFloat(th) * 14.1;
                 let wallCost = parseFloat((wt * 3.875 * mult).toFixed(2));
-                masterItems[`4'x4' Tank Panel (${th}mm) (${coat})`] = { stock: 100, alert: 20, cost: wallCost };
                 
-                // Only thinner ones usually for roof, but populate anyway for safety
+                masterItems[`Base Panel (${th}mm) (${coat})`] = { stock: 100, alert: 20, cost: wallCost };
+                masterItems[`Wall Panel (${th}mm) (${coat})`] = { stock: 100, alert: 20, cost: wallCost };
+                masterItems[`Partition Panel (${th}mm) (${coat})`] = { stock: 100, alert: 20, cost: wallCost };
+                
                 if(th === "1.5" || th === "2.0") {
                     let roofCost = parseFloat((wt * 6.26 * mult).toFixed(2));
-                    masterItems[`Cambered Roof Cover (${th}mm) (${coat})`] = { stock: 100, alert: 20, cost: roofCost };
+                    masterItems[`Roof Panel (${th}mm) (${coat})`] = { stock: 100, alert: 20, cost: roofCost };
                 }
             });
             masterItems[`Access Manhole (${coat})`] = { stock: 20, alert: 5, cost: parseFloat((450 * mult).toFixed(2)) };
@@ -1060,7 +1062,7 @@
         let basePanels = pL * pW; let wallPanels = perimeter * pH; let totalTankPanels = basePanels + wallPanels; let manholeQty = num_partitions + 1; let roofPanels = Math.max(0, (pL * pW)); 
         let numLadders = (parseInt(t.ladder1Col) > 0 ? 1 : 0) + (parseInt(t.ladder2Col) > 0 ? 1 : 0);
 
-        // --- V185 Dynamic Panel Generation ---
+        // --- V186 Explicit Base & Wall Panel Generation ---
         let panelsToBuild = {};
         const addP = (name, q, th, type) => {
             if(q <= 0) return;
@@ -1076,12 +1078,14 @@
         };
 
         addP(`Access Manhole (${coatShort})`, manholeQty, 0, 'manhole');
-        addP(`Cambered Roof Cover (${parseFloat(t.thickRoof).toFixed(1)}mm) (${coatShort})`, Math.max(0, roofPanels - manholeQty), t.thickRoof, 'roof');
-        addP(`4'x4' Tank Panel (${parseFloat(t.thickBase).toFixed(1)}mm) (${coatShort})`, basePanels, t.thickBase, 'base');
-        if(pH >= 1) addP(`4'x4' Tank Panel (${parseFloat(t.thickL1).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL1, 'wall');
-        if(pH >= 2) addP(`4'x4' Tank Panel (${parseFloat(t.thickL2).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL2, 'wall');
-        if(pH >= 3) addP(`4'x4' Tank Panel (${parseFloat(t.thickL3).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL3, 'wall');
-        if(pH >= 4) addP(`4'x4' Tank Panel (${parseFloat(t.thickL4).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL4, 'wall');
+        addP(`Roof Panel (${parseFloat(t.thickRoof).toFixed(1)}mm) (${coatShort})`, Math.max(0, roofPanels - manholeQty), t.thickRoof, 'roof');
+        addP(`Base Panel (${parseFloat(t.thickBase).toFixed(1)}mm) (${coatShort})`, basePanels, t.thickBase, 'base');
+        
+        // Walls are mapped independently so "Wall" does not merge with "Base"
+        if(pH >= 1) addP(`Wall Panel (${parseFloat(t.thickL1).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL1, 'wall');
+        if(pH >= 2) addP(`Wall Panel (${parseFloat(t.thickL2).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL2, 'wall');
+        if(pH >= 3) addP(`Wall Panel (${parseFloat(t.thickL3).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL3, 'wall');
+        if(pH >= 4) addP(`Wall Panel (${parseFloat(t.thickL4).toFixed(1)}mm) (${coatShort})`, perimeter, t.thickL4, 'wall');
         if(partitionPanels > 0) addP(`Partition Panel (${parseFloat(t.thickL1).toFixed(1)}mm) (${coatShort})`, partitionPanels, t.thickL1, 'wall');
 
         t.bom.forEach((sec, sIdx) => {
@@ -1394,11 +1398,12 @@
             let tQty = Math.max(1, parseInt(t.tankQty) || 1);
             let dimStr = u==='ft' ? `${t.L}' x ${t.W}' x ${t.H}' (H)` : `${t.L}m x ${t.W}m x ${t.H}m (H)`; let mkup = getNum('markupPct') / 100; let tankSellPrice = t.baseCost * (1 + mkup); subtotalAccumulator += tankSellPrice;
             
+            let pH = Math.max(1, u === 'ft' ? Math.floor(t.H/4) : Math.floor(t.H));
             let thickStr = `Base: ${t.thickBase||'-'}mm | Roof: ${t.thickRoof||'-'}mm`;
-            if (t.thickL1) thickStr += ` | L1: ${t.thickL1}mm`;
-            if (t.thickL2) thickStr += ` | L2: ${t.thickL2}mm`;
-            if (t.thickL3) thickStr += ` | L3: ${t.thickL3}mm`;
-            if (t.thickL4) thickStr += ` | L4: ${t.thickL4}mm`;
+            if (pH >= 1 && t.thickL1) thickStr += ` | L1: ${t.thickL1}mm`;
+            if (pH >= 2 && t.thickL2) thickStr += ` | L2: ${t.thickL2}mm`;
+            if (pH >= 3 && t.thickL3) thickStr += ` | L3: ${t.thickL3}mm`;
+            if (pH >= 4 && t.thickL4) thickStr += ` | L4: ${t.thickL4}mm`;
 
             let extL = 0, intL = 0, vents = 0;
             t.bom.forEach(sec => sec.items.forEach(it => { let n = it.name.toLowerCase(); let q = Number(it.qty) || 0; if(n.includes('ext') && (n.includes('ladder') || n.includes('lader'))) extL += q; else if(n.includes('int') && (n.includes('ladder') || n.includes('lader'))) intL += q; else if(n.includes('air vent')) vents += q; }));
@@ -1494,7 +1499,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v185 successfully loaded!");
+    console.log("✅ Winko ERP Script v186 successfully loaded!");
 </script>
 </body>
 </html>
