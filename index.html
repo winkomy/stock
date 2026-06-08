@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V183</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V184</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -132,7 +132,6 @@
             .avoid-break { page-break-inside: avoid; }
             .page-break { page-break-before: always; }
             
-            /* --- V183: PROFESSIONAL INTERNAL PRINT MODE (FIXED) --- */
             body.print-internal .col-right,
             body.print-internal .app-header-bar,
             body.print-internal .col-left > .module-card { 
@@ -256,7 +255,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V183 - Strict Calculation Locks</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V184 - Geometric Joints & Excel Names</p>
     </div>
 </div>
 
@@ -580,7 +579,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V183)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V184)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -682,7 +681,7 @@
         return false;
     };
 
-    const cv = "V183"; 
+    const cv = "V184"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -747,7 +746,22 @@
         { category: "Panels", markup: 0, items: [{name: "4'x4' Tank Panels (Base/Wall) (HDG)", def: 263.50, wt: 68}, {name: "Cambered Roof Covers 4'x4' (HDG)", def: 162.75, wt: 26}, {name: "Access Manhole (HDG)", def: 450, wt: 55}, {name: "Partition Panel (4'x4') (HDG)", def: 253.50, wt: 48}] },
         { category: "Cleats, Trusses & Rims", markup: 0, items: [{name: "Roof Trusses (16 ft)", def: 74.40, wt: 15.0}, {name: "2\" x 4'(L) Roof Rim", def: 25.00, wt: 5.0}, {name: "Type RC (A) Cleat", def: 15.00, wt: 1.2}, {name: "Type MC (B) Cleat", def: 16.50, wt: 1.8}, {name: "Type SC (C) Cleat", def: 30, wt: 2.5}, {name: "Type SC1 (C1) Cleat", def: 30, wt: 2.5}, {name: "Ladder Brackets", def: 10, wt: 1.0}] },
         { category: "Angle Stays", markup: 0, items: [{name: "44 1/2\" Angle Stay", def: 20.00, wt: 3.5}, {name: "67 1/2\" Angle Stay", def: 27.25, wt: 4.5}, {name: "68\" Angle Stay", def: 28.00, wt: 4.6}, {name: "Partition Angle Stay", def: 27.25, wt: 4.5, _isPartStay: 1}] },
-        { category: "Accessories & Fasteners", markup: 0, items: [{name: "Ext. Ladder (10 ft) (HDG)", def: 150, wt: 8.5}, {name: "Int. Ladder (8 ft) (HDG)", def: 120, wt: 8.5}, {name: "Air-Vents", def: 85, wt: 1.5}, {name: "Water Level Indicator", def: 220, wt: 2.5}, {name: "M14 x 32mm Bolts & Nuts", def: 1.20, wt: 0.10}, {name: "M16 x 40mm Bolts & Nuts", def: 1.50, wt: 0.15}, {name: "3/8\" x 3/4\" Bolts & Nuts", def: 0.50, wt: 0.05}, {name: "3/8\" x 3\" Bolts & Nuts", def: 0.80, wt: 0.08}, {name: "9/16\" Flat Washer", def: 0.20, wt: 0.01}, {name: "5/8\" Flat Washer", def: 0.20, wt: 0.01}, {name: "3/8\" Flat Washer", def: 0.10, wt: 0.01}, {name: "Bitumen Strip x 13 metre", def: 15.00, wt: 2.0}, {name: "PVC Foam x 15 metre", def: 8.00, wt: 0.8}, {name: "8mm Butyl Sealant", def: 1.70, wt: 0.2}, {name: "24mm Butyl Sealant", def: 3.50, wt: 0.4}]},
+        { category: "Accessories & Fasteners", markup: 0, items: [
+            {name: "Ext. Ladder (10 ft) (HDG)", def: 150, wt: 8.5}, 
+            {name: "Int. Ladder (8 ft) (HDG)", def: 120, wt: 8.5}, 
+            {name: "Air-Vents", def: 85, wt: 1.5}, 
+            {name: "Water Level Indicator", def: 220, wt: 2.5}, 
+            {name: "M14x30 BN", def: 1.20, wt: 0.10}, 
+            {name: "M14 washer", def: 0.20, wt: 0.01}, 
+            {name: "5/8 x 1½ BN", def: 1.50, wt: 0.15}, 
+            {name: "5/8 x 1½ W", def: 0.20, wt: 0.01}, 
+            {name: "3/8 x 3/4 BN", def: 0.50, wt: 0.05}, 
+            {name: "3/8 x 3 BN", def: 0.80, wt: 0.08}, 
+            {name: "5x45x10m Sealant Roll", def: 22.50, wt: 0.8}, 
+            {name: "3x40x10m Sealant Roll", def: 8.00, wt: 0.6}, 
+            {name: "8mm Butyl Sealant", def: 1.70, wt: 0.2}, 
+            {name: "24mm Butyl Sealant", def: 3.50, wt: 0.4}
+        ]},
         { category: "Services", markup: 0, items: [{name: "Installation & Labor", def: 3500, wt: 0}, {name: "Transport", def: 850, wt: 0}]}
     ];
 
@@ -851,8 +865,8 @@
         const masterItems = {
             "Type RC (A) Cleat": { stock: 150, alert: 30, cost: 15.00 }, "Type MC (B) Cleat": { stock: 500, alert: 100, cost: 16.50 }, "Type SC (C) Cleat": { stock: 300, alert: 50, cost: 30.00 },
             "67 1/2\" Angle Stay": { stock: 200, alert: 40, cost: 27.25 },
-            "M14 x 32mm Bolts & Nuts": { stock: 8000, alert: 1000, cost: 1.20 }, "M16 x 40mm Bolts & Nuts": { stock: 800, alert: 100, cost: 1.50 },
-            "PVC Foam x 15 metre": { stock: 300, alert: 50, cost: 8.00 }, "8mm Butyl Sealant": { stock: 200, alert: 30, cost: 1.70 },
+            "M14x30 BN": { stock: 8000, alert: 1000, cost: 1.20 }, "5/8 x 1½ BN": { stock: 800, alert: 100, cost: 1.50 },
+            "5x45x10m Sealant Roll": { stock: 300, alert: 50, cost: 22.50 }, "3x40x10m Sealant Roll": { stock: 300, alert: 50, cost: 8.00 }, "8mm Butyl Sealant": { stock: 200, alert: 30, cost: 1.70 },
             "Installation & Labor": { stock: 999, alert: 10, cost: 3500.00 }, "Transport": { stock: 999, alert: 10, cost: 850.00 }
         };
 
@@ -1020,7 +1034,19 @@
         if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
         let num_partitions = t.partitions.filter(p => p > 0).length; let partitionPanels = num_partitions * (pW * pH);
         
-        let perimeter = (pL + pW) * 2; let basePanels = pL * pW; let wallPanels = perimeter * pH; let totalTankPanels = basePanels + wallPanels; let manholeQty = num_partitions + 1; let roofPanels = Math.max(0, (pL * pW)); 
+        // --- V184 Geometric Joint Logic ---
+        let baseInternalJoints = (pL > 0 && pW > 0) ? ((pL - 1) * pW + (pW - 1) * pL) : 0;
+        let perimeterJoints = 2 * (pL + pW); // Single ring length
+        let wallVertJoints = pH * perimeterJoints;
+        let wallHorizJoints = Math.max(0, pH - 1) * perimeterJoints;
+        let roofInternalJoints = baseInternalJoints;
+        
+        let totalBaseWallJoints = baseInternalJoints + wallVertJoints + wallHorizJoints + (perimeterJoints * 2); // Bottom & Top ring
+        let totalRoofJoints = roofInternalJoints + perimeterJoints; 
+        let m14Joints = baseInternalJoints + wallVertJoints + wallHorizJoints + perimeterJoints; // Base and walls up to roof lip
+        
+        let perimeter = perimeterJoints; 
+        let basePanels = pL * pW; let wallPanels = perimeter * pH; let totalTankPanels = basePanels + wallPanels; let manholeQty = num_partitions + 1; let roofPanels = Math.max(0, (pL * pW)); 
 
         let numLadders = (parseInt(t.ladder1Col) > 0 ? 1 : 0) + (parseInt(t.ladder2Col) > 0 ? 1 : 0);
 
@@ -1068,15 +1094,15 @@
                         else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) calcQ = perimeter; 
                         else if (n.includes("67 1/2") || n.includes("67.5")) calcQ = perimeter + 4; 
                         else if (it._isPartStay === 1) { it.name = t.partL1Angle || "Partition Angle Stay"; calcQ = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
-                        else if (n.includes("m14 x 32mm")) calcQ = Math.ceil(totalTankPanels * 29.1); 
-                        else if (n.includes("m16 x 40mm")) calcQ = Math.ceil(totalTankPanels * 4.10); 
-                        else if (n.includes("3/8\" x 3/4\"")) calcQ = Math.ceil(totalTankPanels * 11.96); 
-                        else if (n.includes("3/8\" x 3\"")) calcQ = perimeter; 
-                        else if (n.includes("9/16\" flat washer")) calcQ = Math.ceil(totalTankPanels * 29.1); 
-                        else if (n.includes("5/8\" flat washer")) calcQ = Math.ceil(totalTankPanels * 1.96); 
-                        else if (n.includes("3/8\" flat washer")) calcQ = Math.ceil(totalTankPanels * 3.39); 
-                        else if (n.includes("bitumen strip")) calcQ = Math.ceil(basePanels / 4); 
-                        else if (n.includes("pvc foam")) calcQ = Math.ceil((totalTankPanels + roofPanels) / 4.22); 
+                        // --- V184 Geometric Quantities ---
+                        else if (n.includes("5x45x10m")) calcQ = Math.ceil((totalBaseWallJoints * 1.22 * 1.1) / 10); 
+                        else if (n.includes("3x40x10m")) calcQ = Math.ceil((totalRoofJoints * 1.22 * 1.1) / 10);
+                        else if (n.includes("m14x30 bn")) calcQ = m14Joints * 16;
+                        else if (n.includes("m14 washer")) calcQ = m14Joints * 16;
+                        else if (n.includes("3/8 x 3/4 bn")) calcQ = totalRoofJoints * 16;
+                        else if (n.includes("5/8 x 1½ bn") || n.includes("5/8 x 1½ w")) calcQ = (perimeterJoints * 2) + (pH * 4); 
+                        else if (n.includes("3/8 x 3 bn")) calcQ = perimeterJoints; 
+                        // --- Legacy Fallbacks ---
                         else if (n.includes("8mm butyl sealant")) calcQ = Math.ceil(totalTankPanels / 2); 
                         else if (n.includes("24mm butyl sealant")) calcQ = Math.ceil(totalTankPanels / 2.15); 
                         else if (n.includes("air-vents") || n.includes("air vent")) calcQ = Math.max(1, Math.floor(roofPanels / 15)); 
@@ -1430,7 +1456,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v183 successfully loaded!");
+    console.log("✅ Winko ERP Script v184 successfully loaded!");
 </script>
 </body>
 </html>
