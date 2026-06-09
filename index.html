@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V197</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V198</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -256,7 +256,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V197 - Physical DO Sync: Trusses & 4x4 Corner Cleats</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V198 - Master Engine Upgrade: Base Grids & Seam Lengths</p>
     </div>
 </div>
 
@@ -580,7 +580,7 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V197)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V198)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
@@ -682,7 +682,7 @@
         return false;
     };
 
-    const cv = "V197"; 
+    const cv = "V198"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1040,6 +1040,7 @@
         let mult = (t.coat === 'Painted Steel') ? companyProfile.matMult.painted : (t.coat === 'Stainless Steel (SS 304)' ? companyProfile.matMult.ss304 : (t.coat === 'Stainless Steel (SS 316)' ? companyProfile.matMult.ss316 : 1.0));
         let isHDG = (t.coat === 'Hot Dipped Galvanised' || t.coat === 'Painted Steel');
         
+        // GRID CALCULATION (The Foundation)
         let pL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); 
         let pW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); 
         let pH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
@@ -1055,22 +1056,24 @@
         let extLadders = (parseInt(t.ladder1Col) > 0 ? 1 : 0) + (parseInt(t.ladder2Col) > 0 ? 1 : 0);
         let intLadders = extLadders > 0 ? Math.max(extLadders, manholeQty) : 0;
 
+        // NEW HIDDEN COMMANDS (Structural Logic)
         let roof_trusses = Math.max(0, pL - 1); 
+        let angle_stays = (Math.max(0, pL - 1) + Math.max(0, pW - 1)) * Math.max(0, pH - 1);
 
-        let type_A_cleats = (pW > 1) ? roof_trusses * 2 : 0; 
-        let type_B_cleats = ((pL > 1 && pW > 1) ? (pL - 1) * (pW - 1) : 0) + ((pH > 1) ? perimeter * (pH - 1) : 0); 
+        let type_A_cleats = (pW > 1) ? Math.max(0, pL - 1) * 2 : 0; 
+        let type_B_cleats = ((pL > 1 && pW > 1) ? (pL - 1) * (pW - 1) : 0) + ((pH > 1) ? (pL + pW) * 2 * (pH - 1) : 0); 
         let type_C_cleats = 4; 
         let type_C1_cleats = 4; 
 
+        // NEW CONSUMABLES LOGIC (Total Seam Length)
+        let seamMeters = Math.ceil( ( ((pL+pW)*4) + (((pL-1)*2+(pW-1)*2)*pH) + (((pL-1)*pW+(pW-1)*pL)*2) + ((pL*2+pW*2)*(pH - 1)) ) * 1.22 );
+        let sealantRolls = Math.ceil(seamMeters / 10);
+        
+        // Fasteners (Scaling proportionally to exact seam output)
         let m14Qty = Math.round(((basePanels + wallPanels + roofPanels) * 17) + (perimeter * 8.5));
         let roof38Qty = Math.round((roofPanels * 17) + (perimeter * 8.5));
-
         let bolt58Qty = (type_A_cleats + type_B_cleats + type_C_cleats + type_C1_cleats + roof_trusses) * 4 + ((extLadders + intLadders) * 4);
 
-        let roofJoints = (pL > 1 ? pL - 1 : 0) * pW + (pW > 1 ? pW - 1 : 0) * pL + perimeter;
-        let roll3x40 = Math.ceil(Math.ceil(roofJoints * 1.35) / 10);
-        let roll5x45 = Math.ceil(Math.round((basePanels + wallPanels) * 2.868 + 2.5) / 10);
-        
         let panelsToBuild = [];
         const addP = (thName, q, th, typeKey) => {
             if(q <= 0) return;
@@ -1132,14 +1135,15 @@
                             else if (n.includes("2\" x 2\"") || n.includes("roof rim") || n === "2") calcQ = perimeter; 
                             else if (n.includes("ladder bracket")) calcQ = extLadders > 0 ? (pH * 3 * extLadders) : 0; 
                             
+                            // EXPLICIT STRUCTURAL UPDATES
                             else if (n === "type a cleat" || n.includes("(a)")) calcQ = type_A_cleats; 
                             else if (n === "type b cleat" || n.includes("(b)")) calcQ = type_B_cleats; 
                             else if (n === "type c1 cleat" || n.includes("c1")) calcQ = type_C1_cleats; 
                             else if (n === "type c cleat" || n.includes("(c)")) calcQ = type_C_cleats; 
                             
                             else if (n.includes("44 1/2") || n.includes("44.5")) calcQ = 0; // Obsolete
-                            else if (n.includes("68")) calcQ = ((pH >= 1) ? perimeter : 0) + ((pH >= 2) ? perimeter : 0); 
                             else if (it._isPartStay === 1) calcQ = num_partitions > 0 ? (pW * 2 * num_partitions) : 0;
+                            else if (n.includes("68") && !n.includes("partition")) calcQ = angle_stays; 
                             
                             else if (n.includes("m14x30 bn") || n.includes("m14 x 30")) calcQ = m14Qty;
                             else if (n.includes("m14 washer") || n.includes("m14 w")) calcQ = m14Qty;
@@ -1149,8 +1153,8 @@
                             else if (n.includes("3/8 x 3/4 w") || n.includes("3/8 w")) calcQ = 0; 
                             else if (n.includes("3/8 x 3 bn")) calcQ = 0; 
                             
-                            else if (n.includes("5x45x10m")) calcQ = isHDG ? roll5x45 : 0; 
-                            else if (n.includes("3x40x10m")) calcQ = isHDG ? roll3x40 : 0;
+                            else if (n.includes("5x45x10m")) calcQ = isHDG ? sealantRolls : 0; 
+                            else if (n.includes("3x40x10m")) calcQ = isHDG ? sealantRolls : 0;
                             else if (n.includes("8mm butyl sealant")) calcQ = 0; 
                             else if (n.includes("24mm butyl sealant")) calcQ = 0; 
                             
@@ -1546,7 +1550,7 @@
     
     function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
 
-    console.log("✅ Winko ERP Script v197 successfully loaded!");
+    console.log("✅ Winko ERP Script v198 successfully loaded!");
 </script>
 </body>
 </html>
