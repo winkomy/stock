@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V200</title>
-    
+    <title>Winko / Jutarama - Enterprise Quoting ERP V194</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
     <style>
         /* MODERN UI REFRESH */
-        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif; }
         body { background-color: #f1f5f9; padding: 0; color: #334155; margin: 0; line-height: 1.5; font-size: 14px; }
         
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
@@ -42,7 +46,7 @@
         .user-menu-btn:hover { background: #475569; }
         .logout-btn { background: #ef4444; } .logout-btn:hover { background: #dc2626; }
         
-        #mainContent, #adminContent, #customerPreviewContainer, #projectsContent, #inventoryContent, #auditContent { display: none; padding: 24px; }
+        #mainContent, #adminContent, #customerPreviewContainer, #projectsContent, #inventoryContent, #auditContent, #dashboardContent { display: none; padding: 24px; }
         #checklistPrintView, .print-only, .internal-only-tag { display: none; }
         
         .container { max-width: 1500px; margin: auto; }
@@ -75,14 +79,14 @@
         th { background: #f8fafc; color: #475569; padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; font-size: 0.75em; font-weight: 700; letter-spacing: 0.5px;}
         th.text-center { text-align: center; } th.text-right { text-align: right; }
         td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle;}
-        
-        .col-qty-input { width: 12%; text-align: center; } 
+        .col-item { background: #fff; font-weight: 500; width: 30%; color: #1e293b; }
+        .col-input { width: 12%; text-align: center; } 
         .col-total { text-align: right; font-weight: 700; width: 18%; background: #fafafa; color: #b91c1c; }
         .desc-input { width: 100%; padding: 6px; border: 1px solid transparent; border-radius: 6px; background: transparent; font-weight: 600; font-size: 1em; color: #0f172a; transition: all 0.2s;}
         .desc-input:focus { border-color: #cbd5e1; background: #fff; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
-        .admin-input-cell { width: 100%; padding: 8px 6px; text-align: center; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; font-weight: 700; color: #0f172a; font-size: 1.05em; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
-        .admin-input-cell:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);}
-
+        .col-input input { width: 100%; padding: 6px; text-align: center; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; font-weight: 600; color: #0f172a; transition: all 0.2s;}
+        .col-input input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);}
+        
         .price-tag { font-size: 10px; font-weight: 600; color: #94a3b8; display: block; margin-top: 4px; display:flex; align-items:center; gap:8px;}
         .price-tag.synced { color: #059669; }
 
@@ -120,7 +124,30 @@
         .editable-section { transition: background 0.2s; border-radius: 6px; padding: 4px; border: 1px solid transparent;}
         .editable-section:hover { background: #fef9c3; cursor: text; border: 1px dashed #eab308; }
 
-        .bom-row:hover { background-color: #f8fafc; }
+        /* === V188 MODERN UI REFRESH (visual only, layout unchanged) === */
+        :root{ --wk-line:#e7ebf0; --wk-shadow:0 1px 2px rgba(15,23,42,.04), 0 10px 28px -14px rgba(15,23,42,.20); --wk-shadow-h:0 2px 6px rgba(15,23,42,.06), 0 22px 48px -18px rgba(15,23,42,.30); }
+        body{ background:
+            radial-gradient(1100px 560px at 100% -10%, #e9f1fb 0%, rgba(233,241,251,0) 60%),
+            radial-gradient(820px 460px at -8% -4%, #fdeee3 0%, rgba(253,238,227,0) 55%),
+            #eef2f7; letter-spacing:.1px; }
+        .module-card{ border-radius:14px; box-shadow:var(--wk-shadow); border:1px solid var(--wk-line); }
+        .module-card:hover{ box-shadow:var(--wk-shadow-h); transform:translateY(-1px); }
+        .card-body{ border-top-color:var(--wk-line); }
+        #topNav{ background:linear-gradient(180deg,#0b1220,#0f172a); border-bottom:1px solid rgba(255,255,255,.06); box-shadow:0 8px 28px -14px rgba(0,0,0,.7); }
+        .nav-btn{ border-radius:8px; }
+        .nav-btn.active{ background:rgba(234,88,12,.14); color:#fdba74; }
+        .action-btn{ border-radius:10px; letter-spacing:.2px; }
+        .action-btn:hover{ filter:brightness(1.05); box-shadow:var(--wk-shadow-h); }
+        .form-group input,.form-group select,.form-group textarea,.admin-input{ border-radius:10px; border-color:var(--wk-line); background:#f7f9fc; }
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus,.admin-input:focus{ background:#fff; border-color:#ea580c; box-shadow:0 0 0 3px rgba(234,88,12,.14); }
+        .summary-box{ border-radius:14px; background:linear-gradient(160deg,#1f2a3d 0%,#0d1422 100%); box-shadow:0 22px 54px -22px rgba(2,6,23,.75); border:1px solid rgba(255,255,255,.06); }
+        .sum-row.total{ color:#fcd34d; }
+        .login-card{ border-radius:20px; box-shadow:0 30px 80px -22px rgba(2,6,23,.75); }
+        .tank-section-title{ border-radius:10px; }
+        table{ border-radius:12px; border-color:var(--wk-line); }
+        th{ background:#f7f9fc; }
+        .live-clock{ box-shadow:var(--wk-shadow); border:1px solid var(--wk-line); }
+        @media print{ body{ background:#fff !important; } }
 
         @media print {
             @page { size: A4; margin: 10mm 15mm; }
@@ -169,10 +196,13 @@
                 padding: 6px 10px !important; border-bottom: 1px solid #e2e8f0 !important; border-right: 1px solid #e2e8f0 !important; color: #0f172a !important; font-size: 9pt !important; vertical-align: middle !important;
             }
             body.print-internal #dynamicBomContainer td:last-child { border-right: none !important; }
+            body.print-internal #dynamicBomContainer td[colspan="6"] { 
+                background: #f8fafc !important; font-weight: 800 !important; color: #1e293b !important; border-bottom: 1px solid #cbd5e1 !important; border-top: 1px solid #cbd5e1 !important; text-transform: uppercase; font-size: 8.5pt !important;
+            }
             
             body.print-internal input, 
-            body.print-internal .desc-input, body.print-internal .admin-input-cell { 
-                border: none !important; background: transparent !important; padding: 0 !important; width: 100% !important; color: #000 !important; font-weight: 600 !important; font-family: 'Inter', Arial, sans-serif !important; text-align: center; box-shadow: none !important;
+            body.print-internal .desc-input { 
+                border: none !important; background: transparent !important; padding: 0 !important; width: 100% !important; color: #000 !important; font-weight: 600 !important; font-family: 'Inter', Arial, sans-serif !important; text-align: center;
             }
             body.print-internal .desc-input { text-align: left; }
             body.print-internal .price-tag, 
@@ -228,6 +258,15 @@
 <datalist id="customerDatalist"></datalist>
 <datalist id="invDatalist"></datalist>
 
+<div id="historyOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); backdrop-filter: blur(4px); z-index: 10001; align-items:center; justify-content:center;">
+    <div class="module-card" style="width: 560px; max-width: 92%; background: white; padding: 30px; max-height: 80vh; overflow-y:auto;">
+        <div class="card-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; cursor:default;"><span id="historyTitle">Revision History</span></div>
+        <p style="font-size:12px; color:#64748b; margin-top:0;">Restoring loads that version into the workspace so you can review it, then Save to keep it as the latest.</p>
+        <div id="historyList"></div>
+        <div style="margin-top:20px; text-align:right;"><button class="action-btn export-btn" style="width:auto; padding:10px 20px;" onclick="document.getElementById('historyOverlay').style.display='none'">Close</button></div>
+    </div>
+</div>
+
 <div id="profileOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); backdrop-filter: blur(4px); z-index: 10001; align-items:center; justify-content:center;">
     <div class="module-card" style="width: 350px; background: white; padding: 30px;">
         <div class="card-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 20px;">👤 Update Password</div>
@@ -256,7 +295,7 @@
             <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
         </div>
         <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V200 - Core Logic Engine Update (Angle Stays & Cleats)</p>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V194 - Hashing, Live Steel Price</p>
     </div>
 </div>
 
@@ -268,7 +307,8 @@
         </div>
     </div>
     <div class="nav-links">
-        <button class="nav-btn active" id="btnTabQuote" onclick="switchTab('quote')">📝 Workspace</button>
+        <button class="nav-btn active" id="btnTabDash" onclick="switchTab('dashboard')">📊 Dashboard</button>
+        <button class="nav-btn" id="btnTabQuote" onclick="switchTab('quote')">📝 Workspace</button>
         <button class="nav-btn" id="btnTabProjects" onclick="switchTab('projects')">📂 Project Bank</button>
         <button class="nav-btn" id="btnTabInv" onclick="switchTab('inventory')">📦 Inventory</button>
         <button class="nav-btn" id="btnTabPreview" onclick="switchTab('preview')">📄 Edit Quote PDF</button>
@@ -276,6 +316,45 @@
         <button class="nav-btn" id="btnTabAudit" onclick="switchTab('audit')" style="background:#fef3c7; color:#b45309; margin-left: 10px;">📜 Activity Log</button>
     </div>
 </div>
+
+<div id="dashboardContent"><div class="container">
+    <div class="app-header-bar"><h2>Dashboard</h2><div class="live-clock"><span id="liveClock2"></span></div></div>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:24px;">
+        <div class="module-card" style="text-align:center;"><div style="font-size:0.8em; color:#64748b; font-weight:700; text-transform:uppercase;">Total Quotes</div><div id="kpiQuotes" style="font-size:2em; font-weight:900; color:#0f172a; margin-top:6px;">0</div></div>
+        <div class="module-card" style="text-align:center;"><div style="font-size:0.8em; color:#64748b; font-weight:700; text-transform:uppercase;">Pipeline Value</div><div id="kpiValue" style="font-size:2em; font-weight:900; color:#059669; margin-top:6px;">RM 0</div></div>
+        <div class="module-card" style="text-align:center;"><div style="font-size:0.8em; color:#64748b; font-weight:700; text-transform:uppercase;">Quotes This Month</div><div id="kpiMonth" style="font-size:2em; font-weight:900; color:#2563eb; margin-top:6px;">0</div></div>
+        <div class="module-card" style="text-align:center;"><div style="font-size:0.8em; color:#64748b; font-weight:700; text-transform:uppercase;">Low Stock Items</div><div id="kpiLowStock" style="font-size:2em; font-weight:900; color:#dc2626; margin-top:6px;">0</div></div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:24px;">
+        <div class="module-card">
+            <div class="card-header" style="cursor:default;"><span>🕒 Recent Activity</span></div>
+            <div class="card-body" style="padding:0; max-height:360px; overflow-y:auto;"><table class="admin-table"><tbody id="dashActivityBody"></tbody></table></div>
+        </div>
+        <div class="module-card">
+            <div class="card-header" style="cursor:default;"><span>⚠️ Low Stock Alerts</span></div>
+            <div class="card-body" style="padding:0; max-height:360px; overflow-y:auto;"><table class="admin-table"><tbody id="dashLowStockBody"></tbody></table></div>
+        </div>
+    </div>
+
+    <div class="module-card" style="margin-top:24px;">
+        <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>📋</span> Quotation Terms &amp; Sign-off (current quote)</div>
+        <div class="card-body">
+            <div class="config-grid">
+                <div class="form-group" style="grid-column: span 2;"><label>Validity</label><input type="text" id="tcValidity" value="14 Days from quotation date." oninput="safeProcess()"></div>
+                <div class="form-group" style="grid-column: span 2;"><label>Market</label><select id="marketChoice" onchange="safeProcess()"><option value="local">Local</option><option value="export">Export</option></select></div>
+                <div class="form-group" style="grid-column: span 2;"><label>Lead-time</label><input type="text" id="tcLead" value="6 - 10 weeks from confirmation." oninput="safeProcess()"></div>
+                <div class="form-group" style="grid-column: span 2;"><label>Delivery Location</label><input type="text" id="tcDelivery" value="Deliver to site exclude unloading." oninput="safeProcess()"></div>
+                <div class="form-group" style="grid-column: span 2;"><label>Payment Terms</label><textarea id="tcPayment" rows="2" oninput="safeProcess()">30% Down Payment&#10;50% Before Delivery</textarea></div>
+                <div class="form-group"><label>Sign-off Name</label><input type="text" id="signName" value="LEE JL" oninput="safeProcess()"></div>
+                <div class="form-group"><label>Sign-off Phone</label><input type="text" id="signPhone" value="019-2215558" oninput="safeProcess()"></div>
+            </div>
+            <div class="form-group" style="margin-top: 16px;">
+                <label style="display: flex; justify-content: space-between;"><span>Full T&amp;C</span><a href="#" onclick="setVal('fullTermsNotes', companyProfile.terms); safeProcess(); return false;" style="color:#3b82f6; text-decoration:none; font-weight:700; text-transform:none; letter-spacing: 0;">⟳ Sync from Master</a></label>
+                <textarea id="fullTermsNotes" rows="10" oninput="safeProcess()"></textarea>
+            </div>
+        </div>
+    </div>
+</div></div>
 
 <div id="auditContent"><div class="container">
     <div class="module-card">
@@ -377,6 +456,20 @@
                 </div>
             </div>
 
+            <div style="display:flex; align-items:center; gap:20px; background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
+                <div style="text-align:center;">
+                    <img id="logoPreview" src="" alt="No logo" style="width:120px; height:auto; max-height:80px; object-fit:contain; border:1px solid #e2e8f0; border-radius:6px; background:#fff; display:none;">
+                    <div id="logoPreviewEmpty" style="width:120px; height:60px; display:flex; align-items:center; justify-content:center; border:1px dashed #cbd5e1; border-radius:6px; color:#94a3b8; font-size:11px;">No logo set</div>
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size: 0.75em; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Company Logo (shows on all PDFs)</label>
+                    <p style="font-size:12px; color:#64748b; margin:4px 0 10px 0;">Upload a PNG/JPG. It's stored with your profile and embedded into every quotation — no separate image file needed.</p>
+                    <input type="file" id="logoUploadInput" accept="image/png,image/jpeg" style="display:none;" onchange="handleLogoUpload(event)">
+                    <button class="file-upload-label" style="border:none; cursor:pointer;" onclick="document.getElementById('logoUploadInput').click()">⬆️ Upload Logo</button>
+                    <button class="del-btn" style="padding:10px 14px; margin-left:8px;" onclick="removeLogo()">Remove</button>
+                </div>
+            </div>
+
             <div class="config-grid">
                 <div class="tank-section-title" style="grid-column: span 2; margin-top:0px; background:#fef3c7; border-left-color:#f59e0b;">🔢 Document Sequencing</div>
                 <div class="form-group"><label>Quote Prefix</label><input type="text" id="profilePrefix"></div>
@@ -394,7 +487,12 @@
                 <div class="form-group"><label>Painted Steel Multiplier</label><input type="number" step="0.01" id="mat_painted"></div>
                 <div class="form-group"><label>SS 304 Multiplier</label><input type="number" step="0.01" id="mat_ss304"></div>
                 <div class="form-group"><label>SS 316 Multiplier</label><input type="number" step="0.01" id="mat_ss316"></div>
-                
+
+                <div class="tank-section-title" style="grid-column: span 2; margin-top:12px; background:#fff7ed; border-left-color:#ea580c;">🏭 Steel / Panel Pricing (live, RM)</div>
+                <div class="form-group"><label>Wall &amp; Base Panel (RM per kg)</label><input type="number" step="0.001" id="panel_wall"></div>
+                <div class="form-group"><label>Roof Panel (RM per kg)</label><input type="number" step="0.001" id="panel_roof"></div>
+                <div class="form-group"><label>Manhole (RM each)</label><input type="number" step="0.01" id="panel_manhole"></div>
+
                 <div class="form-group" style="grid-column: span 2; margin-top: 12px;"><label>Global Default Terms & Conditions</label><textarea id="profileTerms" rows="6"></textarea></div>
             </div>
         </div>
@@ -427,6 +525,7 @@
             <h2>Project Workspace</h2>
             <div class="live-clock">
                 <span id="liveClock" style="margin-right: 8px;"></span>
+                <button class="action-btn print-btn" style="margin:0; padding: 10px 20px; background: #334155; border-radius: 20px;" onclick="newQuote()">✨ New Quote</button>
                 <button class="action-btn print-btn" style="margin:0; padding: 10px 20px; background: #ea580c; border-radius: 20px;" onclick="saveToMemory()">💾 Save Quote</button>
                 <button class="action-btn print-btn" style="margin:0; padding: 10px 20px; background: #8b5cf6; border-radius: 20px;" onclick="confirmOrderAndDeduct()">📦 Confirm & Deduct Stock</button>
             </div>
@@ -435,7 +534,7 @@
         <div class="print-header print-only">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e293b; padding-bottom: 15px; margin-bottom: 20px;">
                 <div class="header-left" style="display:flex; align-items:center;">
-                    <img src="winko logo.png" alt="Company Logo" style="width:120px; height:auto;" onerror="this.style.display='none'">
+                    <img id="printLogoImg" src="winko logo.png" alt="Company Logo" style="width:120px; height:auto;" onerror="this.style.display='none'">
                     <div style="margin-left: 15px;">
                         <h1 style="margin:0; font-size:16pt; color:#1e293b; font-weight:900;"><span id="printHeaderName1">COMPANY NAME</span> <span style="font-size: 10pt; color: #64748b; font-weight:normal;" id="printHeaderReg1">REG NO</span></h1>
                         <p style="margin:4px 0 0 0; font-size:9pt; color:#475569; font-weight:500;" id="printHeaderAddr1">ADDRESS</p>
@@ -488,6 +587,12 @@
                         </div>
                         <div id="dynamicTanksContainer"></div>
                         <button class="action-btn add-btn" style="margin-top: 20px; padding: 14px;" onclick="addNewTank()">+ ADD ANOTHER TANK</button>
+                        <div style="display:flex; gap:10px; align-items:center; margin-top:12px; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; flex-wrap:wrap;">
+                            <span style="font-size:12px; font-weight:700; color:#475569; text-transform:uppercase;">📋 Saved Templates:</span>
+                            <select id="templateSelect" class="admin-input" style="flex:1; min-width:160px; text-align:left;"><option value="">(no saved templates yet)</option></select>
+                            <button class="action-btn" style="width:auto; padding:8px 16px; font-size:12px; background:#0284c7;" onclick="addTankFromTemplate()">+ Add Tank from Template</button>
+                            <button class="del-btn" style="padding:8px 12px;" onclick="deleteTemplate()">Delete Template</button>
+                        </div>
                         <div class="tank-section-title" style="margin-top:32px; background:#fef3c7; border-left-color:#f59e0b;">➕ Additional Custom Items / Services</div>
                         <div id="dynamicCustomContainer"></div>
                         <button class="action-btn add-btn" onclick="addNewCustomItem()" style="background:#eef2ff; border-color:#c7d2fe; color:#4f46e5; padding: 12px; margin-top: 12px;">+ ADD CUSTOM ITEM</button>
@@ -503,29 +608,14 @@
                 </div>
                 
                 <div class="module-card no-print">
-                    <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>💰</span> 4. Commercial Terms</div>
+                    <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')"><span>💰</span> 4. Pricing Adjustments</div>
                     <div class="card-body">
-                        <div class="dim-grid" style="background: #ecfdf5; padding:20px; border-radius: 8px; border:1px solid #a7f3d0; margin-bottom: 24px;">
+                        <div class="dim-grid" style="background: #ecfdf5; padding:20px; border-radius: 8px; border:1px solid #a7f3d0;">
                             <div class="form-group"><label style="color:#065f46;">Proj. Mark-Up (Extra %)</label><input type="number" id="markupPct" value="0" oninput="safeProcess()"></div>
                             <div class="form-group"><label style="color:#065f46;">Discount (%)</label><input type="number" id="discountPct" value="0" oninput="safeProcess()"></div>
                             <div class="form-group"><label style="color:#065f46;">SST Tax (%)</label><input type="number" id="sstPct" oninput="safeProcess()"></div>
                         </div>
-                        <div class="config-grid">
-                            <div class="form-group" style="grid-column: span 2;"><label>Validity</label><input type="text" id="tcValidity" value="14 Days from quotation date." oninput="safeProcess()"></div>
-                            <div class="form-group" style="grid-column: span 2;"><label>Market</label><select id="marketChoice" onchange="safeProcess()"><option value="local">Local</option><option value="export">Export</option></select></div>
-                            <div class="form-group" style="grid-column: span 2;"><label>Lead-time</label><input type="text" id="tcLead" value="6 - 10 weeks from confirmation." oninput="safeProcess()"></div>
-                            <div class="form-group" style="grid-column: span 2;"><label>Delivery Location</label><input type="text" id="tcDelivery" value="Deliver to site exclude unloading." oninput="safeProcess()"></div>
-                            <div class="form-group" style="grid-column: span 2;"><label>Payment Terms</label><textarea id="tcPayment" rows="2" oninput="safeProcess()">30% Down Payment&#10;50% Before Delivery</textarea></div>
-                            <div class="form-group"><label>Sign-off Name</label><input type="text" id="signName" value="LEE JL" oninput="safeProcess()"></div>
-                            <div class="form-group"><label>Sign-off Phone</label><input type="text" id="signPhone" value="019-2215558" oninput="safeProcess()"></div>
-                        </div>
-                        <div class="form-group" style="margin-top: 16px;">
-                            <label style="display: flex; justify-content: space-between;">
-                                <span>Full T&C</span>
-                                <a href="#" onclick="setVal('fullTermsNotes', companyProfile.terms); safeProcess(); return false;" style="color:#3b82f6; text-decoration:none; font-weight:700; text-transform:none; letter-spacing: 0;">⟳ Sync from Master</a>
-                            </label>
-                            <textarea id="fullTermsNotes" rows="10" oninput="safeProcess()"></textarea>
-                        </div>
+                        <p style="font-size:12px; color:#64748b; margin-top:14px;">📋 Quotation terms (validity, payment, lead-time, sign-off, full T&amp;C) are on the <strong>Dashboard</strong> tab.</p>
                     </div>
                 </div>
 
@@ -580,13 +670,13 @@
 
 <div id="customerPreviewContainer">
     <div class="preview-toolbar no-print">
-        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V200)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
+        <div style="flex:1;"><h3 style="margin:0; font-size: 16px;">Customer Quote Editor (V190)</h3><p style="margin:4px 0 0 0; font-size:13px; font-weight: 500; color: #cbd5e1;">Click any bold item description or standard term to edit it before printing.</p></div>
         <button class="action-btn print-btn" style="width: auto; background:#10b981; padding: 12px 24px;" onclick="triggerPrint('customer_from_preview')">🖨️ Print Final PDF</button>
     </div>
     
     <div id="customerPrintViewEditor" contenteditable="true">
         <div style="display:flex; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; align-items:flex-end;">
-            <div style="width:25%;"><img src="winko logo.png" alt="Company Logo" style="width:140px;" onerror="this.style.display='none'"></div>
+            <div style="width:25%;"><img id="cpLogoImg" src="winko logo.png" alt="Company Logo" style="width:140px;" onerror="this.style.display='none'"></div>
             <div style="width:75%; text-align:right;">
                 <h2 style="margin:0 0 5px 0; font-size:16pt; font-weight:900; color:#000; text-transform:uppercase;"><span id="cpHeaderName">COMPANY NAME</span></h2>
                 <p style="margin:0; font-size:8.5pt; font-weight:bold; color:#000;" id="cpHeaderReg">REG NO</p>
@@ -682,7 +772,7 @@
         return false;
     };
 
-    const cv = "V200"; 
+    const cv = "V194"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -740,13 +830,14 @@
         address: "No. 19, Kawasan Perindustrian Mega 2, Jln Mega 2/1, 43500 Semenyih, Selangor, Malaysia.",
         contact: "Tel: (60)-8727 7540", website: "Web: www.winko.my", taxRate: 5, quotePrefix: "QP-26-", quoteSeq: 1001,         
         matMult: { painted: 0.85, ss304: 3.0, ss316: 4.5 },
+        panelRate: { wall: 3.875, roof: 6.26, manhole: 450 },
         terms: "Scope of Supply\n1. Standard tank accessories such as bolt, nut, washer, foam tape, air vent, 600x600mm access manhole, internal stays & brackets, internal & external ladder, water level indicator, subject to manufacturer's design and standard and item mentioned in quotation.\n2. Pipe hole opening at factory (Exclude flange). Pipe hole opening on site will be an additional charge.\n\nExcluded from the Supply\n1. Float valve chamber or top sump.\n2. Flanges, nozzles, pipes, valves, vortex, electrode sensor, pumps and filter.\n3. RC works and RC plinths.\n4. Scaffolding & safety platform for installation.\n5. Unloading, shifting and hoisting of materials at site.\n6. Safety training courses, equipment and medical test require to install tank.\n\nNote:\n1. Tank design to sit on 1M Center to center RC tank support/Plinths with at least 500mm height and 200mm width. Design to be provided by others.\n2. RC plinths MUST be level with maximum tolerance of ± 3mm.\n3. Leak test should be done within 3 months from completion of tank installation to maintain the quality of foam tape.\n4. The customer shall be responsible for the security of materials at site after delivery. Missing item shall be replaced with additional charges."
     };
     
     const JUTARAMA_DEFAULT_BOM = [
         { category: "Panels", markup: 0, items: [] },
-        { category: "Cleats, Trusses & Rims", markup: 0, items: [{name: "Roof Trusses (16 ft)", def: 74.40, wt: 15.0}, {name: "2\" x 2\" Angle", def: 25.00, wt: 5.0}, {name: "Type A Cleat", def: 15.00, wt: 1.2}, {name: "Type B Cleat", def: 16.50, wt: 1.8}, {name: "Type C Cleat", def: 30, wt: 2.5}, {name: "Type C1 Cleat", def: 30, wt: 2.5}, {name: "Ladder Brackets", def: 10, wt: 1.0}] },
-        { category: "Angle Stays", markup: 0, items: [{name: "68\" Angle Stay", def: 27.25, wt: 4.5}, {name: "Partition Angle Stay", def: 27.25, wt: 4.5, _isPartStay: 1}] },
+        { category: "Cleats, Trusses & Rims", markup: 0, items: [{name: "Roof Trusses (16 ft)", def: 74.40, wt: 15.0}, {name: "2\" x 4'(L) Roof Rim", def: 25.00, wt: 5.0}, {name: "Type RC (A) Cleat", def: 15.00, wt: 1.2}, {name: "Type MC (B) Cleat", def: 16.50, wt: 1.8}, {name: "Type SC (C) Cleat", def: 30, wt: 2.5}, {name: "Type SC1 (C1) Cleat", def: 30, wt: 2.5}, {name: "Ladder Brackets", def: 10, wt: 1.0}] },
+        { category: "Angle Stays", markup: 0, items: [{name: "44 1/2\" Angle Stay", def: 20.00, wt: 3.5}, {name: "67 1/2\" Angle Stay", def: 27.25, wt: 4.5}, {name: "68\" Angle Stay", def: 28.00, wt: 4.6}, {name: "Partition Angle Stay", def: 27.25, wt: 4.5, _isPartStay: 1}] },
         { category: "Accessories & Fasteners", markup: 0, items: [
             {name: "Ext. Ladder (10 ft) (HDG)", def: 150, wt: 8.5}, 
             {name: "Int. Ladder (8 ft) (HDG)", def: 120, wt: 8.5}, 
@@ -757,7 +848,6 @@
             {name: "5/8 x 1½ BN", def: 1.50, wt: 0.15}, 
             {name: "5/8 x 1½ W", def: 0.20, wt: 0.01}, 
             {name: "3/8 x 3/4 BN", def: 0.50, wt: 0.05}, 
-            {name: "3/8 x 3/4 W", def: 0.10, wt: 0.01}, 
             {name: "3/8 x 3 BN", def: 0.80, wt: 0.08}, 
             {name: "5x45x10m Sealant Roll", def: 22.50, wt: 0.8}, 
             {name: "3x40x10m Sealant Roll", def: 8.00, wt: 0.6}, 
@@ -803,6 +893,9 @@
             cloudDB.collection("winko_settings").doc("users").onSnapshot(doc => { if(doc.exists) { let d = doc.data(); let newUsers = d.data || d; if(Array.isArray(newUsers) && newUsers.length > 0) { winkoUsers = newUsers; if(document.getElementById('adminContent').style.display === 'block') renderUserTable(); } } });
             cloudDB.collection("winko_projects").onSnapshot(snapshot => { let m = {}; snapshot.forEach(doc => { m[doc.id] = doc.data(); }); window.cloudMemoryBank = m; if(document.getElementById('projectsContent').style.display === 'block') drawProjectBankTable(); });
             
+            cloudDB.collection("winko_settings").doc("bom_templates").onSnapshot(doc => {
+                if(doc.exists) { let d = doc.data(); bomTemplates = d.data || d || {}; renderTemplateSelect(); }
+            });
             cloudDB.collection("winko_settings").doc("audit_log").onSnapshot(doc => {
                 if(doc.exists) { winkoAuditLog = doc.data().data || []; if(document.getElementById('auditContent').style.display === 'block') renderAuditLog(); }
             });
@@ -819,34 +912,62 @@
     
     initSystemData();
 
-    function processSecureLogin() {
+    // ---- Password hashing (SHA-256 + per-user salt). Requires https or localhost for crypto.subtle. ----
+    function makeSalt() {
+        let a = new Uint8Array(8);
+        if(window.crypto && crypto.getRandomValues) crypto.getRandomValues(a); else for(let i=0;i<8;i++) a[i]=Math.floor(Math.random()*256);
+        return Array.from(a).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    async function hashPassword(pw, salt) {
+        if(window.crypto && crypto.subtle) {
+            let data = new TextEncoder().encode(salt + ':' + pw);
+            let buf = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+        }
+        return null; // crypto unavailable (insecure context)
+    }
+    function persistUsers() { if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({ data: winkoUsers }); }
+
+    async function processSecureLogin() {
         let u = getVal('userInput').trim(); let p = getVal('passInput').trim(); if(!u || !p) return showToast("Enter username and password", "error");
-        let user = winkoUsers.find(x => x.username === u && x.password === p);
+        let user = winkoUsers.find(x => x.username === u);
+        let ok = false;
         if(user) {
+            if(user.hash) { let h = await hashPassword(p, user.salt); ok = !!(h && h === user.hash); }
+            else if(user.password !== undefined) {
+                ok = (p === user.password);
+                if(ok) { // legacy plaintext -> upgrade to hash transparently
+                    let salt = makeSalt(); let h = await hashPassword(p, salt);
+                    if(h) { user.salt = salt; user.hash = h; delete user.password; persistUsers(); }
+                }
+            }
+        }
+        if(ok) {
             loggedInUser = user; setDisp('securityOverlay', false); setDisp('topNav', true); setDisp('mainContent', true);
             if(user.role === 'admin') document.getElementById('btnTabAdmin').style.display = 'inline-block'; else document.getElementById('btnTabAdmin').style.display = 'none';
-            switchTab('quote'); appTanks = [defaultTank()]; renderAllDynamicUI(); autoCalculateBOM(0); renderBOMUI(); safeProcess(); showToast(`Welcome back, ${u}!`);
+            switchTab('quote'); appTanks = [defaultTank()]; renderAllDynamicUI(); autoCalculateBOM(0); safeProcess(); window._dirtyQuote = false; showToast(`Welcome back, ${u}!`);
             logAction("User Logged In");
         } else { showToast("Invalid credentials", "error"); }
     }
     
     function openMyProfile() { setVal('myNewPassword', ''); document.getElementById('profileOverlay').style.display = 'flex'; }
-    function saveMyPassword() { let p = getVal('myNewPassword').trim(); if(!p) return showToast("Password cannot be empty", "error"); let userIndex = winkoUsers.findIndex(x => x.username === loggedInUser.username); if(userIndex > -1) { winkoUsers[userIndex].password = p; loggedInUser.password = p; if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); showToast("Password updated successfully!"); document.getElementById('profileOverlay').style.display = 'none'; logAction("User Updated Password"); } }
-    function logout() { loggedInUser = null; setDisp('topNav', false); setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false); setDisp('auditContent', false); setDisp('securityOverlay', true); setVal('userInput', ''); setVal('passInput', ''); }
+    async function saveMyPassword() { let p = getVal('myNewPassword').trim(); if(!p) return showToast("Password cannot be empty", "error"); let userIndex = winkoUsers.findIndex(x => x.username === loggedInUser.username); if(userIndex > -1) { let salt = makeSalt(); let h = await hashPassword(p, salt); let usr = winkoUsers[userIndex]; if(h) { usr.salt = salt; usr.hash = h; delete usr.password; } else { usr.password = p; } loggedInUser = usr; persistUsers(); showToast("Password updated successfully!"); document.getElementById('profileOverlay').style.display = 'none'; logAction("User Updated Password"); } }
+    function logout() { loggedInUser = null; setDisp('topNav', false); setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false); setDisp('auditContent', false); setDisp('dashboardContent', false); setDisp('securityOverlay', true); setVal('userInput', ''); setVal('passInput', ''); }
 
     function switchTab(tabId) {
-        setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false); setDisp('auditContent', false);
-        ['btnTabQuote', 'btnTabAdmin', 'btnTabPreview', 'btnTabProjects', 'btnTabInv', 'btnTabAudit'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).classList.remove('active'); });
-        if(tabId === 'quote') { setDisp('mainContent', true); document.getElementById('btnTabQuote').classList.add('active'); }
-        else if(tabId === 'preview') { safeProcess(); syncPrintHeader(window.currentUnit||'ft'); document.getElementById('customerPreviewContainer').style.display='flex'; document.getElementById('btnTabPreview').classList.add('active'); }
+        setDisp('mainContent', false); setDisp('adminContent', false); setDisp('customerPreviewContainer', false); setDisp('projectsContent', false); setDisp('inventoryContent', false); setDisp('auditContent', false); setDisp('dashboardContent', false);
+        ['btnTabDash', 'btnTabQuote', 'btnTabAdmin', 'btnTabPreview', 'btnTabProjects', 'btnTabInv', 'btnTabAudit'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).classList.remove('active'); });
+        if(tabId === 'dashboard') { setDisp('dashboardContent', true); document.getElementById('btnTabDash').classList.add('active'); renderDashboard(); }
+        else if(tabId === 'quote') { setDisp('mainContent', true); document.getElementById('btnTabQuote').classList.add('active'); }
+        else if(tabId === 'preview') { processTankData(); syncPrintHeader(window.currentUnit||'ft'); document.getElementById('customerPreviewContainer').style.display='flex'; document.getElementById('btnTabPreview').classList.add('active'); }
         else if(tabId === 'admin') { setDisp('adminContent', true); document.getElementById('btnTabAdmin').classList.add('active'); buildAdminTable(); renderCustomerAdmin(); renderUserTable(); }
         else if(tabId === 'projects') { setDisp('projectsContent', true); document.getElementById('btnTabProjects').classList.add('active'); drawProjectBankTable(); }
         else if(tabId === 'inventory') { setDisp('inventoryContent', true); document.getElementById('btnTabInv').classList.add('active'); renderInventoryUI(); }
         else if(tabId === 'audit') { setDisp('auditContent', true); document.getElementById('btnTabAudit').classList.add('active'); renderAuditLog(); }
     }
 
-    function renderUserTable() { let h = ''; winkoUsers.forEach((u, i) => { h += `<tr><td>${u.username}</td><td>${u.password}</td><td>${u.role}</td><td class="text-center"><button class="del-btn" onclick="removeUser(${i})">X</button></td></tr>`; }); setHtml('userTableBody', h); }
-    function addUser() { let u = getVal('newUsername').trim(); let p = getVal('newPassword').trim(); let r = getVal('newRole'); if(!u || !p) return showToast("Username and password required.", "error"); winkoUsers.push({username: u, password: p, role: r}); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); setVal('newUsername', ''); setVal('newPassword', ''); renderUserTable(); showToast("User added!"); logAction(`Created new user: ${u}`); }
+    function renderUserTable() { let h = ''; winkoUsers.forEach((u, i) => { let pwCell = u.hash ? '<span style="color:#10b981;">🔒 Hashed</span>' : '<span style="color:#dc2626;">⚠ Plain (will hash on next login)</span>'; h += `<tr><td>${u.username}</td><td>${pwCell}</td><td>${u.role}</td><td class="text-center"><button class="del-btn" onclick="removeUser(${i})">X</button></td></tr>`; }); setHtml('userTableBody', h); }
+    async function addUser() { let u = getVal('newUsername').trim(); let p = getVal('newPassword').trim(); let r = getVal('newRole'); if(!u || !p) return showToast("Username and password required.", "error"); if(winkoUsers.find(x => x.username === u)) return showToast("That username already exists.", "error"); let salt = makeSalt(); let hsh = await hashPassword(p, salt); let rec = { username: u, role: r }; if(hsh) { rec.salt = salt; rec.hash = hsh; } else { rec.password = p; } winkoUsers.push(rec); persistUsers(); setVal('newUsername', ''); setVal('newPassword', ''); renderUserTable(); showToast("User added!"); logAction(`Created new user: ${u}`); }
     function removeUser(i) { if(confirm("Remove user?")) { logAction(`Deleted user: ${winkoUsers[i].username}`); winkoUsers.splice(i, 1); if(cloudDB) cloudDB.collection("winko_settings").doc("users").set({data: winkoUsers}); renderUserTable(); } }
 
     function checkCustomerAutoFill() { let c = getVal('custCompany'); if(winkoCustomers[c]) { setVal('custAttn', winkoCustomers[c].attn); setVal('custAddr', winkoCustomers[c].addr); safeProcess(); } }
@@ -865,8 +986,8 @@
 
     function autoPopulateInventory() {
         const masterItems = {
-            "Type A Cleat": { stock: 150, alert: 30, cost: 15.00 }, "Type B Cleat": { stock: 500, alert: 100, cost: 16.50 }, "Type C Cleat": { stock: 300, alert: 50, cost: 30.00 }, "Type C1 Cleat": { stock: 300, alert: 50, cost: 30.00 },
-            "68\" Angle Stay": { stock: 200, alert: 40, cost: 27.25 },
+            "Type RC (A) Cleat": { stock: 150, alert: 30, cost: 15.00 }, "Type MC (B) Cleat": { stock: 500, alert: 100, cost: 16.50 }, "Type SC (C) Cleat": { stock: 300, alert: 50, cost: 30.00 },
+            "67 1/2\" Angle Stay": { stock: 200, alert: 40, cost: 27.25 },
             "M14x30 BN": { stock: 8000, alert: 1000, cost: 1.20 }, "5/8 x 1½ BN": { stock: 800, alert: 100, cost: 1.50 },
             "5x45x10m Sealant Roll": { stock: 300, alert: 50, cost: 22.50 }, "3x40x10m Sealant Roll": { stock: 300, alert: 50, cost: 8.00 }, "8mm Butyl Sealant": { stock: 200, alert: 30, cost: 1.70 },
             "Installation & Labor": { stock: 999, alert: 10, cost: 3500.00 }, "Transport": { stock: 999, alert: 10, cost: 850.00 }
@@ -938,9 +1059,21 @@
 
     function saveToMemory() {
         let qid = getVal('quoteIdInput'); if(!qid) return showToast("Enter Quote ID first", "error");
-        let d = { tanks: appTanks, custom: appCustomItems, projectName: getVal('projectName'), customer: getVal('custCompany'), total: window.currentGrandTotal, date: new Date().toISOString().split('T')[0] };
+        let existing = (window.cloudMemoryBank && window.cloudMemoryBank[qid]) ? window.cloudMemoryBank[qid] : null;
+        let isNew = !existing;
+        let revisions = (existing && Array.isArray(existing.revisions)) ? existing.revisions.slice() : [];
+        if(existing) { let snap = Object.assign({}, existing); delete snap.revisions; revisions.unshift(snap); revisions = revisions.slice(0, 5); }
+        let d = { tanks: appTanks, custom: appCustomItems, projectName: getVal('projectName'), customer: getVal('custCompany'), total: window.currentGrandTotal, date: new Date().toISOString().split('T')[0], revisions: revisions, _savedAt: new Date().toISOString(), _revBy: loggedInUser ? loggedInUser.username : 'System' };
         configIDs.forEach(id => d[id] = getVal(id)); if(cloudDB) cloudDB.collection("winko_projects").doc(qid).set(d); 
-        showToast("Project Saved to Cloud!");
+        if(window.cloudMemoryBank) window.cloudMemoryBank[qid] = d;
+        window._dirtyQuote = false;
+        // Auto-increment the quote number for the NEXT new quote (only when this was a fresh auto-numbered quote)
+        let expected = (companyProfile.quotePrefix || '') + (companyProfile.quoteSeq || 0);
+        if(isNew && qid === expected) {
+            companyProfile.quoteSeq = (parseInt(companyProfile.quoteSeq) || 1000) + 1;
+            if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile);
+        }
+        showToast("Project Saved to Cloud!" + (revisions.length ? ` (rev ${revisions.length + 1})` : ""));
         logAction(`Saved / Updated Project Quote: ${qid}`);
     }
 
@@ -964,22 +1097,62 @@
         let filter = getVal('projSearchBox').toLowerCase(); let h = '';
         Object.keys(window.cloudMemoryBank).forEach(k => {
             let p = window.cloudMemoryBank[k]; if(filter && !k.toLowerCase().includes(filter) && !(p.customer||'').toLowerCase().includes(filter)) return;
-            h += `<tr><td><strong>${k}</strong></td><td>${p.projectName||'-'}</td><td>${p.customer||'-'}</td><td class="text-right">RM ${p.total||'0.00'}</td><td>${p.date||'-'}</td><td class="text-center"><button class="action-btn" style="padding:8px 16px; width:auto; font-size:12px; background:#3b82f6;" onclick="loadFromMemory('${k}')">Load</button></td></tr>`;
+            h += `<tr><td><strong>${k}</strong></td><td>${p.projectName||'-'}</td><td>${p.customer||'-'}</td><td class="text-right">RM ${p.total||'0.00'}</td><td>${p.date||'-'}</td><td class="text-center"><button class="action-btn" style="padding:8px 14px; width:auto; font-size:12px; background:#3b82f6;" onclick="loadFromMemory('${k}')">Load / Edit</button> <button class="action-btn" style="padding:8px 12px; width:auto; font-size:12px; background:#64748b;" onclick="showHistory('${encodeURIComponent(k).replace(/'/g,'%27')}')">History${(Array.isArray(p.revisions)&&p.revisions.length)?' ('+p.revisions.length+')':''}</button> <button class="del-btn" style="padding:8px 12px;" onclick="deleteProject('${encodeURIComponent(k).replace(/'/g,'%27')}')">Delete</button></td></tr>`;
         }); setHtml('projectBankBody', h || '<tr><td colspan="6" class="text-center">No projects found.</td></tr>');
     }
     function renderProjectBank() { drawProjectBankTable(); }
+    function showHistory(safeK) {
+        let k = decodeURIComponent(safeK); let p = (window.cloudMemoryBank||{})[k]; if(!p) return;
+        let revs = Array.isArray(p.revisions) ? p.revisions : [];
+        setTxt('historyTitle', `Revision History — ${k}`);
+        let h = revs.length ? revs.map((r, idx) => `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 4px; border-bottom:1px solid #f1f5f9;"><div style="font-size:13px;"><strong>Rev ${revs.length - idx}</strong> &nbsp;<span style="color:#64748b;">${formatAuditDate(r._savedAt || r.date)}</span> &nbsp;·&nbsp; by ${r._revBy || '?'} &nbsp;·&nbsp; <strong style="color:#059669;">RM ${r.total || '0.00'}</strong></div><button class="action-btn" style="width:auto; padding:6px 14px; font-size:12px;" onclick="restoreRevision('${safeK}', ${idx})">Restore</button></div>`).join('') : '<p style="color:#64748b;">No previous versions saved yet. Versions are kept each time you re-save this quote.</p>';
+        setHtml('historyList', h);
+        document.getElementById('historyOverlay').style.display = 'flex';
+    }
+    function restoreRevision(safeK, idx) {
+        let k = decodeURIComponent(safeK); let p = (window.cloudMemoryBank||{})[k]; if(!p || !Array.isArray(p.revisions) || !p.revisions[idx]) return;
+        let r = p.revisions[idx];
+        configIDs.forEach(id => { if(r[id] !== undefined) setVal(id, r[id]); });
+        appTanks = r.tanks || []; appCustomItems = r.custom || [];
+        appTanks.forEach((_, i) => autoCalculateBOM(i));
+        document.getElementById('historyOverlay').style.display = 'none';
+        switchTab('quote'); renderAllDynamicUI(); safeProcess(); window._dirtyQuote = true;
+        showToast(`Restored a previous version of ${k}. Review, then Save to keep it.`);
+        logAction(`Restored a revision of Quote: ${k}`);
+    }
+    function deleteProject(safeK) {
+        let k = decodeURIComponent(safeK);
+        if(!confirm(`Delete project "${k}"? This permanently removes it from the cloud and cannot be undone.`)) return;
+        if(cloudDB) cloudDB.collection("winko_projects").doc(k).delete();
+        if(window.cloudMemoryBank) delete window.cloudMemoryBank[k];
+        drawProjectBankTable(); showToast("Project deleted."); logAction(`Deleted Project Quote: ${k}`);
+    }
+
+    function renderDashboard() {
+        let projects = window.cloudMemoryBank || {}; let keys = Object.keys(projects);
+        let pipeline = 0; let monthCount = 0; let ym = new Date().toISOString().slice(0,7);
+        keys.forEach(k => { let p = projects[k]; pipeline += parseFloat(String(p.total||'0').replace(/,/g,'')) || 0; if((p.date||'').slice(0,7) === ym) monthCount++; });
+        setTxt('kpiQuotes', keys.length);
+        setTxt('kpiValue', 'RM ' + pipeline.toLocaleString('en-MY',{maximumFractionDigits:0}));
+        setTxt('kpiMonth', monthCount);
+        let low = Object.keys(winkoInventory).filter(n => winkoInventory[n].stock <= winkoInventory[n].alert);
+        setTxt('kpiLowStock', low.length);
+        setHtml('dashLowStockBody', low.length ? low.sort().map(n => `<tr><td><strong>${n}</strong></td><td class="text-right" style="color:#dc2626; font-weight:700;">${winkoInventory[n].stock} / ${winkoInventory[n].alert}</td></tr>`).join('') : '<tr><td style="color:#64748b; padding:16px;">All stock levels healthy ✅</td></tr>');
+        setHtml('dashActivityBody', (winkoAuditLog||[]).slice(0,12).map(l => `<tr><td style="white-space:nowrap; color:#64748b; font-size:11px;">${formatAuditDate(l.time)}</td><td><strong>${l.user}</strong></td><td>${l.action}</td></tr>`).join('') || '<tr><td style="color:#64748b; padding:16px;">No activity yet.</td></tr>');
+        let lc2 = document.getElementById('liveClock2'); if(lc2) lc2.innerText = new Date().toLocaleString('en-MY');
+    }
     
     function loadFromMemory(k) { 
         let d = window.cloudMemoryBank[k]; if(!d) return; 
         configIDs.forEach(id => { if(d[id]!==undefined) setVal(id, d[id]); }); 
         appTanks = d.tanks || []; appCustomItems = d.custom || []; 
         appTanks.forEach((_, i) => autoCalculateBOM(i)); 
-        switchTab('quote'); renderBOMUI(); safeProcess(); showToast("Project Loaded & Synced!"); 
+        switchTab("quote"); safeProcess(); window._dirtyQuote = false; showToast("Project Loaded & Synced!"); 
     }
 
     function backupSystem() {
         let backupData = { company: companyProfile, master_bom: {data: systemBaseStructure}, users: {data: winkoUsers}, crm: {data: winkoCustomers}, inventory: {data: winkoInventory}, projects: window.cloudMemoryBank || {}, audit_log: {data: winkoAuditLog} };
-        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData)); let a = document.createElement('a'); a.href = dataStr; a.download = "winko_cloud_backup_" + new Date().toISOString().split('T')[0] + ".json"; document.body.appendChild(a); a.click(); a.remove(); showToast("Cloud Snapshot Downloaded!");
+        let blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' }); let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = "winko_cloud_backup_" + new Date().toISOString().split('T')[0] + ".json"; document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url); showToast("Cloud Snapshot Downloaded!");
         logAction("Downloaded Full System Backup JSON");
     }
 
@@ -987,7 +1160,7 @@
         let file = event.target.files[0]; if (!file || !cloudDB) return;
         if (!confirm("⚠️ WARNING: Restoring will overwrite the LIVE CLOUD DATABASE. Are you sure?")) { event.target.value = ''; return; }
         let reader = new FileReader();
-        reader.onload = function(e) { try { let d = JSON.parse(e.target.result); if(d.company) cloudDB.collection("winko_settings").doc("company").set(d.company); if(d.master_bom) cloudDB.collection("winko_settings").doc("master_bom").set(d.master_bom); if(d.users) cloudDB.collection("winko_settings").doc("users").set(d.users); if(d.crm) cloudDB.collection("winko_settings").doc("crm").set(d.crm); if(d.inventory) cloudDB.collection("winko_settings").doc("inventory").set(d.inventory); if(d.projects) Object.keys(d.projects).forEach(k => cloudDB.collection("winko_projects").doc(k).set(d.projects[k])); alert("✅ Cloud Database successfully restored! Reloading."); window.location.reload(true); } catch(err) { showToast("Error reading backup.", "error"); } }; reader.readAsText(file);
+        reader.onload = function(e) { try { let d = JSON.parse(e.target.result); if(d.company) cloudDB.collection("winko_settings").doc("company").set(d.company); if(d.master_bom) cloudDB.collection("winko_settings").doc("master_bom").set(d.master_bom); if(d.users) cloudDB.collection("winko_settings").doc("users").set(d.users); if(d.crm) cloudDB.collection("winko_settings").doc("crm").set(d.crm); if(d.inventory) cloudDB.collection("winko_settings").doc("inventory").set(d.inventory); if(d.projects) Object.keys(d.projects).forEach(k => cloudDB.collection("winko_projects").doc(k).set(d.projects[k])); alert("✅ Cloud Database successfully restored! Reloading."); window.location.reload(); } catch(err) { showToast("Error reading backup.", "error"); } }; reader.readAsText(file);
     }
 
     function confirmOrderAndDeduct() {
@@ -1009,18 +1182,18 @@
         } else { alert("❌ No matching inventory items found to deduct. Ensure BOM names match Master Inventory."); }
     }
 
-    let appTanks = []; let appCustomItems = [];
+    let appTanks = []; let appCustomItems = []; let bomTemplates = {};
     const configIDs = ['quoteIdInput', 'custPoNo', 'custDelDate', 'marketChoice', 'unitChoice', 'markupPct','discountPct','sstPct', 'fullTermsNotes', 'custCompany', 'custAttn', 'custAddr', 'tcValidity', 'tcLead', 'tcDelivery', 'tcPayment', 'signName', 'signPhone'];
 
     function defaultTank() { 
         let baseBOM = JSON.parse(JSON.stringify(systemBaseStructure));
         baseBOM.forEach(sec => sec.items.forEach((it, iIdx) => { it.baseIdx = iIdx; it.manualPrice = false; it.manualQty = false; }));
-        let t = { id: Date.now(), tankQty: 1, std: "SANS 10329:2020 Approved by SIRIM & SPAN", coat: "Hot Dipped Galvanised", L: 12, W: 4, H: 8, partitions: [], ladder1Col: 1, ladder2Col: 0, thickBase: "3.0", thickRoof: "1.5", thickL1: "3.0", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5", partL1Angle: "68\" Angle Stay", partL2Angle: "68\" Angle Stay", partL3Angle: "92.5\" Angle Stay", override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 };
+        let t = { id: Date.now(), tankQty: 1, std: "SANS 10329:2020 Approved by SIRIM & SPAN", coat: "Hot Dipped Galvanised", L: 20, W: 16, H: 8, partitions: [], ladder1Col: 1, ladder2Col: 0, thickBase: "5.0", thickRoof: "1.5", thickL1: "5.0", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5", partL1Angle: "67 1/2\" Angle Stay", partL2Angle: "92.5\" (L2 Stay)", partL3Angle: "135.5\" (L3 Stay)", override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 };
         applySmartThickness(t, 0, true);
         return t; 
     }
 
-    function handleUnitChange() { appTanks.forEach((t, i) => { applySmartThickness(t, i); autoCalculateBOM(i); }); renderBOMUI(); safeProcess(); }
+    function handleUnitChange() { appTanks.forEach((t, i) => { applySmartThickness(t, i); autoCalculateBOM(i); }); safeProcess(); }
     
     function applySmartThickness(t, tankIndex, isInit = false) {
         let u = getVal('unitChoice') || 'ft'; let H = parseFloat(t.H) || 0;
@@ -1028,81 +1201,74 @@
     }
 
     function autoCalculateBOM(tIdx) {
-        let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let displayUnit = u === 'ft' ? 'ft' : 'm';
-        let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
+        let t = appTanks[tIdx]; let u = getVal('unitChoice') || 'ft'; let L = parseFloat(t.L) || 0; let W = parseFloat(t.W) || 0; let H = parseFloat(t.H) || 0;
         let tQty = Math.max(1, parseInt(t.tankQty) || 1);
-        
-        let coatShort = "HDG"; 
-        if (t.coat === 'Painted Steel') coatShort = "Painted"; 
-        else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; 
-        else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
-        
+        let coatShort = "HDG"; if (t.coat === 'Painted Steel') coatShort = "Painted"; else if (t.coat === 'Stainless Steel (SS 304)') coatShort = "SS 304"; else if (t.coat === 'Stainless Steel (SS 316)') coatShort = "SS 316";
         let mult = (t.coat === 'Painted Steel') ? companyProfile.matMult.painted : (t.coat === 'Stainless Steel (SS 304)' ? companyProfile.matMult.ss304 : (t.coat === 'Stainless Steel (SS 316)' ? companyProfile.matMult.ss316 : 1.0));
-        let isHDG = (t.coat === 'Hot Dipped Galvanised' || t.coat === 'Painted Steel');
-        
-        // GRID CALCULATION
-        let pL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); 
-        let pW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); 
-        let pH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
-        
-        let perimeter = 2 * (pL + pW); 
-        let basePanels = pL * pW; let wallPanels = perimeter * pH; let totalTankPanels = basePanels + wallPanels;  
-        let roofPanels = Math.max(0, (pL * pW)); 
-        
-        let num_partitions = t.partitions ? t.partitions.filter(p => p > 0).length : 0;
-        let partitionPanels = num_partitions * (pW * pH);
-        let manholeQty = num_partitions + 1;
 
-        let extLadders = (parseInt(t.ladder1Col) > 0 ? 1 : 0) + (parseInt(t.ladder2Col) > 0 ? 1 : 0);
-        let intLadders = extLadders > 0 ? Math.max(extLadders, manholeQty) : 0;
+        let pL = Math.max(1, u === 'ft' ? Math.floor(L/4) : Math.floor(L)); let pW = Math.max(1, u === 'ft' ? Math.floor(W/4) : Math.floor(W)); let pH = Math.max(1, u === 'ft' ? Math.floor(H/4) : Math.floor(H));
+        if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
+        let num_partitions = t.partitions.filter(p => p > 0).length; let partitionPanels = num_partitions * (pW * pH);
 
-        // V200: CORRECTED STRUCTURAL FORMULAS FOR STAYS AND CLEATS
-        let roof_trusses = (pW > 1) ? Math.max(0, pL - 1) : 0; 
-        
-        // The Exact 68" Angle Stay Formula
-        let angle_stays = (2 * Math.max(0, pL - 1)) + (2 * Math.max(0, pW - 1)) + (4 * pH);
+        let perimeter = 2 * (pL + pW);
+        let basePanels = pL * pW; let wallPanels = perimeter * pH; let totalTankPanels = basePanels + wallPanels; let manholeQty = num_partitions + 1; let roofPanels = Math.max(0, (pL * pW));
+        let numLadders = (parseInt(t.ladder1Col) > 0 ? 1 : 0) + (parseInt(t.ladder2Col) > 0 ? 1 : 0);
 
-        let type_A_cleats = (pW > 1) ? Math.max(0, pL - 1) : 0; 
-        
-        let type_B_floor = (pL > 1 && pW > 1) ? (pL - 1) * (pW - 1) : 0;
-        let type_B_walls = (pH > 1) ? (Math.max(0, pL - 1) * 2 + Math.max(0, pW - 1) * 2) * (pH - 1) : 0;
-        let type_B_cleats = type_B_floor + type_B_walls;
-        
-        let type_C_cleats = (pL + pW) * 2; 
-        let type_C1_cleats = (pL + pW) * 2; 
+        // === V190 — EXACT formulas transcribed from your 8__BOM.xlsx (Excel cell refs in comments). pL=B3=L/4, pW=C3=W/4, pH=D3=H/4. ru()=ROUNDUP. ===
+        let ru = Math.ceil;
+        const mround10 = (x) => Math.round(x / 10) * 10;   // Excel MROUND(x,10)
+        const ceiling10 = (x) => Math.ceil(x / 10) * 10;   // Excel CEILING(x,10)
 
-        // CONSUMABLES LOGIC
-        let seamMeters = Math.ceil( ( ((pL+pW)*4) + (((pL-1)*2+(pW-1)*2)*pH) + (((pL-1)*pW+(pW-1)*pL)*2) + ((pL*2+pW*2)*(pH - 1)) ) * 1.22 );
-        let sealantRolls = Math.ceil(seamMeters / 10);
-        
-        let m14Qty = Math.round(((basePanels + wallPanels + roofPanels) * 17) + (perimeter * 8.5));
-        let roof38Qty = Math.round((roofPanels * 17) + (perimeter * 8.5));
-        let bolt58Qty = (type_A_cleats + type_B_cleats + type_C_cleats + type_C1_cleats + roof_trusses) * 4 + ((extLadders + intLadders) * 4);
+        // --- Cleats ---
+        let cleatA  = Math.max(0, (pW - 1) * 2);                                                  // C14 =(C3-1)*2
+        let cleatB  = Math.max(0, ru((pL - 1) * (pW - 1)) + ru(pL - 1) * 2 + ru(pW - 1) * 2);      // C15
+        let cleatC  = Math.max(0, ru((pL - 1) * 2 + (pW - 1) * 2) + ru(pH - 1) * 4);               // C16
+        let cleatC1 = cleatC;                                                                      // C17 =C16
 
+        // --- Internal structure ---
+        let numTrusses   = Math.max(0, pL - 1);                                                    // C20 =B3-1
+        let angleStayQty = Math.max(0, ru(pL - 1) * 2 + ru(pW - 1) * 2 + pH * 4);                   // C28 -> 26 for 28x16x8
+
+        // --- Sealant: metres then rolls ---
+        let sealant3x40m = ru((pL * ru(pW + 1) + ru(pL + 1) * pW) * 1.35);                          // I2
+        let roll3x40Qty  = ceiling10(sealant3x40m) / 10;                                            // J2 =CEILING(I2,10)/10
+        let sealant5x45m = ru(((pH * ru(pL - 1) + pL * ru(pH)) * 2 * 1.35) + ((pH * ru(pW - 1) + pW * ru(pH)) * 2 * 1.35) + sealant3x40m + pH * 4 * 1.22); // I3
+        let roll5x45Qty  = mround10(sealant5x45m) / 10;                                             // J3 =MROUND(I3,10)/10
+        let butyl8Qty    = (cleatC + cleatC1) + 1;                                                  // J4 =SUM(C16:C17)+1
+        let butyl24Qty   = cleatB;                                                                  // J5 =C15
+
+        // --- Fasteners (BNW) ---
+        let m14Qty       = ru(ru(pL + 1) * pW + ru(pW + 1) * pL) * 17 + ru(ru(pL - 1) * pH * 2 + ru(pW - 1) * pH * 2) * 17 + pH * 4 * 17; // I10
+        let washer58Qty  = 0;                                                                       // 5/8 washer (blank in sheet)
+        let bolt58Qty    = cleatB * 4 + (cleatC + cleatC1) * 2;                                      // I12 =C15*4+(C16+C17)*2
+        let bolt38_3Qty  = cleatA * 2;                                                              // I14 =C14*2
+        let bolt38_34Qty = ru((pL * ru(pW + 1) + ru(pL + 1) * pW) + (pL + pW) * 2) * 10 * 1.03;     // I15
+
+        t.lastSeamMeters = sealant5x45m;
+
+        // --- Panel construction (each panel labeled by role so same-thickness rows stay distinct) ---
         let panelsToBuild = [];
+        const roleLabel = { roof: 'Roof', wall: 'Wall', base: 'Base' };
+        let pr = companyProfile.panelRate || { wall: 3.875, roof: 6.26, manhole: 450 };
+        let rWall = parseFloat(pr.wall) || 3.875, rRoof = parseFloat(pr.roof) || 6.26, rManhole = parseFloat(pr.manhole) || 450;
         const addP = (thName, q, th, typeKey) => {
             if(q <= 0) return;
             let wt = typeKey === 'manhole' ? 55 : parseFloat(th) * 14.1;
-            let defCost = typeKey === 'manhole' ? 450 : (typeKey === 'roof' ? (wt * 6.26) : (wt * 3.875));
-            panelsToBuild.push({ name: thName, qty: q, wt: wt, def: defCost * mult, typeKey: typeKey });
+            let defCost = typeKey === 'manhole' ? rManhole : (typeKey === 'roof' ? (wt * rRoof) : (wt * rWall));
+            let displayName = (typeKey === 'manhole') ? 'Manhole' : `${th}mm (${roleLabel[typeKey] || ''})`;
+            panelsToBuild.push({ name: displayName, qty: q, wt: wt, def: defCost * mult, typeKey: typeKey });
         };
-
         addP("Manhole", manholeQty, 0, 'manhole');
-        addP(parseFloat(t.thickRoof).toFixed(1) + "mm", Math.max(0, roofPanels - manholeQty), t.thickRoof, 'roof');
-        
+        addP(t.thickRoof + "mm", Math.max(0, roofPanels - manholeQty), t.thickRoof, 'roof');
         let wallTotals = {};
         const addWall = (th, q) => { if(!wallTotals[th]) wallTotals[th]=0; wallTotals[th]+=q; };
         if(pH >= 1) addWall(t.thickL1, perimeter);
         if(pH >= 2) addWall(t.thickL2, perimeter);
         if(pH >= 3) addWall(t.thickL3, perimeter);
         if(pH >= 4) addWall(t.thickL4, perimeter);
-        if(partitionPanels > 0) addWall(t.thickL1, partitionPanels); 
-
-        Object.keys(wallTotals).forEach(th => {
-            addP(parseFloat(th).toFixed(1) + "mm", wallTotals[th], th, 'wall');
-        });
-        
-        addP(parseFloat(t.thickBase).toFixed(1) + "mm", basePanels, t.thickBase, 'base');
+        if(partitionPanels > 0) addWall(t.thickL1, partitionPanels);
+        Object.keys(wallTotals).forEach(th => { addP(th + "mm", wallTotals[th], th, 'wall'); });
+        addP(t.thickBase + "mm", basePanels, t.thickBase, 'base');
 
         t.bom.forEach((sec, sIdx) => {
             if (sec.category === "Panels") {
@@ -1118,61 +1284,45 @@
                     }
                 });
                 sec.items.forEach(it => { if(it.manualAdded && !newItems.find(x=>x.name===it.name)) newItems.push(it); });
-                sec.items = newItems; 
+                sec.items = newItems;
             } else {
                 sec.items.forEach((it, iIdx) => {
                     let baseItem = (it.baseIdx !== undefined && systemBaseStructure[sIdx]) ? systemBaseStructure[sIdx].items[it.baseIdx] : null;
                     let baseName = baseItem ? baseItem.name : it.name;
-                    
                     if(sec.category !== "Services") {
                         if (!it.manualQty) {
                             let n = baseName.toLowerCase();
                             let calcQ = 0;
-                            
-                            if (n.includes("roof trusses") || n.includes("roof truss")) {
-                                calcQ = roof_trusses;
-                                if (!it.manualPrice && baseItem) it.name = `Roof Trusses (${t.W} ft)`; 
-                            } 
-                            else if (n.includes("water level indicator")) {
-                                calcQ = 1;
-                                if (!it.manualPrice && baseItem) it.name = `Water Level Indicator (${t.H} ${displayUnit})`;
-                            }
-                            else if (n.includes("2\" x 2\"") || n.includes("roof rim") || n === "2") calcQ = perimeter; 
-                            else if (n.includes("ladder bracket")) calcQ = extLadders > 0 ? (pH * 3 * extLadders) : 0; 
-                            
-                            // V200 STRUCTURAL MAPPING 
-                            else if (n === "type a cleat" || n.includes("(a)")) calcQ = type_A_cleats; 
-                            else if (n === "type b cleat" || n.includes("(b)")) calcQ = type_B_cleats; 
-                            else if (n === "type c1 cleat" || n.includes("c1")) calcQ = type_C1_cleats; 
-                            else if (n === "type c cleat" || n.includes("(c)")) calcQ = type_C_cleats; 
-                            
-                            else if (n.includes("44 1/2") || n.includes("44.5")) calcQ = 0; 
-                            else if (it._isPartStay === 1) calcQ = num_partitions > 0 ? (pW * 2 * num_partitions) : 0;
-                            else if (n.includes("68") && !n.includes("partition")) calcQ = angle_stays; 
-                            
-                            else if (n.includes("m14x30 bn") || n.includes("m14 x 30")) calcQ = m14Qty;
-                            else if (n.includes("m14 washer") || n.includes("m14 w")) calcQ = m14Qty;
-                            else if (n.includes("5/8 x 1½ bn") || n.includes("5/8x1.5 bn")) calcQ = bolt58Qty;
-                            else if (n.includes("5/8 x 1½ w") || n.includes("5/8 w")) calcQ = 0; 
-                            else if (n.includes("3/8 x 3/4 bn") || n.includes("3/8x3/4 bn")) calcQ = roof38Qty;
-                            else if (n.includes("3/8 x 3/4 w") || n.includes("3/8 w")) calcQ = 0; 
-                            else if (n.includes("3/8 x 3 bn")) calcQ = 0; 
-                            
-                            else if (n.includes("5x45x10m")) calcQ = isHDG ? sealantRolls : 0; 
-                            else if (n.includes("3x40x10m")) calcQ = isHDG ? sealantRolls : 0;
-                            else if (n.includes("8mm butyl sealant")) calcQ = 0; 
-                            else if (n.includes("24mm butyl sealant")) calcQ = 0; 
-                            
-                            else if (n.includes("air-vents") || n.includes("air vent")) calcQ = Math.max(1, Math.floor(roofPanels / 15)); 
-                            else if (n.includes("ext") && n.includes("ladder")) calcQ = extLadders; 
-                            else if (n.includes("int") && n.includes("ladder")) calcQ = intLadders; 
-                            
-                            it.qty = calcQ * tQty; 
+                            if (n.includes("roof trusses") || n.includes("roof truss")) calcQ = numTrusses;
+                            else if (n.includes("roof rim")) calcQ = perimeter;
+                            else if (n.includes("ladder bracket")) calcQ = numLadders > 0 ? (pH * 3 * numLadders) : 0;
+                            else if (n.includes("rc (a)") || n.includes("rc(a)")) calcQ = cleatA;
+                            else if (n.includes("mc (b)") || n.includes("mc(b)")) calcQ = cleatB;
+                            else if (n.includes("sc (c)") || n.includes("sc1 (c1)")) calcQ = cleatC;
+                            else if (n.includes("67 1/2") || n.includes("67.5")) calcQ = angleStayQty;
+                            else if (it._isPartStay === 1) { calcQ = num_partitions > 0 ? (pW * 2 * num_partitions) : 0; }
+                            else if (n.includes("m14x30 bn")) calcQ = m14Qty;
+                            else if (n.includes("m14 washer")) calcQ = m14Qty;
+                            else if (n.includes("5/8 x 1½ bn")) calcQ = bolt58Qty;
+                            else if (n.includes("5/8 x 1½ w")) calcQ = washer58Qty;
+                            else if (n.includes("3/8 x 3/4 bn")) calcQ = bolt38_34Qty;
+                            else if (n.includes("3/8 x 3 bn")) calcQ = bolt38_3Qty;
+                            else if (n.includes("5x45x10m")) calcQ = roll5x45Qty;
+                            else if (n.includes("3x40x10m")) calcQ = roll3x40Qty;
+                            else if (n.includes("8mm butyl sealant")) calcQ = butyl8Qty;
+                            else if (n.includes("24mm butyl sealant")) calcQ = butyl24Qty;
+                            else if (n.includes("air-vents") || n.includes("air vent")) calcQ = Math.max(1, Math.floor(roofPanels / 15));
+                            else if (n.includes("water level indicator")) calcQ = 1;
+                            else if (n.includes("ext") && n.includes("ladder")) calcQ = numLadders;
+                            else if (n.includes("int") && n.includes("ladder")) calcQ = numLadders > 0 ? Math.max(numLadders, manholeQty) : 0;
+                            it.qty = calcQ * tQty;
                         }
+                        let qInput = document.getElementById(`t_${tIdx}_q_${sIdx}_${iIdx}`); if(qInput && document.activeElement !== qInput) qInput.value = it.qty || 0;
                     }
                 });
             }
         });
+        renderBomTables();
     }
 
     function updateTankField(i, f, v, isNum) { 
@@ -1190,41 +1340,148 @@
         }
 
         if (f === 'H' && oldH !== appTanks[i].H) applySmartThickness(appTanks[i], i);
-        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std', 'tankQty'].includes(f)) {
-            autoCalculateBOM(i);
-            renderBOMUI(); 
-        }
+        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std', 'tankQty'].includes(f)) autoCalculateBOM(i); 
         safeProcess(); 
     }
 
-    function addNewTank() { appTanks.push(defaultTank()); renderTanksUI(); autoCalculateBOM(appTanks.length - 1); renderBOMUI(); safeProcess(); }
-    function removeTank(i) { if(confirm("Remove tank?")) { appTanks.splice(i, 1); renderTanksUI(); renderBOMUI(); processTankData(); } }
+    function addNewTank() { appTanks.push(defaultTank()); renderAllDynamicUI(); autoCalculateBOM(appTanks.length - 1); safeProcess(); }
+    function duplicateTank(i) {
+        let copy = JSON.parse(JSON.stringify(appTanks[i])); copy.id = Date.now();
+        appTanks.splice(i + 1, 0, copy);
+        renderAllDynamicUI(); autoCalculateBOM(i + 1); safeProcess(); showToast("Tank duplicated.");
+    }
+    function removeTank(i) { if(confirm("Remove tank?")) { appTanks.splice(i, 1); renderAllDynamicUI(); processTankData(); } }
+    function newQuote() {
+        if(!confirm("Start a new blank quote? Any unsaved changes will be lost.")) return;
+        appTanks = [defaultTank()]; appCustomItems = [];
+        ['projectName','custCompany','custAttn','custAddr','custPoNo','custDelDate'].forEach(id => setVal(id, ''));
+        setVal('markupPct', 0); setVal('discountPct', 0);
+        let nextSeq = (parseInt(companyProfile.quoteSeq) || 1001);
+        setVal('quoteIdInput', (companyProfile.quotePrefix || 'QP-26-') + nextSeq);
+        renderAllDynamicUI(); autoCalculateBOM(0); safeProcess(); window._dirtyQuote = false;
+        switchTab('quote'); showToast("New blank quote started.");
+    }
+
+    // ---- BOM Templates: save a tank's full setup + edited BOM for reuse ----
+    function renderTemplateSelect() {
+        let sel = document.getElementById('templateSelect'); if(!sel) return;
+        let keys = Object.keys(bomTemplates).sort();
+        sel.innerHTML = keys.length ? keys.map(k => `<option value="${k.replace(/"/g,'&quot;')}">${k}</option>`).join('') : '<option value="">(no saved templates yet)</option>';
+    }
+    function saveTankAsTemplate(i) {
+        let name = prompt("Save this tank's full setup & edited BOM as a template. Name it:");
+        if(!name) return; name = name.trim(); if(!name) return;
+        let copy = JSON.parse(JSON.stringify(appTanks[i])); delete copy.id;
+        bomTemplates[name] = copy;
+        if(cloudDB) cloudDB.collection("winko_settings").doc("bom_templates").set({ data: bomTemplates });
+        renderTemplateSelect(); showToast(`Template "${name}" saved for future use.`); logAction(`Saved BOM Template: ${name}`);
+    }
+    function addTankFromTemplate() {
+        let sel = document.getElementById('templateSelect'); let name = sel ? sel.value : '';
+        if(!name || !bomTemplates[name]) return showToast("Select a saved template first.", "error");
+        let copy = JSON.parse(JSON.stringify(bomTemplates[name])); copy.id = Date.now();
+        appTanks.push(copy); renderAllDynamicUI(); autoCalculateBOM(appTanks.length - 1); safeProcess();
+        showToast(`Added a tank from template "${name}".`); logAction(`Loaded BOM Template: ${name}`);
+    }
+    function deleteTemplate() {
+        let sel = document.getElementById('templateSelect'); let name = sel ? sel.value : '';
+        if(!name || !bomTemplates[name]) return showToast("Select a template to delete.", "error");
+        if(!confirm(`Delete template "${name}"?`)) return;
+        delete bomTemplates[name];
+        if(cloudDB) cloudDB.collection("winko_settings").doc("bom_templates").set({ data: bomTemplates });
+        renderTemplateSelect(); showToast("Template deleted."); logAction(`Deleted BOM Template: ${name}`);
+    }
     
-    function addPartition(tIdx) { if(!appTanks[tIdx].partitions) appTanks[tIdx].partitions = []; if(appTanks[tIdx].partitions.length < 3) { appTanks[tIdx].partitions.push(0); renderTanksUI(); autoCalculateBOM(tIdx); renderBOMUI(); safeProcess(); } }
-    function updatePartition(tIdx, pIdx, val) { appTanks[tIdx].partitions[pIdx] = parseInt(val) || 0; renderDrawings(); autoCalculateBOM(tIdx); renderBOMUI(); safeProcess(); }
-    function removePartition(tIdx, pIdx) { appTanks[tIdx].partitions.splice(pIdx, 1); renderTanksUI(); autoCalculateBOM(tIdx); renderBOMUI(); safeProcess(); }
+    function addPartition(tIdx) { if(!appTanks[tIdx].partitions) appTanks[tIdx].partitions = []; if(appTanks[tIdx].partitions.length < 3) { appTanks[tIdx].partitions.push(0); renderAllDynamicUI(); autoCalculateBOM(tIdx); safeProcess(); } }
+    function updatePartition(tIdx, pIdx, val) { appTanks[tIdx].partitions[pIdx] = parseInt(val) || 0; renderDrawings(); }
+    function removePartition(tIdx, pIdx) { appTanks[tIdx].partitions.splice(pIdx, 1); renderAllDynamicUI(); autoCalculateBOM(tIdx); safeProcess(); }
 
     function updateBomField(t, s, i, f, v, isNum) { 
         appTanks[t].bom[s].items[i][f] = isNum ? (parseFloat(v)||0) : v; 
         if(f === 'def') appTanks[t].bom[s].items[i].manualPrice = true; 
         if(f === 'qty') appTanks[t].bom[s].items[i].manualQty = true; 
-        if(f === 'name') appTanks[t].bom[s].items[i].manualPrice = true; 
+        if(f === 'name') appTanks[t].bom[s].items[i].manualPrice = false; 
         safeProcess(); 
     }
     
     function addBomItem(tIdx, sIdx) {
         appTanks[tIdx].bom[sIdx].items.push({ name: "New Custom Item", qty: 1, wt: 0, def: 0, manualPrice: true, manualQty: true, manualAdded: true });
-        renderBOMUI(); safeProcess();
+        renderAllDynamicUI(); safeProcess();
     }
 
-    function removeBomItem(tIdx, sIdx, iIdx) { if(confirm("Remove this item from the BOM list?")) { appTanks[tIdx].bom[sIdx].items.splice(iIdx, 1); renderBOMUI(); safeProcess(); } }
+    function removeBomItem(tIdx, sIdx, iIdx) { if(confirm("Remove this item from the BOM list?")) { appTanks[tIdx].bom[sIdx].items.splice(iIdx, 1); renderAllDynamicUI(); safeProcess(); } }
     function updateNozzle(t, nId, f, v, isNum) { let n = appTanks[t].nozzles.find(x=>x.id==nId); if(n) { n[f] = isNum ? (parseFloat(v)||0) : v; safeProcess(); } }
-    function addNozzle(t) { if(!appTanks[t].nozzles) appTanks[t].nozzles = []; appTanks[t].nozzles.push({id: Date.now(), type: "Inlet", size: "2\"", qty: 1, pos: "Side panel"}); renderTanksUI(); }
-    function addNewCustomItem() { appCustomItems.push({ id: Date.now(), name: "Custom Service / Add-on", qty: 1, unit: "Lot", cost: 0 }); renderTanksUI(); safeProcess(); }
+    function addNozzle(t) { if(!appTanks[t].nozzles) appTanks[t].nozzles = []; appTanks[t].nozzles.push({id: Date.now(), type: "Inlet", size: "2\"", qty: 1, pos: "Side panel"}); renderAllDynamicUI(); }
+    function addNewCustomItem() { appCustomItems.push({ id: Date.now(), name: "Custom Service / Add-on", qty: 1, unit: "Lot", cost: 0 }); renderAllDynamicUI(); safeProcess(); }
     function updateCustomItem(i, f, v, isNum) { appCustomItems[i][f] = isNum ? parseFloat(v)||0 : v; safeProcess(); }
-    function removeCustomItem(i) { appCustomItems.splice(i, 1); renderTanksUI(); safeProcess(); }
+    function removeCustomItem(i) { appCustomItems.splice(i, 1); renderAllDynamicUI(); safeProcess(); }
 
-    function renderTanksUI() {
+    function renderBomTables() {
+        let bH = "";
+        let u = window.currentUnit || getVal('unitChoice') || 'ft';
+        appTanks.forEach((t, i) => {
+            let displayQtyText = (t.tankQty && t.tankQty > 1) ? ` - ${t.tankQty} Sets` : ``;
+            let gL = Math.max(1, u === 'ft' ? Math.floor(t.L/4) : Math.floor(t.L)); let gW = Math.max(1, u === 'ft' ? Math.floor(t.W/4) : Math.floor(t.W)); let gH = Math.max(1, u === 'ft' ? Math.floor(t.H/4) : Math.floor(t.H));
+            let basisInfo = ` · Grid ${gL}×${gW}×${gH}` + ((t.lastSeamMeters != null) ? ` · Seam ${t.lastSeamMeters}m` : ``);
+            let rH = "";
+            t.bom.forEach((sec, sIdx) => {
+                rH += `<tr>
+                    <td colspan="6" style="background:#f8fafc; font-weight:700; border-bottom: 2px solid #e2e8f0; padding: 6px 10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="text-transform:uppercase; font-size:12px; color:#475569;">${sec.category}</span>
+                            <button class="action-btn no-print" style="padding:2px 8px !important; min-width:auto; font-size:10px; height:auto; border-radius:4px; background:#10b981;" onclick="addBomItem(${i}, ${sIdx})">+ Add Row</button>
+                        </div>
+                    </td>
+                </tr>`;
+                sec.items.forEach((it, iIdx) => {
+                    let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" class="admin-input" id="t_${i}_q_${sIdx}_${iIdx}" value="${it.qty||0}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
+                    let resetBtn = it.manualPrice ? `<button class="del-btn no-print" style="background:#e0f2fe; color:#0369a1; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice = false; safeProcess(); renderBomTables();">Sync Price</button>` : '';
+                    let resetQtyBtn = it.manualQty ? `<button class="del-btn no-print" style="background:#e8f5e9; color:#2e7d32; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualQty = false; autoCalculateBOM(${i}); safeProcess();">Sync Qty</button>` : '';
+                    let safeName = (it.name||'').replace(/"/g, '&quot;');
+                    rH += `<tr class="bom-row-${i}">
+                        <td>
+                            <div style="display:flex; align-items:center;">
+                                <button class="del-btn no-print" style="padding:3px 6px; font-size:10px; margin-right:8px;" onclick="removeBomItem(${i}, ${sIdx}, ${iIdx})" title="Remove Item">X</button>
+                                <input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" list="invDatalist" value="${safeName}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)">
+                                ${resetBtn} ${resetQtyBtn}
+                            </div>
+                            <div id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag" style="margin-left: 28px;"></div>
+                        </td>
+                        <td class="text-center"><input type="number" class="admin-input" value="${it.wt||0}" onchange="appTanks[${i}].bom[${sIdx}].items[${iIdx}].wt=parseFloat(this.value)||0; safeProcess();"></td>
+                        <td class="col-input">${qtyHtml}</td>
+                        <td class="text-center" style="font-weight:600; color:#475569;" id="tot_wt_${i}_${sIdx}_${iIdx}">0.0</td>
+                        <td class="text-center"><input type="number" class="admin-input" id="cost_in_${i}_${sIdx}_${iIdx}" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td>
+                        <td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td>
+                    </tr>`;
+                });
+            });
+            bH += `<div class="module-card${i === 0 ? '' : ' collapsed'}">
+                <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <span>⚙️ BOM - TANK ${i+1}${displayQtyText}<span style="font-weight:500; color:#94a3b8; font-size:11px;">${basisInfo}</span></span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:30%;">Type / Description</th>
+                                <th class="text-center" style="width:12%;">Weight(KG)</th>
+                                <th class="text-center" style="width:12%;">Qty</th>
+                                <th class="text-center" style="width:12%;">Total(KG)</th>
+                                <th class="text-center" style="width:15%;">Unit(RM)</th>
+                                <th class="text-right" style="width:19%;">Total(RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rH}</tbody>
+                    </table>
+                </div>
+            </div>`;
+        });
+        setHtml('dynamicBomContainer', bH);
+    }
+
+    function renderAllDynamicUI() {
         let tH = "";
         appTanks.forEach((t, i) => {
             if(!t.nozzles) t.nozzles = []; let nozHtml = "";
@@ -1234,12 +1491,15 @@
             if(!t.partitions) t.partitions = []; if(t.partitionCol > 0 && t.partitions.length === 0) t.partitions.push(t.partitionCol);
             t.partitions.forEach((p, pIdx) => { partHtml += `<div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:12px;"><div class="form-group" style="flex:1;"><label style="color:#be185d;">Partition ${pIdx+1} Column</label><input type="number" value="${p}" oninput="updatePartition(${i}, ${pIdx}, this.value)"></div><button class="del-btn" style="height:40px; padding:0 20px; font-size:12px;" onclick="removePartition(${i}, ${pIdx})">X Remove</button></div>`; });
             let addPartBtn = t.partitions.length < 3 ? `<button class="action-btn" style="width:auto; padding:8px 16px; font-size:12px; background:#fbcfe8; color: #be185d; box-shadow:none;" onclick="addPartition(${i})">+ Add Partition Wall</button>` : `<span style="font-size:12px; color:#ef4444; font-weight:bold;">Max 3 Partitions Reached</span>`;
-            let partAnglesHtml = t.partitions.length > 0 ? `<div class="dim-grid" style="margin-top:16px; border-top:1px dashed #fbcfe8; padding-top:16px;"><div class="form-group"><label style="color:#db2777;">Partition L1 Stay</label><input type="text" value="${t.partL1Angle || '68\" Angle Stay'}" oninput="updateTankField(${i}, 'partL1Angle', this.value)"></div><div class="form-group"><label style="color:#db2777;">Partition L2 Stay</label><input type="text" value="${t.partL2Angle || '68\" Angle Stay'}" oninput="updateTankField(${i}, 'partL2Angle', this.value)"></div><div class="form-group"><label style="color:#db2777;">Partition L3 Stay</label><input type="text" value="${t.partL3Angle || '92.5\" Angle Stay'}" oninput="updateTankField(${i}, 'partL3Angle', this.value)"></div></div>` : ``;
+            let partAnglesHtml = t.partitions.length > 0 ? `<div class="dim-grid" style="margin-top:16px; border-top:1px dashed #fbcfe8; padding-top:16px;"><div class="form-group"><label style="color:#db2777;">Partition L1 Stay (Type)</label><input type="text" value="${t.partL1Angle || 'Partition Angle Stay'}" oninput="updateTankField(${i}, 'partL1Angle', this.value)"></div><div class="form-group"><label style="color:#db2777;">Partition L2 Stay (Type)</label><input type="text" value="${t.partL2Angle || '92.5\" (L2 Stay)'}" oninput="updateTankField(${i}, 'partL2Angle', this.value)"></div><div class="form-group"><label style="color:#db2777;">Partition L3 Stay (Type)</label><input type="text" value="${t.partL3Angle || '135.5\" (L3 Stay)'}" oninput="updateTankField(${i}, 'partL3Angle', this.value)"></div></div>` : ``;
 
             let displayQtyText = (t.tankQty && t.tankQty > 1) ? ` - ${t.tankQty} Sets` : ``;
+            let _u = getVal('unitChoice') || 'ft';
+            let _capL = (((_u === 'ft') ? (t.L * t.W * t.H * 28.3168) : (t.L * t.W * t.H * 1000)) * 0.9);
+            let capStr = _capL > 0 ? ` · ${Math.round(_capL).toLocaleString('en-MY')} L` : ``;
 
             tH += `<div class="tank-block" style="border-top:2px dashed #cbd5e1; margin-top:32px; padding-top:24px;">
-                <div class="tank-section-title"><span>Tank ${i+1} Specs${displayQtyText}</span><button class="del-btn no-print" onclick="removeTank(${i})">X REMOVE</button></div>
+                <div class="tank-section-title"><span>Tank ${i+1} Specs${displayQtyText}<span style="font-weight:500; color:#0284c7; font-size:11px;">${capStr}</span></span><span style="display:flex; gap:8px;"><button class="del-btn no-print" style="background:#dcfce7; color:#15803d;" onclick="saveTankAsTemplate(${i})">💾 TEMPLATE</button><button class="del-btn no-print" style="background:#e0f2fe; color:#0369a1;" onclick="duplicateTank(${i})">⎘ DUPLICATE</button><button class="del-btn no-print" onclick="removeTank(${i})">X REMOVE</button></span></div>
                 <div class="config-grid"><div class="form-group"><label>Standard</label><select onchange="updateTankField(${i}, 'std', this.value)"><option ${t.std.includes('SANS')?'selected':''}>SANS 10329:2020 Approved by SIRIM & SPAN</option><option ${t.std.includes('SS 22')?'selected':''}>SS 22: 1979</option></select></div><div class="form-group"><label>Material</label><select onchange="updateTankField(${i}, 'coat', this.value)"><option ${t.coat==='Hot Dipped Galvanised'?'selected':''}>Hot Dipped Galvanised</option><option ${t.coat==='Painted Steel'?'selected':''}>Painted Steel</option><option ${t.coat==='Stainless Steel (SS 304)'?'selected':''}>Stainless Steel (SS 304)</option><option ${t.coat==='Stainless Steel (SS 316)'?'selected':''}>Stainless Steel (SS 316)</option></select></div></div>
                 
                 <div class="tank-section-title" style="margin-top:16px; background:#f0fdf4; border-left-color:#22c55e;">🛡️ Panel Thickness Config (mm)</div>
@@ -1268,93 +1528,13 @@
 
                 <div class="tank-section-title" style="margin-top:16px; background:#fff7ed; border-left-color:#ea580c;">🚰 Nozzles</div>${nozHtml}<button class="add-btn" style="width:auto; padding:8px 16px; font-size:12px; background: #ffedd5; color: #c2410c; border: 1px dashed #fdba74;" onclick="addNozzle(${i})">+ Add Nozzle</button>
             </div>`;
+            
         });
-        setHtml('dynamicTanksContainer', tH);
+        setHtml('dynamicTanksContainer', tH); renderBomTables();
         
         let cH = ""; appCustomItems.forEach((c, i) => { cH += `<div style="display:flex; gap:16px; margin-bottom:12px; align-items:center; background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0;"><div style="flex:3;"><label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Item Name</label><input type="text" class="admin-input" style="width:100%; text-align:left;" value="${c.name}" oninput="updateCustomItem(${i}, 'name', this.value)"></div><div style="flex:1;"><label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Qty</label><input type="number" class="admin-input" style="width:100%;" value="${c.qty}" oninput="updateCustomItem(${i}, 'qty', this.value, true)"></div><div style="flex:1;"><label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Unit</label><input type="text" class="admin-input" style="width:100%;" value="${c.unit}" oninput="updateCustomItem(${i}, 'unit', this.value)"></div><div style="flex:1.5;"><label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Cost/Unit (RM)</label><input type="number" class="admin-input" style="width:100%;" value="${c.cost}" oninput="updateCustomItem(${i}, 'cost', this.value, true)"></div><div style="flex:0.5; text-align:center;"><label style="display:block; font-size:11px; color:transparent;">x</label><button class="del-btn" style="width:100%; padding:10px 0;" onclick="removeCustomItem(${i})">X</button></div></div>`; });
         setHtml('dynamicCustomContainer', cH);
-    }
-
-    function renderBOMUI() {
-        let bH = "";
-        
-        let catColors = {
-            "Panels": { bg: "#e0f2fe", color: "#0369a1", icon: "🟦" },
-            "Cleats, Trusses & Rims": { bg: "#fef3c7", color: "#b45309", icon: "🏗️" },
-            "Angle Stays": { bg: "#f3e8ff", color: "#7e22ce", icon: "🔩" },
-            "Accessories & Fasteners": { bg: "#dcfce7", color: "#15803d", icon: "🔧" },
-            "Services": { bg: "#f1f5f9", color: "#475569", icon: "👷" }
-        };
-
-        appTanks.forEach((t, i) => {
-            let tQty = Math.max(1, parseInt(t.tankQty) || 1);
-            let displayQtyText = (tQty > 1) ? ` - ${tQty} Sets` : ``;
-            let rH = "";
-            t.bom.forEach((sec, sIdx) => {
-                let theme = catColors[sec.category] || { bg: "#f8fafc", color: "#475569", icon: "📁" };
-
-                rH += `<tr>
-                    <td colspan="6" style="background:${theme.bg}; color:${theme.color}; font-weight:800; border-bottom: 1px solid rgba(0,0,0,0.1); border-top: 1px solid rgba(0,0,0,0.05); padding: 10px 12px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="text-transform:uppercase; font-size:13px; letter-spacing:0.5px;">${theme.icon} &nbsp; ${sec.category}</span>
-                            <button class="action-btn no-print" style="padding:4px 10px !important; min-width:auto; font-size:10px; height:auto; border-radius:6px; background:${theme.color}; color:#fff; box-shadow:none;" onclick="addBomItem(${i}, ${sIdx})">+ Add Row</button>
-                        </div>
-                    </td>
-                </tr>`;
-                
-                sec.items.forEach((it, iIdx) => {
-                    let calcQty = (sec.category === "Services") ? 1 : (it.qty||0); 
-                    let qtyHtml = ""; if (sec.category === "Services") { qtyHtml = `<span style="display:none;"></span>`; } else { qtyHtml = `<input type="number" class="admin-input-cell" value="${calcQty}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'qty', this.value, true)">`; }
-                    
-                    let resetBtn = it.manualPrice ? `<button class="del-btn no-print" style="background:#e0f2fe; color:#0369a1; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualPrice = false; safeProcess(); renderBOMUI();">Sync Price</button>` : '';
-                    let resetQtyBtn = it.manualQty ? `<button class="del-btn no-print" style="background:#e8f5e9; color:#2e7d32; padding:2px 6px; font-size:9px; margin-left:8px; white-space:nowrap;" onclick="appTanks[${i}].bom[${sIdx}].items[${iIdx}].manualQty = false; autoCalculateBOM(${i}); safeProcess(); renderBOMUI();">Sync Qty</button>` : '';
-                    
-                    rH += `<tr class="bom-row bom-row-${i}" data-qty="${calcQty}">
-                        <td>
-                            <div style="display:flex; align-items:center;">
-                                <button class="del-btn no-print" style="padding:3px 6px; font-size:10px; margin-right:8px;" onclick="removeBomItem(${i}, ${sIdx}, ${iIdx})" title="Remove Item">X</button>
-                                <input type="text" id="t_${i}_n_${sIdx}_${iIdx}" class="desc-input" list="invDatalist" value="${it.name}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'name', this.value)">
-                                ${resetBtn} ${resetQtyBtn}
-                            </div>
-                            <div id="price_tag_${i}_${sIdx}_${iIdx}" class="price-tag" style="margin-left: 28px;"></div>
-                        </td>
-                        <td class="text-center"><input type="number" class="admin-input-cell" style="font-weight:500;" value="${it.wt||0}" onchange="appTanks[${i}].bom[${sIdx}].items[${iIdx}].wt=parseFloat(this.value)||0; safeProcess();"></td>
-                        <td class="col-qty-input">${qtyHtml}</td>
-                        <td class="text-center" style="font-weight:600; color:#475569;" id="tot_wt_${i}_${sIdx}_${iIdx}">0.0</td>
-                        <td class="text-center"><input type="number" class="admin-input-cell" style="font-weight:500;" id="cost_in_${i}_${sIdx}_${iIdx}" value="${(it.def||0).toFixed(2)}" oninput="updateBomField(${i}, ${sIdx}, ${iIdx}, 'def', this.value, true)"></td>
-                        <td class="col-total" id="tot_${i}_${sIdx}_${iIdx}">0.00</td>
-                    </tr>`;
-                });
-            });
-            bH += `<div class="module-card collapsed">
-                <div class="card-header" onclick="this.parentElement.classList.toggle('collapsed')" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 8px; padding: 16px 20px;">
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <span>⚙️ BOM - TANK ${i+1}${displayQtyText}</span>
-                    </div>
-                </div>
-                <div class="card-body" style="padding-top:0;">
-                    <table style="border-top:none; border-radius: 0 0 8px 8px;">
-                        <thead>
-                            <tr>
-                                <th style="width:30%;">Type / Description</th>
-                                <th class="text-center" style="width:12%;">Weight(KG)</th>
-                                <th class="text-center" style="width:12%;">Qty</th>
-                                <th class="text-center" style="width:12%;">Total(KG)</th>
-                                <th class="text-center" style="width:15%;">Unit(RM)</th>
-                                <th class="text-right" style="width:19%;">Total(RM)</th>
-                            </tr>
-                        </thead>
-                        <tbody>${rH}</tbody>
-                    </table>
-                </div>
-            </div>`;
-        });
-        setHtml('dynamicBomContainer', bH);
-    }
-
-    function renderAllDynamicUI() {
-        renderTanksUI();
-        renderBOMUI();
+        renderTemplateSelect();
     }
 
     function createSVG(cols, rows, title, isWall, partitionsArr, ladder1Col, ladder2Col) {
@@ -1387,17 +1567,17 @@
         setHtml('internal_drawings_print_container', h);
     }
 
-    function processTankData() {
+function processTankData() {
         try {
             let u = getVal('unitChoice') || 'ft'; window.currentUnit = u; let totalBase = 0, totalC = 0, totalPanelsCount = 0, totalWeight = 0;
+            let invLookup = {}; for (let k in winkoInventory) { invLookup[k.trim().toLowerCase()] = winkoInventory[k]; }
             appTanks.forEach((t, i) => {
                 let tQty = Math.max(1, parseInt(t.tankQty) || 1);
                 t.effLiters = (((u === 'ft') ? (t.L * t.W * t.H * 28.3168) : (t.L * t.W * t.H * 1000)) * 0.9) * tQty; totalC += t.effLiters; t.baseCost = 0;
                 
                 t.bom.forEach((sec, sIdx) => { sec.items.forEach((it, iIdx) => {
                     let searchName = it.name.trim().toLowerCase();
-                    let invItemKey = Object.keys(winkoInventory).find(k => k.trim().toLowerCase() === searchName);
-                    let invData = invItemKey ? winkoInventory[invItemKey] : null;
+                    let invData = invLookup[searchName] || null;
                     
                     let unitPrice = 0;
                     if (it.manualPrice) { 
@@ -1444,28 +1624,31 @@
             renderDrawings();
         } catch(e) { console.error("Calc error:", e); }
     }
-    function safeProcess() { processTankData(); }
+    let _recalcTimer = null;
+    function safeProcess() { window._dirtyQuote = true; clearTimeout(_recalcTimer); _recalcTimer = setTimeout(processTankData, 180); }
 
     function syncPrintHeader(u) {
         setTxt('metaQuoteId', getVal('quoteIdInput')); setTxt('cpRef', getVal('quoteIdInput')); setTxt('metaDate', new Date().toLocaleDateString()); setTxt('cpDate', new Date().toLocaleDateString()); setTxt('metaProject', getVal('projectName')); setTxt('cpProject', getVal('projectName')); setTxt('cpCustName', getVal('custCompany')); setTxt('cpAttention', getVal('custAttn')); setTxt('cpCustAddress', getVal('custAddr')); setTxt('cpValidity', getVal('tcValidity')); setTxt('cpPayment', getVal('tcPayment').replace(/\n/g, '<br>')); setTxt('cpLeadTime', getVal('tcLead')); setTxt('cpDeliveryTerm', getVal('tcDelivery')); setTxt('cpSignName', getVal('signName')); setTxt('cpSignPhone', getVal('signPhone')); setTxt('cpFullTermsText', getVal('fullTermsNotes'));
-        
+
+        if (appTanks[0]) { setTxt('metaStd', appTanks[0].std); setTxt('metaCoat', appTanks[0].coat); let t0 = appTanks[0]; setTxt('metaDims', u==='ft' ? `${t0.L}' x ${t0.W}' x ${t0.H}'` : `${t0.L}m x ${t0.W}m x ${t0.H}m`); }
+
         let tH = ''; let subtotalAccumulator = 0;
         appTanks.forEach((t, i) => {
             let tQty = Math.max(1, parseInt(t.tankQty) || 1);
             let dimStr = u==='ft' ? `${t.L}' x ${t.W}' x ${t.H}' (H)` : `${t.L}m x ${t.W}m x ${t.H}m (H)`; let mkup = getNum('markupPct') / 100; let tankSellPrice = t.baseCost * (1 + mkup); subtotalAccumulator += tankSellPrice;
-            
+
             let pH = Math.max(1, u === 'ft' ? Math.floor(t.H/4) : Math.floor(t.H));
-            let thickStr = `Base: ${parseFloat(t.thickBase).toFixed(1)||'-'}mm | Roof: ${parseFloat(t.thickRoof).toFixed(1)||'-'}mm`;
-            if (pH >= 1 && t.thickL1) thickStr += ` | L1: ${parseFloat(t.thickL1).toFixed(1)}mm`;
-            if (pH >= 2 && t.thickL2) thickStr += ` | L2: ${parseFloat(t.thickL2).toFixed(1)}mm`;
-            if (pH >= 3 && t.thickL3) thickStr += ` | L3: ${parseFloat(t.thickL3).toFixed(1)}mm`;
-            if (pH >= 4 && t.thickL4) thickStr += ` | L4: ${parseFloat(t.thickL4).toFixed(1)}mm`;
+            let thickStr = `Base: ${t.thickBase||'-'}mm | Roof: ${t.thickRoof||'-'}mm`;
+            if (pH >= 1 && t.thickL1) thickStr += ` | L1: ${t.thickL1}mm`;
+            if (pH >= 2 && t.thickL2) thickStr += ` | L2: ${t.thickL2}mm`;
+            if (pH >= 3 && t.thickL3) thickStr += ` | L3: ${t.thickL3}mm`;
+            if (pH >= 4 && t.thickL4) thickStr += ` | L4: ${t.thickL4}mm`;
 
             let extL = 0, intL = 0, vents = 0;
-            t.bom.forEach(sec => sec.items.forEach(it => { let n = it.name.toLowerCase(); let q = Number(it.qty) || 0; if(n.includes('ext') && (n.includes('ladder') || n.includes('lader'))) extL += q; else if(n.includes('int') && (n.includes('ladder') || n.includes('lader'))) intL += q; else if(n.includes('air vent')) vents += q; }));
+            t.bom.forEach(sec => sec.items.forEach(it => { let n = it.name.toLowerCase(); let q = Number(it.qty) || 0; if(n.includes('ext') && (n.includes('ladder') || n.includes('lader'))) extL += q; else if(n.includes('int') && (n.includes('ladder') || n.includes('lader'))) intL += q; else if(n.includes('air vent') || n.includes('air-vent')) vents += q; }));
             let accStr = []; if(intL > 0) accStr.push(`${intL}x Internal Ladder`); if(extL > 0) accStr.push(`${extL}x External Ladder`); if(vents > 0) accStr.push(`${vents}x Air Vent`);
             let accHtml = accStr.length > 0 ? `<br><span style="color:#0f172a; font-weight:600;">Included: ${accStr.join(', ')}</span>` : '';
-            
+
             tH += `<tr>
                 <td class="text-center" style="font-weight:bold;">${i+1}</td>
                 <td>
@@ -1476,19 +1659,19 @@
                 <td class="text-right" style="font-weight:bold;">RM ${tankSellPrice.toLocaleString('en-MY',{minimumFractionDigits:2})}</td>
             </tr>`;
         });
-        
-        appCustomItems.forEach((c, i) => { 
-            let lineCost = ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); subtotalAccumulator += lineCost; 
-            tH += `<tr><td class="text-center" style="font-weight:bold;">-</td><td><span contenteditable="true" spellcheck="false" style="color:#000; font-size:10pt; font-weight:bold; border-bottom:1px dashed transparent;" onmouseover="this.style.borderBottom='1px dashed #cbd5e1'" onmouseout="this.style.borderBottom='1px dashed transparent'">${c.name}</span></td><td class="text-center" style="font-weight:bold;">${c.qty} ${c.unit}</td><td class="text-right" style="font-weight:bold;">RM ${lineCost.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; 
+
+        appCustomItems.forEach((c) => {
+            let lineCost = ((parseFloat(c.qty)||0) * (parseFloat(c.cost)||0)); subtotalAccumulator += lineCost;
+            tH += `<tr><td class="text-center" style="font-weight:bold;">-</td><td><span contenteditable="true" spellcheck="false" style="color:#000; font-size:10pt; font-weight:bold; border-bottom:1px dashed transparent;" onmouseover="this.style.borderBottom='1px dashed #cbd5e1'" onmouseout="this.style.borderBottom='1px dashed transparent'">${c.name}</span></td><td class="text-center" style="font-weight:bold;">${c.qty} ${c.unit}</td><td class="text-right" style="font-weight:bold;">RM ${lineCost.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`;
         });
 
         let dscPct = getNum('discountPct'); let dscAmt = subtotalAccumulator * (dscPct/100); let net = subtotalAccumulator - dscAmt;
         if (dscAmt > 0) { tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">Gross Subtotal</td><td style="text-align:right; border:none; padding:8px 5px; font-weight:bold; border-top:2px solid #000;">RM ${subtotalAccumulator.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr><tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">Discount (${dscPct}%)</td><td style="text-align:right; border:none; padding:4px 5px; font-weight:bold;">- RM ${dscAmt.toLocaleString('en-MY',{minimumFractionDigits:2})}</td></tr>`; }
         let finalCustomerTotal = net.toLocaleString('en-MY',{minimumFractionDigits:2}); tH += `<tr><td colspan="2" style="border:none;"></td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">Total Amount</td><td style="text-align:right; border:none; padding:10px 5px; font-weight:900; font-size:11pt; border-top:2px solid #000;">RM ${finalCustomerTotal}</td></tr>`;
         setHtml('cpDynamicTanksBody', tH);
-        
+
         let nozH = ''; appTanks.forEach((t,i) => { if(t.nozzles) t.nozzles.forEach(n => { nozH += `<tr><td style="text-align:center;">${n.type}</td><td style="text-align:center;">${n.size}</td><td style="text-align:center;">${n.qty}</td><td style="padding-left:10px;">Tank ${i+1}: ${n.pos}</td></tr>`; }) });
-        setHtml('so_nozzle_body', nozH);
+        setHtml('so_nozzle_body', nozH || '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">No nozzles specified.</td></tr>');
 
         let soHtml = '';
         appTanks.forEach((t, i) => {
@@ -1496,66 +1679,155 @@
             let displayQtyText = (tQty > 1) ? ` - ${tQty} Sets` : ``;
             soHtml += `<div class="so-section-title">TANK ${i+1} - ${t.L}x${t.W}x${t.H}${displayQtyText}</div>`;
             soHtml += `<table class="so-table"><thead><tr><th style="width:5%;">#</th><th style="width:65%; text-align:left;">Description & Specifications</th><th style="width:15%;">Unit</th><th style="width:15%;">Qty</th></tr></thead><tbody>`;
+            let rowNo = 1;
             t.bom.forEach(sec => {
-                let hasItems = false; let secRows = '';
-                sec.items.forEach(it => { 
-                    let qty = sec.category === 'Services' ? 1 : (parseFloat(it.qty)||0); 
-                    if (qty > 0) { 
-                        hasItems = true; 
-                        let unitDisp = sec.category === 'Services' ? 'Lot' : 'Pcs'; 
-                        let qtyDisp = sec.category === 'Services' ? '' : qty;
-                        secRows += `<tr><td style="text-align:center; color:#94a3b8;">-</td><td><strong>${it.name}</strong></td><td style="text-align:center;">${unitDisp}</td><td style="text-align:center; font-weight:bold; font-size:11pt;">${qtyDisp}</td></tr>`; 
-                    } 
+                let secRows = ''; let hasItems = false;
+                sec.items.forEach(it => {
+                    let qty = sec.category === 'Services' ? 1 : (parseFloat(it.qty)||0);
+                    if (qty > 0) {
+                        hasItems = true;
+                        let unitDisp = sec.category === 'Services' ? 'Lot' : 'Pcs';
+                        let qtyDisp = sec.category === 'Services' ? '-' : qty;
+                        secRows += `<tr><td style="text-align:center;">${rowNo++}</td><td style="text-align:left;">${it.name}</td><td style="text-align:center;">${unitDisp}</td><td style="text-align:center; font-weight:bold;">${qtyDisp}</td></tr>`;
+                    }
                 });
-                if (hasItems) { 
-                    soHtml += `<tr><td colspan="4" style="background:#f8fafc !important; font-weight:800; color:#475569; font-size:8pt; text-transform:uppercase;">${sec.category}</td></tr>` + secRows; 
-                }
+                if (hasItems) { soHtml += `<tr><td colspan="4" style="background:#f1f5f9; font-weight:800; text-transform:uppercase; font-size:8pt;">${sec.category}</td></tr>` + secRows; }
             });
             soHtml += `</tbody></table>`;
-        }); 
+        });
         setHtml('so_table_body', soHtml);
+
+        setTxt('so_customer', getVal('custCompany')); setTxt('so_projno', getVal('quoteIdInput')); setTxt('so_project', getVal('projectName')); setTxt('so_deldate', getVal('custDelDate')); setTxt('so_custpo', getVal('custPoNo'));
+        let mkt = getVal('marketChoice'); setTxt('box_local', mkt === 'local' ? 'X' : ''); setTxt('box_export', mkt === 'export' ? 'X' : '');
     }
-    
+
     function triggerPrint(type) {
-        if (type !== 'customer_from_preview') { processTankData(); syncPrintHeader(window.currentUnit||'ft'); }
-        if (type === 'customer') { switchTab('preview'); setTimeout(() => { document.body.className = 'print-customer'; window.print(); }, 200); } else if (type === 'customer_from_preview') { document.body.className = 'print-customer'; setTimeout(() => window.print(), 100); } else if (type === 'internal') { document.body.className = 'print-internal'; setTimeout(() => window.print(), 100); } else if (type === 'checklist') { setTxt('so_customer', getVal('custCompany')); setTxt('so_project', getVal('projectName')); setTxt('so_custpo', getVal('custPoNo')); setTxt('so_projno', getVal('quoteIdInput')); setTxt('so_deldate', getVal('custDelDate')); document.body.className = 'print-checklist'; setTimeout(() => window.print(), 100); }
-    } window.addEventListener('afterprint', () => { document.body.className = ''; });
-
-    function buildAdminTable() { let h = ''; systemBaseStructure.forEach((sec, cIdx) => { h += `<tr style="background:#f8fafc;"><td colspan="4"><strong>${sec.category}</strong> <button onclick="addAdminItem(${cIdx})" class="action-btn" style="display:inline-block; padding:6px 12px; width:auto; font-size:11px; margin-left:10px;">+ Item</button></td></tr>`; sec.items.forEach((it, iIdx) => { h += `<tr><td class="text-center"><button class="del-btn" onclick="removeAdminItem(${cIdx}, ${iIdx})">X</button></td><td><input type="text" class="admin-input" style="text-align:left;" value="${it.name}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].name=this.value"></td><td><input type="number" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td><td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${cIdx}].items[${iIdx}].def=parseFloat(this.value)||0; saveAdminDefaults();"></td></tr>`; }); }); setHtml('adminBody', h); }
-    function addAdminCat() { systemBaseStructure.push({category: "New Category", markup: 0, items: []}); buildAdminTable(); }
-    function addAdminItem(c) { systemBaseStructure[c].items.push({name:"New Item", wt:0, def:0}); buildAdminTable(); }
-    function removeAdminItem(c, i) { systemBaseStructure[c].items.splice(i, 1); buildAdminTable(); }
-    
-    function saveAdminDefaults() { 
-        let payload = { data: systemBaseStructure, lastUpdated: new Date().toISOString(), updatedBy: loggedInUser ? loggedInUser.username : 'System' };
-        if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set(payload); 
-        showToast("Master BOM Saved"); 
-        logAction("Updated Master BOM Structure & Defaults");
+        try {
+            document.body.classList.remove('print-internal','print-customer','print-checklist');
+            let u = window.currentUnit || getVal('unitChoice') || 'ft';
+            if (type !== 'customer_from_preview') {
+                try { processTankData(); } catch(e) { console.warn("processTankData during print:", e); }
+                try { syncPrintHeader(u); } catch(e) { console.warn("syncPrintHeader during print:", e); }
+            }
+            let cls = (type === 'internal') ? 'print-internal' : (type === 'checklist' ? 'print-checklist' : 'print-customer');
+            document.body.classList.add(cls);
+            let label = (type === 'internal') ? 'Internal Costing PDF' : (type === 'checklist') ? 'SO / Material Checklist' : 'Customer Quotation PDF';
+            try { logAction(`Printed / Exported ${label} — Quote: ${getVal('quoteIdInput') || '(no id)'}`); } catch(e) {}
+        } catch(e) { console.error("Print setup error:", e); }
+        setTimeout(() => { try { window.print(); } catch(e) { console.error("window.print failed:", e); } }, 100);
     }
-    
+    window.addEventListener('afterprint', function() { document.body.classList.remove('print-internal','print-customer','print-checklist'); });
+
+    function buildAdminTable() {
+        let body = document.getElementById('adminBody'); if(!body) return;
+        let h = '';
+        systemBaseStructure.forEach((sec, sIdx) => {
+            h += `<tr><td colspan="4" style="background:#f1f5f9; font-weight:800; text-transform:uppercase; color:#1e293b;"><div style="display:flex; justify-content:space-between; align-items:center;"><span>${sec.category}</span><button class="action-btn" style="width:auto; padding:4px 12px; font-size:11px; background:#3b82f6;" onclick="addAdminItem(${sIdx})">+ Item</button></div></td></tr>`;
+            sec.items.forEach((it, iIdx) => {
+                let safeName = (it.name||'').replace(/"/g, '&quot;');
+                h += `<tr>
+                    <td class="text-center"><button class="del-btn" onclick="removeAdminItem(${sIdx}, ${iIdx})">X</button></td>
+                    <td><input class="admin-input" style="text-align:left;" value="${safeName}" onchange="systemBaseStructure[${sIdx}].items[${iIdx}].name=this.value"></td>
+                    <td><input type="number" step="0.01" class="admin-input" value="${it.wt||0}" onchange="systemBaseStructure[${sIdx}].items[${iIdx}].wt=parseFloat(this.value)||0"></td>
+                    <td><input type="number" step="0.01" class="admin-input" value="${it.def||0}" onchange="systemBaseStructure[${sIdx}].items[${iIdx}].def=parseFloat(this.value)||0"></td>
+                </tr>`;
+            });
+        });
+        setHtml('adminBody', h);
+    }
+    function addAdminCat() { let name = prompt("New category name:"); if(!name) return; systemBaseStructure.push({ category: name, markup: 0, items: [] }); buildAdminTable(); }
+    function addAdminItem(sIdx) { systemBaseStructure[sIdx].items.push({ name: "New Item", def: 0, wt: 0 }); buildAdminTable(); }
+    function removeAdminItem(sIdx, iIdx) { if(confirm("Remove this default item?")) { systemBaseStructure[sIdx].items.splice(iIdx, 1); buildAdminTable(); } }
+    function saveAdminDefaults() {
+        if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set({ data: systemBaseStructure, lastUpdated: new Date().toISOString(), updatedBy: loggedInUser ? loggedInUser.username : 'System' });
+        showToast("Master BOM structure saved to cloud!"); logAction("Saved Master BOM Structure");
+    }
     function forceResetCloudBOM() {
-        if(confirm("⚠️ WARNING: This will overwrite your current Cloud Master BOM with the Jutarama Delivery Order defaults. Do you want to continue?")) {
-            let payload = { data: JUTARAMA_DEFAULT_BOM, lastUpdated: new Date().toISOString(), updatedBy: loggedInUser ? loggedInUser.username : 'System' };
-            if(cloudDB) { cloudDB.collection("winko_settings").doc("master_bom").set(payload).then(() => { alert("✅ Cloud Database Successfully Overwritten!\n\nThe page will now reload to apply the new changes."); window.location.reload(); }).catch((error) => { alert("Error saving to cloud: " + error); }); } else { alert("Cloud DB not connected. Running in offline mode."); }
-        }
+        if(!confirm("⚠️ This will overwrite the cloud Master BOM with the built-in Jutarama defaults. Continue?")) return;
+        systemBaseStructure = JSON.parse(JSON.stringify(JUTARAMA_DEFAULT_BOM));
+        if(cloudDB) cloudDB.collection("winko_settings").doc("master_bom").set({ data: systemBaseStructure, lastUpdated: new Date().toISOString(), updatedBy: loggedInUser ? loggedInUser.username : 'System' });
+        buildAdminTable(); showToast("Cloud BOM reset to defaults."); logAction("Force Reset Cloud BOM to Defaults");
     }
 
-    function renderCustomerAdmin() { let f = getVal('custSearchBox').toLowerCase(); let h = ''; Object.keys(winkoCustomers).forEach(c => { if(!f || c.toLowerCase().includes(f)) h += `<tr><td><strong>${c}</strong></td><td>${winkoCustomers[c].attn||'-'}</td><td>${winkoCustomers[c].addr||'-'}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${encodeURIComponent(c).replace(/'/g, "%27")}')">X</button></td></tr>`; }); setHtml('customerAdminBody', h); }
-    function updateCustomerDatalist() { let h = ''; Object.keys(winkoCustomers).forEach(c => h += `<option value="${c}"></option>`); setHtml('customerDatalist', h); updateInvDatalist(); }
-    function deleteCustomer(safeC) { let c = decodeURIComponent(safeC); if(confirm(`Remove customer: ${c}?`)) { delete winkoCustomers[c]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); renderCustomerAdmin(); logAction(`Deleted Customer CRM: ${c}`); } }
-    
-    function applyCompanyProfileToAdmin() { setVal('profileName', companyProfile.name); setVal('profileReg', companyProfile.reg); setVal('profileAddress', companyProfile.address); setVal('profileContact', companyProfile.contact); setVal('profileWebsite', companyProfile.website); setVal('profileTax', companyProfile.taxRate); setVal('profileTerms', companyProfile.terms); setVal('mat_painted', companyProfile.matMult.painted); setVal('mat_ss304', companyProfile.matMult.ss304); setVal('mat_ss316', companyProfile.matMult.ss316); setVal('profilePrefix', companyProfile.quotePrefix); setVal('profileSeq', companyProfile.quoteSeq); }
-    
-    function saveCompanyProfile() { 
-        companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = getNum('profileTax'); companyProfile.terms = getVal('profileTerms'); companyProfile.matMult = { painted: getNum('mat_painted'), ss304: getNum('mat_ss304'), ss316: getNum('mat_ss316') }; companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq')) || 1001; 
+    function updateCustomerDatalist() {
+        let h = ''; Object.keys(winkoCustomers).forEach(k => { h += `<option value="${k}"></option>`; }); setHtml('customerDatalist', h);
+    }
+    function renderCustomerAdmin() {
+        let body = document.getElementById('customerAdminBody'); if(!body) return;
+        let filter = (getVal('custSearchBox')||'').toLowerCase(); let h = '';
+        Object.keys(winkoCustomers).forEach(k => {
+            if(filter && !k.toLowerCase().includes(filter)) return;
+            let c = winkoCustomers[k]; let safeK = encodeURIComponent(k).replace(/'/g, "%27");
+            h += `<tr><td><strong>${k}</strong></td><td>${c.attn||''}</td><td>${c.addr||''}</td><td class="text-center"><button class="del-btn" onclick="deleteCustomer('${safeK}')">X</button></td></tr>`;
+        });
+        setHtml('customerAdminBody', h);
+    }
+    function deleteCustomer(safeK) { let k = decodeURIComponent(safeK); if(confirm(`Remove customer ${k}?`)) { delete winkoCustomers[k]; if(cloudDB) cloudDB.collection("winko_settings").doc("crm").set({data: winkoCustomers}); updateCustomerDatalist(); renderCustomerAdmin(); } }
+
+    function applyCompanyProfileToAdmin() {
+        setVal('profilePrefix', companyProfile.quotePrefix); setVal('profileSeq', companyProfile.quoteSeq); setVal('profileName', companyProfile.name); setVal('profileReg', companyProfile.reg); setVal('profileAddress', companyProfile.address); setVal('profileContact', companyProfile.contact); setVal('profileWebsite', companyProfile.website); setVal('profileTax', companyProfile.taxRate); setVal('profileTerms', companyProfile.terms);
+        if(companyProfile.matMult) { setVal('mat_painted', companyProfile.matMult.painted); setVal('mat_ss304', companyProfile.matMult.ss304); setVal('mat_ss316', companyProfile.matMult.ss316); }
+        let prr = companyProfile.panelRate || { wall: 3.875, roof: 6.26, manhole: 450 };
+        setVal('panel_wall', prr.wall); setVal('panel_roof', prr.roof); setVal('panel_manhole', prr.manhole);
+        updateLogoPreview();
+    }
+    function saveCompanyProfile() {
+        companyProfile.quotePrefix = getVal('profilePrefix'); companyProfile.quoteSeq = parseInt(getVal('profileSeq'))||1001; companyProfile.name = getVal('profileName'); companyProfile.reg = getVal('profileReg'); companyProfile.address = getVal('profileAddress'); companyProfile.contact = getVal('profileContact'); companyProfile.website = getVal('profileWebsite'); companyProfile.taxRate = parseFloat(getVal('profileTax'))||0; companyProfile.terms = getVal('profileTerms');
+        companyProfile.matMult = { painted: parseFloat(getVal('mat_painted'))||1, ss304: parseFloat(getVal('mat_ss304'))||1, ss316: parseFloat(getVal('mat_ss316'))||1 };
+        companyProfile.panelRate = { wall: parseFloat(getVal('panel_wall'))||3.875, roof: parseFloat(getVal('panel_roof'))||6.26, manhole: parseFloat(getVal('panel_manhole'))||450 };
         companyProfile.lastUpdated = new Date().toISOString(); companyProfile.updatedBy = loggedInUser ? loggedInUser.username : 'System';
-        if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile); showToast('Profile Updated!'); 
-        logAction("Updated Global Company Profile");
+        if(cloudDB) cloudDB.collection("winko_settings").doc("company").set(companyProfile);
+        applyCompanyProfileToHeaders(); appTanks.forEach((_, i) => autoCalculateBOM(i)); safeProcess(); showToast("Company profile saved!"); logAction("Updated Company Profile");
     }
-    
-    function applyCompanyProfileToHeaders() { setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address); setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name); }
+    function applyCompanyProfileToHeaders() {
+        setTxt('printHeaderName1', companyProfile.name); setTxt('printHeaderReg1', companyProfile.reg); setTxt('printHeaderAddr1', companyProfile.address);
+        setTxt('cpHeaderName', companyProfile.name); setTxt('cpHeaderReg', companyProfile.reg); setTxt('cpHeaderAddr', companyProfile.address); setTxt('cpHeaderContact', companyProfile.contact); setTxt('cpHeaderWeb', companyProfile.website); setTxt('cpSignCompany', companyProfile.name);
+        if(companyProfile.logo) { ['printLogoImg','cpLogoImg'].forEach(id => { let el = document.getElementById(id); if(el) { el.src = companyProfile.logo; el.style.display = ''; } }); }
+    }
+    function updateLogoPreview() {
+        let img = document.getElementById('logoPreview'); let empty = document.getElementById('logoPreviewEmpty'); if(!img) return;
+        if(companyProfile.logo) { img.src = companyProfile.logo; img.style.display = ''; if(empty) empty.style.display = 'none'; }
+        else { img.style.display = 'none'; if(empty) empty.style.display = 'flex'; }
+    }
+    function handleLogoUpload(event) {
+        let file = event.target.files[0]; if(!file) return;
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            let img = new Image();
+            img.onload = function() {
+                let maxW = 400; let scale = Math.min(1, maxW / img.width);
+                let canvas = document.createElement('canvas'); canvas.width = img.width * scale; canvas.height = img.height * scale;
+                let ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                let mime = (file.type === 'image/png') ? 'image/png' : 'image/jpeg';
+                companyProfile.logo = canvas.toDataURL(mime, 0.85);
+                updateLogoPreview(); applyCompanyProfileToHeaders();
+                showToast("Logo loaded — click 'Save Company Profile' to store it.");
+            };
+            img.onerror = function() { showToast("Could not read that image.", "error"); };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file); event.target.value = '';
+    }
+    function removeLogo() {
+        companyProfile.logo = ''; updateLogoPreview();
+        ['printLogoImg','cpLogoImg'].forEach(id => { let el = document.getElementById(id); if(el) el.src = 'winko logo.png'; });
+        showToast("Logo removed — click 'Save Company Profile' to apply.");
+    }
 
-    console.log("✅ Winko ERP Script v200 successfully loaded!");
+    setInterval(() => { let now = new Date().toLocaleString('en-MY'); let el = document.getElementById('liveClock'); if(el) el.innerText = now; let el2 = document.getElementById('liveClock2'); if(el2) el2.innerText = now; }, 1000);
+
+    // Ctrl/Cmd+S saves the current quote
+    window.addEventListener('keydown', function(e) {
+        if((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+            if(loggedInUser && document.getElementById('mainContent').style.display !== 'none') { e.preventDefault(); saveToMemory(); }
+        }
+    });
+    // Warn before leaving with unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+        if(window._dirtyQuote && loggedInUser) { e.preventDefault(); e.returnValue = ''; return ''; }
+    });
+
+    console.log("✅ Winko ERP Script v194 successfully loaded!");
 </script>
 </body>
 </html>
