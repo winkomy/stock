@@ -772,7 +772,7 @@
         return false;
     };
 
-    const cv = "V196"; 
+    const cv = "V197"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -849,6 +849,7 @@
             {name: "5/8 x 1½ W", def: 0.20, wt: 0.01}, 
             {name: "3/8 x 3/4 BN", def: 0.50, wt: 0.05}, 
             {name: "3/8 x 3 BN", def: 0.80, wt: 0.08}, 
+            {name: "3/8 Washer", def: 0.10, wt: 0.005}, 
             {name: "5x45x10m Sealant Roll", def: 22.50, wt: 0.8}, 
             {name: "3x40x10m Sealant Roll", def: 8.00, wt: 0.6}, 
             {name: "8mm Butyl Sealant", def: 1.70, wt: 0.2}, 
@@ -1243,6 +1244,7 @@
         let bolt58Qty    = cleatB * 4 + (cleatC + cleatC1) * 2;                                      // I12 =C15*4+(C16+C17)*2
         let bolt38_3Qty  = cleatA * 2;                                                              // I14 =C14*2
         let bolt38_34Qty = ru((pL * ru(pW + 1) + ru(pL + 1) * pW) + (pL + pW) * 2) * 10 * 1.03;     // I15
+        let washer38Qty  = (pL + pW) * 2 * 10;                                                      // I16 =(B3+C3)*2*10
 
         t.lastSeamMeters = sealant5x45m;
 
@@ -1306,6 +1308,7 @@
                             else if (n.includes("5/8 x 1½ w")) calcQ = washer58Qty;
                             else if (n.includes("3/8 x 3/4 bn")) calcQ = bolt38_34Qty;
                             else if (n.includes("3/8 x 3 bn")) calcQ = bolt38_3Qty;
+                            else if (n.includes("3/8 washer")) calcQ = washer38Qty;
                             else if (n.includes("5x45x10m")) calcQ = roll5x45Qty;
                             else if (n.includes("3x40x10m")) calcQ = roll3x40Qty;
                             else if (n.includes("8mm butyl sealant")) calcQ = butyl8Qty;
@@ -1824,7 +1827,7 @@ function processTankData() {
         if(window._dirtyQuote && loggedInUser) { e.preventDefault(); e.returnValue = ''; return ''; }
     });
 
-    console.log("✅ Winko ERP Script v196 successfully loaded!");
+    console.log("✅ Winko ERP Script v197 successfully loaded!");
 </script>
 </body>
 </html>
