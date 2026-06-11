@@ -772,7 +772,7 @@
         return false;
     };
 
-    const cv = "V195"; 
+    const cv = "V196"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1188,7 +1188,7 @@
     function defaultTank() { 
         let baseBOM = JSON.parse(JSON.stringify(systemBaseStructure));
         baseBOM.forEach(sec => sec.items.forEach((it, iIdx) => { it.baseIdx = iIdx; it.manualPrice = false; it.manualQty = false; }));
-        let t = { id: Date.now(), tankQty: 1, std: "SANS 10329:2020 Approved by SIRIM & SPAN", coat: "Hot Dipped Galvanised", L: 20, W: 16, H: 8, partitions: [], ladder1Col: 1, ladder2Col: 0, thickBase: "5.0", thickRoof: "1.5", thickL1: "5.0", thickL2: "3.0", thickL3: "3.0", thickL4: "1.5", partL1Angle: "67 1/2\" Angle Stay", partL2Angle: "92.5\" (L2 Stay)", partL3Angle: "135.5\" (L3 Stay)", override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 };
+        let t = { id: Date.now(), tankQty: 1, std: "SANS 10329:2020 Approved by SIRIM & SPAN", coat: "Hot Dipped Galvanised", L: 20, W: 16, H: 8, partitions: [], ladder1Col: 1, ladder2Col: 0, thickBase: "5.0", thickRoof: "1.5", thickL1: "5.0", thickL2: "3.0", thickL3: "1.5", partL1Angle: "67 1/2\" Angle Stay", partL2Angle: "92.5\" (L2 Stay)", partL3Angle: "135.5\" (L3 Stay)", override: "", bom: baseBOM, nozzles: [], baseCost: 0, finalPrice: 0, effLiters: 0 };
         applySmartThickness(t, 0, true);
         return t; 
     }
@@ -1197,7 +1197,7 @@
     
     function applySmartThickness(t, tankIndex, isInit = false) {
         let u = getVal('unitChoice') || 'ft'; let H = parseFloat(t.H) || 0;
-        if(!isInit) { let ids = ['thickBase', 'thickRoof', 'thickL1', 'thickL2', 'thickL3', 'thickL4']; ids.forEach(f => { let el = document.getElementById(`tank_${tankIndex}_${f}`); if(el) el.value = t[f]; }); }
+        if(!isInit) { let ids = ['thickBase', 'thickRoof', 'thickL1', 'thickL2', 'thickL3']; ids.forEach(f => { let el = document.getElementById(`tank_${tankIndex}_${f}`); if(el) el.value = t[f]; }); }
     }
 
     function autoCalculateBOM(tIdx) {
@@ -1264,8 +1264,7 @@
         const addWall = (th, q) => { if(!wallTotals[th]) wallTotals[th]=0; wallTotals[th]+=q; };
         if(pH >= 1) addWall(t.thickL1, perimeter);
         if(pH >= 2) addWall(t.thickL2, perimeter);
-        if(pH >= 3) addWall(t.thickL3, perimeter);
-        if(pH >= 4) addWall(t.thickL4, perimeter);
+        if(pH >= 3) addWall(t.thickL3, perimeter * (pH - 2));
         if(partitionPanels > 0) addWall(t.thickL1, partitionPanels);
         Object.keys(wallTotals).forEach(th => { addP(th + "mm", wallTotals[th], th, 'wall'); });
         addP(t.thickBase + "mm", basePanels, t.thickBase, 'base');
@@ -1340,7 +1339,7 @@
         }
 
         if (f === 'H' && oldH !== appTanks[i].H) applySmartThickness(appTanks[i], i);
-        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickL4', 'thickBase', 'thickRoof', 'coat', 'std', 'tankQty'].includes(f)) autoCalculateBOM(i); 
+        if (['L', 'W', 'H', 'ladder1Col', 'ladder2Col', 'thickL1', 'thickL2', 'thickL3', 'thickBase', 'thickRoof', 'coat', 'std', 'tankQty'].includes(f)) autoCalculateBOM(i); 
         safeProcess(); 
     }
 
@@ -1508,8 +1507,7 @@
                     <div class="form-group"><label>Roof Panel</label><input type="text" id="tank_${i}_thickRoof" value="${t.thickRoof||'1.5'}" oninput="updateTankField(${i}, 'thickRoof', this.value)"></div>
                     <div class="form-group"><label>Wall L1 (Bottom)</label><input type="text" id="tank_${i}_thickL1" value="${t.thickL1||'4.5'}" oninput="updateTankField(${i}, 'thickL1', this.value)"></div>
                     <div class="form-group"><label>Wall L2</label><input type="text" id="tank_${i}_thickL2" value="${t.thickL2||'3.0'}" oninput="updateTankField(${i}, 'thickL2', this.value)"></div>
-                    <div class="form-group"><label>Wall L3</label><input type="text" id="tank_${i}_thickL3" value="${t.thickL3||'3.0'}" oninput="updateTankField(${i}, 'thickL3', this.value)"></div>
-                    <div class="form-group"><label>Wall L4 (Top)</label><input type="text" id="tank_${i}_thickL4" value="${t.thickL4||'1.5'}" oninput="updateTankField(${i}, 'thickL4', this.value)"></div>
+                    <div class="form-group"><label>Wall L3 (Top)</label><input type="text" id="tank_${i}_thickL3" value="${t.thickL3||'3.0'}" oninput="updateTankField(${i}, 'thickL3', this.value)"></div>
                 </div>
 
                 <div class="dim-grid">
@@ -1642,7 +1640,6 @@ function processTankData() {
             if (pH >= 1 && t.thickL1) thickStr += ` | L1: ${t.thickL1}mm`;
             if (pH >= 2 && t.thickL2) thickStr += ` | L2: ${t.thickL2}mm`;
             if (pH >= 3 && t.thickL3) thickStr += ` | L3: ${t.thickL3}mm`;
-            if (pH >= 4 && t.thickL4) thickStr += ` | L4: ${t.thickL4}mm`;
 
             let extL = 0, intL = 0, vents = 0;
             t.bom.forEach(sec => sec.items.forEach(it => { let n = it.name.toLowerCase(); let q = Number(it.qty) || 0; if(n.includes('ext') && (n.includes('ladder') || n.includes('lader'))) extL += q; else if(n.includes('int') && (n.includes('ladder') || n.includes('lader'))) intL += q; else if(n.includes('air vent') || n.includes('air-vent')) vents += q; }));
@@ -1827,7 +1824,7 @@ function processTankData() {
         if(window._dirtyQuote && loggedInUser) { e.preventDefault(); e.returnValue = ''; return ''; }
     });
 
-    console.log("✅ Winko ERP Script v195 successfully loaded!");
+    console.log("✅ Winko ERP Script v196 successfully loaded!");
 </script>
 </body>
 </html>
