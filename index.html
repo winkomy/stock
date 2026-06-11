@@ -772,7 +772,7 @@
         return false;
     };
 
-    const cv = "V194"; 
+    const cv = "V195"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1293,7 +1293,7 @@
                         if (!it.manualQty) {
                             let n = baseName.toLowerCase();
                             let calcQ = 0;
-                            if (n.includes("roof trusses") || n.includes("roof truss")) calcQ = numTrusses;
+                            if (n.includes("roof trusses") || n.includes("roof truss")) { calcQ = numTrusses; it.name = `Roof Trusses (${t.W || 0} ${u === 'ft' ? 'ft' : 'm'})`; }
                             else if (n.includes("roof rim")) calcQ = perimeter;
                             else if (n.includes("ladder bracket")) calcQ = numLadders > 0 ? (pH * 3 * numLadders) : 0;
                             else if (n.includes("rc (a)") || n.includes("rc(a)")) calcQ = cleatA;
@@ -1827,7 +1827,7 @@ function processTankData() {
         if(window._dirtyQuote && loggedInUser) { e.preventDefault(); e.returnValue = ''; return ''; }
     });
 
-    console.log("✅ Winko ERP Script v194 successfully loaded!");
+    console.log("✅ Winko ERP Script v195 successfully loaded!");
 </script>
 </body>
 </html>
