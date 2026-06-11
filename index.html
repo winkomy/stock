@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Winko / Jutarama - Enterprise Quoting ERP V194</title>
+    <title>Winko / Jutarama - Enterprise Quoting ERP V198</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -147,6 +147,31 @@
         table{ border-radius:12px; border-color:var(--wk-line); }
         th{ background:#f7f9fc; }
         .live-clock{ box-shadow:var(--wk-shadow); border:1px solid var(--wk-line); }
+
+        /* === V198 MODERN LOGIN === */
+        #securityOverlay { background: linear-gradient(135deg,#0b1220 0%,#0f172a 55%,#13233d 100%); }
+        .wk-login-shell { display:flex; width:880px; max-width:94%; min-height:520px; background:#fff; border-radius:24px; overflow:hidden; box-shadow:0 40px 100px -20px rgba(0,0,0,.7); animation: slideIn .4s cubic-bezier(.16,1,.3,1); }
+        .wk-login-brand { flex:1; background:linear-gradient(150deg,#ea580c 0%,#c2410c 60%,#7c2d12 100%); color:#fff; padding:48px 40px; display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
+        .wk-login-brand::after { content:''; position:absolute; width:300px; height:300px; border-radius:50%; background:rgba(255,255,255,.08); top:-90px; right:-90px; }
+        .wk-login-brand::before { content:''; position:absolute; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.06); bottom:-70px; left:-50px; }
+        .wk-login-logo { width:72px; height:72px; border-radius:18px; background:rgba(255,255,255,.16); display:flex; align-items:center; justify-content:center; margin-bottom:24px; position:relative; z-index:1; }
+        .wk-login-brand h1 { margin:0; font-size:30px; font-weight:900; letter-spacing:-.5px; position:relative; z-index:1; }
+        .wk-login-brand .wk-tag { margin:8px 0 28px; font-size:14px; opacity:.92; font-weight:500; max-width:270px; line-height:1.5; position:relative; z-index:1; }
+        .wk-login-features div { font-size:13px; margin-bottom:11px; font-weight:600; opacity:.95; position:relative; z-index:1; }
+        .wk-login-form { flex:1; padding:48px 44px; display:flex; flex-direction:column; justify-content:center; }
+        .wk-login-form h2 { margin:0; font-size:24px; font-weight:800; color:#0f172a; }
+        .wk-login-sub { margin:6px 0 28px; color:#64748b; font-size:13px; font-weight:500; }
+        .wk-login-form label { display:block; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+        .wk-login-form input { width:100%; padding:13px 15px; margin-bottom:16px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:15px; background:#f8fafc; outline:none; transition:.2s; font-weight:500; color:#1e293b; }
+        .wk-login-form input:focus { border-color:#ea580c; background:#fff; box-shadow:0 0 0 4px rgba(234,88,12,.12); }
+        .wk-pass-wrap { position:relative; }
+        .wk-pass-wrap span { position:absolute; right:14px; top:13px; cursor:pointer; opacity:.55; font-size:16px; }
+        .wk-pass-wrap span:hover { opacity:1; }
+        .wk-login-form button { width:100%; padding:14px; background:linear-gradient(135deg,#ea580c,#c2410c); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:15px; letter-spacing:.3px; cursor:pointer; margin-top:8px; transition:transform .15s, box-shadow .2s; box-shadow:0 10px 22px -8px rgba(234,88,12,.6); }
+        .wk-login-form button:hover { transform:translateY(-2px); box-shadow:0 16px 30px -8px rgba(234,88,12,.7); }
+        .wk-login-ver { text-align:center; margin-top:24px; font-size:11px; color:#94a3b8; font-weight:500; }
+        @media (max-width:720px){ .wk-login-shell{ flex-direction:column; width:420px; min-height:0; } .wk-login-brand{ padding:32px; } .wk-login-features{ display:none; } .wk-login-form{ padding:36px 32px; } }
+
         @media print{ body{ background:#fff !important; } }
 
         @media print {
@@ -282,20 +307,31 @@
 </div>
 
 <div id="securityOverlay">
-    <div class="login-card">
-        <h2 style="margin: 0 0 5px 0; color: #0f172a; font-weight: 900; font-size: 26px; letter-spacing: -0.5px;">WINKO ERP</h2>
-        <p style="color:#64748b; margin-top: 0; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;" id="loginTitleText">Enterprise Quoting Gateway</p>
-        <div style="width: 100%; text-align: left; margin-top: 32px;">
-            <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-left: 4px;">Username</label>
+    <div class="wk-login-shell">
+        <div class="wk-login-brand">
+            <div class="wk-login-logo">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <ellipse cx="12" cy="5" rx="7" ry="2.4"/>
+                    <path d="M5 5 V19 c0 1.33 3.13 2.4 7 2.4 s7 -1.07 7 -2.4 V5"/>
+                    <path d="M5 12 c0 1.33 3.13 2.4 7 2.4 s7 -1.07 7 -2.4"/>
+                </svg>
+            </div>
+            <h1>WINKO ERP</h1>
+            <p class="wk-tag">Pressed-steel tank quoting &amp; BOM intelligence</p>
+        </div>
+        <div class="wk-login-form">
+            <h2>Welcome back</h2>
+            <p class="wk-login-sub" id="loginTitleText">Sign in to your workspace</p>
+            <label>Username</label>
             <input type="text" id="userInput" placeholder="Enter username" onkeypress="if(event.key==='Enter') document.getElementById('passInput').focus()">
+            <label>Password</label>
+            <div class="wk-pass-wrap">
+                <input type="password" id="passInput" placeholder="••••••••" style="margin-bottom:0;" onkeypress="if(event.key==='Enter') processSecureLogin()">
+                <span onclick="togglePass('passInput')" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.55" title="Show/Hide Password">👁️</span>
+            </div>
+            <button onclick="processSecureLogin()">Sign In →</button>
+            <p class="wk-login-ver">🔒 Secure hashed login</p>
         </div>
-        <div style="position: relative; width: 100%; text-align: left; margin-top: 8px;">
-            <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-left: 4px;">Password</label>
-            <input type="password" id="passInput" placeholder="••••••••" onkeypress="if(event.key==='Enter') processSecureLogin()" style="width: 100%; padding-right: 40px;">
-            <span onclick="togglePass('passInput')" style="position: absolute; right: 14px; top: 34px; cursor: pointer; font-size: 16px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Show/Hide Password">👁️</span>
-        </div>
-        <button onclick="processSecureLogin()">Secure Login</button>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 24px; font-weight: 500;">V194 - Hashing, Live Steel Price</p>
     </div>
 </div>
 
@@ -772,7 +808,7 @@
         return false;
     };
 
-    const cv = "V197"; 
+    const cv = "V198"; 
     
     const getVal = (id) => { let e = document.getElementById(id); return e ? e.value : ''; };
     const getNum = (id) => { let v = parseFloat(getVal(id)); return isNaN(v) ? 0 : v; };
@@ -1245,6 +1281,17 @@
         let bolt38_3Qty  = cleatA * 2;                                                              // I14 =C14*2
         let bolt38_34Qty = ru((pL * ru(pW + 1) + ru(pL + 1) * pW) + (pL + pW) * 2) * 10 * 1.03;     // I15
         let washer38Qty  = (pL + pW) * 2 * 10;                                                      // I16 =(B3+C3)*2*10
+
+        // --- Partition wall extras (ESTIMATE: your Excel has no partition sample; a partition is treated as an internal pW x pH wall) ---
+        if (num_partitions > 0) {
+            let np = num_partitions;
+            let partCleatB = Math.max(0, ru((pW - 1) * (pH - 1)) + ru(pW - 1) * 2 + ru(pH - 1) * 2); // Type-B cleats on the W x H face
+            cleatB     += np * partCleatB;                                  // MC (B) cleats
+            butyl24Qty += np * partCleatB;                                  // 24mm butyl tracks Type-B
+            m14Qty     += np * ru(ru(pW + 1) * pH + ru(pH + 1) * pW) * 17;  // face bolts (Excel I10 term-1 pattern on W x H)
+            bolt58Qty  += np * partCleatB * 4;                             // 5/8 bolts per partition cleat
+            butyl8Qty  += np * (pW + pH) * 2;                              // perimeter sealing of the partition
+        }
 
         t.lastSeamMeters = sealant5x45m;
 
@@ -1827,7 +1874,7 @@ function processTankData() {
         if(window._dirtyQuote && loggedInUser) { e.preventDefault(); e.returnValue = ''; return ''; }
     });
 
-    console.log("✅ Winko ERP Script v197 successfully loaded!");
+    console.log("✅ Winko ERP Script v198 successfully loaded!");
 </script>
 </body>
 </html>
